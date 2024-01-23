@@ -170,7 +170,6 @@ def update_cryptos(dataframe, crypto_list=crypto_list, timesleep=1):
             # Convert max_date to datetime if needed
             max_date = pd.to_datetime(max_date) if max_date is not pd.NaT else pd.to_datetime('2020-01-01')
             
-            print(max_date)
             # Get historical data from the last recorded date in the existing data
             crypto_data = yf.Ticker(crypto).history(start=max_date)
             crypto_data['symbol'] = crypto
@@ -216,7 +215,6 @@ def load_data_into_database(df, engine, table_name, if_exists='append'):
         return
 
     try:
-        print(df)
         df.to_sql(table_name, engine, if_exists=if_exists, index=False)
         print(f'DataFrame data loaded into {table_name} table')
     except Exception as e:
