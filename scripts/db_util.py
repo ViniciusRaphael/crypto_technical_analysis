@@ -167,11 +167,13 @@ def update_cryptos(dataframe, crypto_list=crypto_list, timesleep=1):
             # Get the maximum date for the given cryptocurrency in the existing data
             max_date = dataframe[dataframe['symbol'] == crypto]['date'].max()
 
+            start_date = max_date + timedelta(days=1)
+
             # Convert max_date to datetime if needed
-            max_date = pd.to_datetime(max_date) if max_date is not pd.NaT else pd.to_datetime('2020-01-01')
+            start_date = pd.to_datetime(start_date) if start_date is not pd.NaT else pd.to_datetime('2020-01-01')
             
             # Get historical data from the last recorded date in the existing data
-            crypto_data = yf.Ticker(crypto).history(start=max_date)
+            crypto_data = yf.Ticker(crypto).history(start=start_date)
             crypto_data['symbol'] = crypto
             # Check if the retrieved data is not empty before appending to empty_dataframe
             if not crypto_data.empty:
