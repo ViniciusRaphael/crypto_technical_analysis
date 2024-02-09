@@ -222,6 +222,31 @@ def load_data_into_database(df, engine, table_name, if_exists='append'):
     except Exception as e:
         print(f'Error loading data into the database: {e}')
 
+def get_db_data(conn, table):
+    """
+    Retrieve data from a specific table in the database using the provided connection.
+
+    Parameters:
+    - conn: Database connection object.
+    - table (str): The name of the table from which to retrieve data.
+
+    Returns:
+    - pd.DataFrame: DataFrame containing the data from the specified table.
+    """
+
+    # Construct the SQL query to select all columns from the specified table
+    sql_query = f"""
+                    SELECT *
+                    FROM {table}
+                    """
+
+    # Execute the SQL query using the provided connection
+    output = conn.execute(text(sql_query))
+
+    # Convert the query result to a DataFrame
+    result = pd.DataFrame(output.fetchall())
+
+    return result
 
 def main():
     # Configuration parameters for the PostgreSQL database
