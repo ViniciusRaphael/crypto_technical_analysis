@@ -7,6 +7,7 @@ import pandas_ta as ta
 from sqlalchemy import text
 import plotly.graph_objects as go
 import time
+import numpy as np
 
 # My own libraries or custom modules
 import db_util as du
@@ -29,6 +30,7 @@ def add_indicators(dataframe):
 
     # Sorts the DataFrame by 'symbol' and 'date' to ensure proper application of operations
     dataframe = dataframe.sort_values(by=['symbol', 'date'])
+    dataframe['date'] = pd.to_datetime(dataframe['date'])
 
     # Calculates and adds the x-day Simple Moving Average (SMA) to the DataFrame
     dataframe['ma_20'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.sma(x, 20))
@@ -66,12 +68,12 @@ with engine.connect() as conn:
     end = time.time()
     print(f'Code finished in: {end - start} sec')
 
-result = df1.loc[ 
-    (df1['date'] == '2024-02-08T21:00:00.000')
-    & (df1['close'] > df1['ma_20'])
-    & (df1['close'] > df1['ma_50'])
-    & (df1['close'] > df1['ma_100'])
-    & (df1['close'] > df1['ma_200'])
-    & (df1['ma_20'] > df1['ma_50'])
-    & (df1['ma_50'] > df1['ma_100'])
-    & (df1['ma_100'] > df1['ma_200'])]
+# result = df1.loc[ 
+#     (df1['date'] == '2024-02-12')
+#     & (df1['close'] > df1['ma_20'])
+#     & (df1['close'] > df1['ma_50'])
+#     & (df1['close'] > df1['ma_100'])
+#     & (df1['close'] > df1['ma_200'])
+#     & (df1['ma_20'] > df1['ma_50'])
+#     & (df1['ma_50'] > df1['ma_100'])
+#     & (df1['ma_100'] > df1['ma_200'])]

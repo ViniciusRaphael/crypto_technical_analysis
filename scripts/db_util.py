@@ -48,7 +48,7 @@ def create_table(conn, table_name):
     - table_name (str): Name of the table to be created.
     """    
     sql_code = f"""CREATE TABLE {table_name}(
-                    date TIMESTAMP,
+                    date DATE,
                     open NUMERIC,
                     high NUMERIC,
                     low NUMERIC,
@@ -238,7 +238,7 @@ def get_db_data(conn, table):
     sql_query = f"""
                     SELECT *
                     FROM {table}
-                    """
+                """
 
     # Execute the SQL query using the provided connection
     output = conn.execute(text(sql_query))
@@ -291,3 +291,5 @@ def main():
                 load_data_into_database(df, engine, table_name)
 
     
+if __name__ == "__main__":
+    main()
