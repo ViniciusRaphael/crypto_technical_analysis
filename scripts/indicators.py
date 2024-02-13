@@ -16,6 +16,28 @@ import db_util as du
 config = ConfigParser()
 config.read('../config.ini')
 
+def classify_adx_value(value):
+    """
+    Checks the ADX value against predefined ranges and returns the corresponding trend category.
+
+    Args:
+        value (int): The ADX value to be categorized.
+
+    Returns:
+        str or None: The category name for the provided ADX value.
+    """    
+    NM_ADX_GROUP = {
+    '0-25': '1. Absent or Weak Trend',
+    '25-50': '2. Strong Trend',
+    '50-75': '3. Very Strong Trend',
+    '75-100': '4. Extremely Strong Trend'
+    }
+
+    for key, name in NM_ADX_GROUP.items():
+        range_start, range_end = map(int, key.split('-'))
+        if range_start <= value <= range_end:
+            return name
+    return None
 
 def add_indicators(dataframe):
     """
@@ -29,6 +51,9 @@ def add_indicators(dataframe):
     """
 
     # Sorts the DataFrame by 'symbol' and 'date' to ensure proper application of operations
+    # Convert certain columns to float
+    dataframe[['open', 'close', 'high', 'low']] = dataframe[['open', 'close', 'high', 'low']].astype(float)
+    
     dataframe = dataframe.sort_values(by=['symbol', 'date'])
     dataframe['date'] = pd.to_datetime(dataframe['date'])
 
@@ -41,6 +66,12 @@ def add_indicators(dataframe):
     dataframe['min_50'] = dataframe.groupby('symbol')['close'].transform(lambda x: x.shift(1).rolling(window=50).min())
     dataframe['max_50'] = dataframe.groupby('symbol')['close'].transform(lambda x: x.shift(1).rolling(window=50).max())
 
+    dataframe[['vl_adx', 'vl_dmp', 'vl_dmn']] = dataframe.groupby('symbol').apply(lambda x: ta.adx(x['high'], x['low'], x['close'], length=14)).reset_index(drop=True)
+    dataframe['nm_adx_trend'] = dataframe['vl_adx'].apply(classify_adx_value)
+    
+    dataframe['rsi'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.sma(x))
+
+    dataframe.drop(columns=['vl_dmp', 'vl_dmn'])
     return dataframe
 
 
