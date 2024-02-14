@@ -7,7 +7,6 @@ import pandas_ta as ta
 from sqlalchemy import text
 import plotly.graph_objects as go
 import time
-import numpy as np
 
 # My own libraries or custom modules
 import db_util as du
@@ -39,53 +38,88 @@ def classify_adx_value(value):
             return name
     return None
 
-def add_indicators(dataframe):
+def count_positive_reset(df_column):
     """
-    Add indicators to the DataFrame, including the 21-day Simple Moving Average (SMA) and the maximum of the last 55 days.
+    Counts consecutive positive values in a DataFrame column and resets count on encountering negative values.
 
-    Parameters:
-    - dataframe (pd.DataFrame): The DataFrame containing financial data.
+    Args:
+        df_column (pandas.Series): The DataFrame column to be processed.
 
     Returns:
-    - pd.DataFrame: The updated DataFrame with added indicators.
-    """
+        list: A list containing counts of consecutive positive values.
+    """    
+    count = 0
+    counts = []
 
-    # Sort the DataFrame by 'symbol' and 'date' to ensure proper application of operations
-    # Convert certain columns to float
+    for value in df_column:
+        if value > 0:
+            count += 1
+        else:
+            count = 0  # Reset count if a negative value is encountered
+        counts.append(count)
+
+    return counts
+
+def add_indicators(dataframe):
+    # Sort DataFrame by 'symbol' and 'date', convert date column to datetime
     dataframe[['open', 'close', 'high', 'low']] = dataframe[['open', 'close', 'high', 'low']].astype(float)
-
-    # Sort DataFrame by 'symbol' and 'date' columns
-    dataframe = dataframe.sort_values(by=['symbol', 'date'])
-
-    # Convert the 'date' column to datetime format
+    dataframe = dataframe.sort_values(by=['symbol', 'date']).reset_index(drop=True)
     dataframe['date'] = pd.to_datetime(dataframe['date'])
 
-    # Calculate and add the x-day Simple Moving Average (SMA) to the DataFrame
-    dataframe['ma_20'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.sma(x, 20))
-    dataframe['ma_50'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.sma(x, 50))
-    dataframe['ma_100'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.sma(x, 100))
-    dataframe['ma_200'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.sma(x, 200))
+    # Calculate and add SMAs
+    for window in [20, 50, 100, 200]:
+        dataframe[f'ma_{window}'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.sma(x, window))
 
     # Calculate and add the minimum and maximum values for a 50-day rolling window
     dataframe['min_50'] = dataframe.groupby('symbol')['close'].transform(lambda x: x.shift(1).rolling(window=50).min())
     dataframe['max_50'] = dataframe.groupby('symbol')['close'].transform(lambda x: x.shift(1).rolling(window=50).max())
 
-    # Calculate the ADX (Average Directional Movement Index) for each symbol
-    # Reset the index to drop unnecessary grouping index
-    dataframe[['vl_adx', 'vl_dmp', 'vl_dmn']] = dataframe.groupby('symbol').apply(
-        lambda x: ta.adx(x['high'], x['low'], x['close'], length=14)
-    ).reset_index(drop=True)
-
-    # Classify the ADX values into trend categories
+    # Calculate ADX
+    adx_values = dataframe.groupby('symbol').apply(lambda x: ta.adx(x['high'], x['low'], x['close'], length=14)).reset_index(drop=True)
+    dataframe[['vl_adx', 'vl_dmp', 'vl_dmn']] = adx_values
     dataframe['nm_adx_trend'] = dataframe['vl_adx'].transform(classify_adx_value)
 
-    # Calculate the Relative Strength Index (RSI) for each symbol
+    # Calculate RSI
     dataframe['rsi'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.rsi(x))
 
-    # Drop unnecessary columns 'vl_dmp' and 'vl_dmn'
-    dataframe.drop(columns=['vl_dmp', 'vl_dmn'])
+    # Calculate Ichimoku Cloud indicators
+    ichimoku_values = dataframe.groupby('symbol').apply(lambda x: ta.ichimoku(x['high'], x['low'], x['close'])[0]).reset_index(drop=True)
+    dataframe[['vl_leading_span_a', 'vl_leading_span_b', 'vl_conversion_line', 'vl_base_line', 'vl_lagging_span']] = ichimoku_values
+    dataframe[['vl_leading_span_a', 'vl_leading_span_b', 'vl_conversion_line', 'vl_base_line', 'vl_lagging_span']] = dataframe[['vl_leading_span_a', 'vl_leading_span_b', 'vl_conversion_line', 'vl_base_line', 'vl_lagging_span']].astype(float)
+    dataframe['vl_price_over_conv_line'] = dataframe['close'] - dataframe['vl_conversion_line']
+    dataframe['qt_days_ichimoku_positive'] = count_positive_reset(dataframe['vl_price_over_conv_line'])
+
+    # Drop unnecessary columns
+    dataframe = dataframe.drop(columns=['vl_dmp', 'vl_dmn'])
+
     return dataframe
 
+def filter_indicators_today(dataframe, vl_adx_min = 25, date = '2024-02-12' ,vl_macd_hist_min = 0, vl_macd_delta_min = 0.01, qt_days_supertrend_positive = 1):
+    """
+    Filters the concatenated DataFrame to select specific indicators for the current date.
+
+    Args:
+        dataframe (pandas.DataFrame): Concatenated DataFrame containing processed data.
+
+    Returns:
+        pandas.DataFrame: Filtered DataFrame based on specific indicators for the current date.
+    """
+
+    df_indicators = dataframe.loc[
+        (dataframe['vl_adx'] >= vl_adx_min) &
+        (dataframe['date'] == date) &
+
+        # Ichimoku with price above conversion line and base line
+        (dataframe['close'] > dataframe['vl_conversion_line']) &
+        (dataframe['close'] > dataframe['vl_base_line']) 
+
+        # # vl_macd histogram greater than 0 and signal greater than vl_macd
+        # (dataframe['vl_macd_hist'] >= vl_macd_hist_min) &
+        # (dataframe['vl_macd_delta'] >= vl_macd_delta_min) &
+        # (dataframe['qt_days_supertrend_positive'] >= qt_days_supertrend_positive)
+    ]
+
+    return df_indicators
 
 # Configuration parameters for the PostgreSQL database
 db_connection = {
@@ -111,12 +145,5 @@ with engine.connect() as conn:
     end = time.time()
     print(f'Code finished in: {end - start} sec')
 
-# result = df1.loc[ 
-#     (df1['date'] == '2024-02-12')
-#     & (df1['close'] > df1['ma_20'])
-#     & (df1['close'] > df1['ma_50'])
-#     & (df1['close'] > df1['ma_100'])
-#     & (df1['close'] > df1['ma_200'])
-#     & (df1['ma_20'] > df1['ma_50'])
-#     & (df1['ma_50'] > df1['ma_100'])
-#     & (df1['ma_100'] > df1['ma_200'])]
+    result1 = filter_indicators_today(df1)
+    
