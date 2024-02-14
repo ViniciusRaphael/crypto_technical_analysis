@@ -50,27 +50,39 @@ def add_indicators(dataframe):
     - pd.DataFrame: The updated DataFrame with added indicators.
     """
 
-    # Sorts the DataFrame by 'symbol' and 'date' to ensure proper application of operations
+    # Sort the DataFrame by 'symbol' and 'date' to ensure proper application of operations
     # Convert certain columns to float
     dataframe[['open', 'close', 'high', 'low']] = dataframe[['open', 'close', 'high', 'low']].astype(float)
-    
+
+    # Sort DataFrame by 'symbol' and 'date' columns
     dataframe = dataframe.sort_values(by=['symbol', 'date'])
+
+    # Convert the 'date' column to datetime format
     dataframe['date'] = pd.to_datetime(dataframe['date'])
 
-    # Calculates and adds the x-day Simple Moving Average (SMA) to the DataFrame
+    # Calculate and add the x-day Simple Moving Average (SMA) to the DataFrame
     dataframe['ma_20'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.sma(x, 20))
     dataframe['ma_50'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.sma(x, 50))
     dataframe['ma_100'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.sma(x, 100))
     dataframe['ma_200'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.sma(x, 200))
 
+    # Calculate and add the minimum and maximum values for a 50-day rolling window
     dataframe['min_50'] = dataframe.groupby('symbol')['close'].transform(lambda x: x.shift(1).rolling(window=50).min())
     dataframe['max_50'] = dataframe.groupby('symbol')['close'].transform(lambda x: x.shift(1).rolling(window=50).max())
 
-    dataframe[['vl_adx', 'vl_dmp', 'vl_dmn']] = dataframe.groupby('symbol').apply(lambda x: ta.adx(x['high'], x['low'], x['close'], length=14)).reset_index(drop=True)
-    dataframe['nm_adx_trend'] = dataframe['vl_adx'].apply(classify_adx_value)
-    
-    dataframe['rsi'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.sma(x))
+    # Calculate the ADX (Average Directional Movement Index) for each symbol
+    # Reset the index to drop unnecessary grouping index
+    dataframe[['vl_adx', 'vl_dmp', 'vl_dmn']] = dataframe.groupby('symbol').apply(
+        lambda x: ta.adx(x['high'], x['low'], x['close'], length=14)
+    ).reset_index(drop=True)
 
+    # Classify the ADX values into trend categories
+    dataframe['nm_adx_trend'] = dataframe['vl_adx'].transform(classify_adx_value)
+
+    # Calculate the Relative Strength Index (RSI) for each symbol
+    dataframe['rsi'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.rsi(x))
+
+    # Drop unnecessary columns 'vl_dmp' and 'vl_dmn'
     dataframe.drop(columns=['vl_dmp', 'vl_dmn'])
     return dataframe
 
