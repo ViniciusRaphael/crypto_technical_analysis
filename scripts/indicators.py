@@ -75,6 +75,7 @@ def add_indicators(dataframe):
     """    
     # Sort DataFrame by 'symbol' and 'date', convert date column to datetime
     dataframe[['open', 'close', 'high', 'low']] = dataframe[['open', 'close', 'high', 'low']].astype(float)
+    # dataframe = dataframe.drop(columns = ['count_duplicate'])
     dataframe = dataframe.sort_values(by=['symbol', 'date']).reset_index(drop=True)
     dataframe['date'] = pd.to_datetime(dataframe['date'])
 
@@ -97,11 +98,17 @@ def add_indicators(dataframe):
     dataframe[['vl_leading_span_a', 'vl_leading_span_b', 'vl_conversion_line', 'vl_base_line', 'vl_lagging_span']] = dataframe.groupby('symbol').apply(lambda x: ta.ichimoku(x['high'], x['low'], x['close'])[0]).reset_index(drop=True)
     dataframe['vl_price_over_conv_line'] = dataframe['close'] - dataframe['vl_conversion_line']
     dataframe['qt_days_ichimoku_positive'] = count_positive_reset(dataframe['vl_price_over_conv_line'])
+ 
+    # Calculate MACD
+    dataframe[['vl_macd', 'vl_macd_hist', 'vl_macd_signal']]  = dataframe.groupby('symbol')['close'].apply(lambda x: ta.macd(x)).reset_index(drop=True)
+    dataframe['vl_macd_delta'] = dataframe['vl_macd'] - dataframe['vl_macd_signal']
+    dataframe['qt_days_macd_delta_positive'] = count_positive_reset(dataframe['vl_macd_delta'])
+
 
     return dataframe
 
 
-def filter_indicators_today(dataframe, vl_adx_min = 25, date = '2024-02-12' ,vl_macd_hist_min = 0, vl_macd_delta_min = 0.01, qt_days_supertrend_positive = 1):
+def filter_indicators_today(dataframe, vl_adx_min = 25, date = '2024-02-14' ,vl_macd_hist_min = 0, vl_macd_delta_min = 0.01, qt_days_supertrend_positive = 1):
     """
     Filters the concatenated DataFrame to select specific indicators for the current date.
 
@@ -118,17 +125,19 @@ def filter_indicators_today(dataframe, vl_adx_min = 25, date = '2024-02-12' ,vl_
 
         # Ichimoku with price above conversion line and base line
         (dataframe['close'] > dataframe['vl_conversion_line']) &
-        (dataframe['close'] > dataframe['vl_base_line']) 
+        (dataframe['close'] > dataframe['vl_base_line']) &
 
         # # vl_macd histogram greater than 0 and signal greater than vl_macd
-        # (dataframe['vl_macd_hist'] >= vl_macd_hist_min) &
-        # (dataframe['vl_macd_delta'] >= vl_macd_delta_min) &
+        (dataframe['vl_macd_hist'] >= vl_macd_hist_min) &
+        (dataframe['vl_macd_delta'] >= vl_macd_delta_min) 
         # (dataframe['qt_days_supertrend_positive'] >= qt_days_supertrend_positive)
     ]
 
         # Drop unnecessary columns
     df_indicators = df_indicators.drop(
         columns = [
+            'open',
+            'close',
             'high',
             'low',
             'volume',
@@ -137,11 +146,19 @@ def filter_indicators_today(dataframe, vl_adx_min = 25, date = '2024-02-12' ,vl_
             'vl_dmn', 
             'vl_leading_span_a', 
             'vl_leading_span_b', 
-            'vl_lagging_span'
+            'vl_lagging_span',
+            'vl_conversion_line', 
+            'vl_base_line',
+            'vl_price_over_conv_line',
+            'vl_macd', 
+            'vl_macd_hist', 
+            'vl_macd_signal'
             ]
         )
 
+    df_indicators.set_index('date', inplace=True)
     return df_indicators
+
 
 # Configuration parameters for the PostgreSQL database
 db_connection = {
@@ -167,6 +184,7 @@ with engine.connect() as conn:
     end = time.time()
     print(f'Code finished in: {end - start} sec')
 
-    yesterday_date = datetime.today().date() - timedelta(days=1)
+    yesterday_date = datetime.today().date() - timedelta(days=2)
     result = filter_indicators_today(df1, date = yesterday_date)
+
     
