@@ -16,6 +16,7 @@ import db_util as du
 config = ConfigParser()
 config.read('../config.ini')
 
+
 def classify_adx_value(value):
     """
     Checks the ADX value against predefined ranges and returns the corresponding trend category.
@@ -25,12 +26,12 @@ def classify_adx_value(value):
 
     Returns:
         str or None: The category name for the provided ADX value.
-    """    
+    """
     NM_ADX_GROUP = {
-    '0-25': '1. Absent or Weak Trend',
-    '25-50': '2. Strong Trend',
-    '50-75': '3. Very Strong Trend',
-    '75-100': '4. Extremely Strong Trend'
+        '0-25': '1. Absent or Weak Trend',
+        '25-50': '2. Strong Trend',
+        '50-75': '3. Very Strong Trend',
+        '75-100': '4. Extremely Strong Trend'
     }
 
     for key, name in NM_ADX_GROUP.items():
@@ -49,7 +50,7 @@ def count_positive_reset(df_column):
 
     Returns:
         list: A list containing counts of consecutive positive values.
-    """    
+    """
     count = 0
     counts = []
 
@@ -72,11 +73,13 @@ def add_indicators(dataframe):
 
     Returns:
     - pd.DataFrame: Updated DataFrame with added technical indicators.
-    """    
+    """
     # Sort DataFrame by 'symbol' and 'date', convert date column to datetime
-    dataframe[['open', 'close', 'high', 'low']] = dataframe[['open', 'close', 'high', 'low']].astype(float)
+    dataframe[['open', 'close', 'high', 'low']] = dataframe[[
+        'open', 'close', 'high', 'low']].astype(float)
     # dataframe = dataframe.drop(columns = ['count_duplicate'])
-    dataframe = dataframe.sort_values(by=['symbol', 'date']).reset_index(drop=True)
+    dataframe = dataframe.sort_values(
+        by=['symbol', 'date']).reset_index(drop=True)
     dataframe['date'] = pd.to_datetime(dataframe['date'])
 
     # Calculate and add SMAs
@@ -84,31 +87,41 @@ def add_indicators(dataframe):
     #     dataframe[f'ma_{window}'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.sma(x, window))
 
     # Calculate and add the minimum and maximum values for a 50-day rolling window
-    dataframe['min_50'] = dataframe.groupby('symbol')['close'].transform(lambda x: x.shift(1).rolling(window=50).min())
-    dataframe['max_50'] = dataframe.groupby('symbol')['close'].transform(lambda x: x.shift(1).rolling(window=50).max())
+    dataframe['min_50'] = dataframe.groupby('symbol')['close'].transform(
+        lambda x: x.shift(1).rolling(window=50).min())
+    dataframe['max_50'] = dataframe.groupby('symbol')['close'].transform(
+        lambda x: x.shift(1).rolling(window=50).max())
 
     # Calculate ADX
-    dataframe[['vl_adx', 'vl_dmp', 'vl_dmn']] = dataframe.groupby('symbol').apply(lambda x: ta.adx(x['high'], x['low'], x['close'], length=14)).reset_index(drop=True)
-    dataframe['nm_adx_trend'] = dataframe['vl_adx'].transform(classify_adx_value)
+    dataframe[['vl_adx', 'vl_dmp', 'vl_dmn']] = dataframe.groupby('symbol').apply(
+        lambda x: ta.adx(x['high'], x['low'], x['close'], length=14)).reset_index(drop=True)
+    dataframe['nm_adx_trend'] = dataframe['vl_adx'].transform(
+        classify_adx_value)
 
     # Calculate RSI
-    dataframe['rsi'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.rsi(x))
+    dataframe['rsi'] = dataframe.groupby(
+        'symbol')['close'].transform(lambda x: ta.rsi(x))
 
     # Calculate Ichimoku Cloud indicators
-    dataframe[['vl_leading_span_a', 'vl_leading_span_b', 'vl_conversion_line', 'vl_base_line', 'vl_lagging_span']] = dataframe.groupby('symbol').apply(lambda x: ta.ichimoku(x['high'], x['low'], x['close'])[0]).reset_index(drop=True)
-    dataframe['vl_price_over_conv_line'] = dataframe['close'] - dataframe['vl_conversion_line']
-    dataframe['qt_days_ichimoku_positive'] = count_positive_reset(dataframe['vl_price_over_conv_line'])
- 
-    # Calculate MACD
-    dataframe[['vl_macd', 'vl_macd_hist', 'vl_macd_signal']]  = dataframe.groupby('symbol')['close'].apply(lambda x: ta.macd(x)).reset_index(drop=True)
-    dataframe['vl_macd_delta'] = dataframe['vl_macd'] - dataframe['vl_macd_signal']
-    dataframe['qt_days_macd_delta_positive'] = count_positive_reset(dataframe['vl_macd_delta'])
+    dataframe[['vl_leading_span_a', 'vl_leading_span_b', 'vl_conversion_line', 'vl_base_line', 'vl_lagging_span']] = dataframe.groupby(
+        'symbol').apply(lambda x: ta.ichimoku(x['high'], x['low'], x['close'])[0]).reset_index(drop=True)
+    dataframe['vl_price_over_conv_line'] = dataframe['close'] - \
+        dataframe['vl_conversion_line']
+    dataframe['qt_days_ichimoku_positive'] = count_positive_reset(
+        dataframe['vl_price_over_conv_line'])
 
+    # Calculate MACD
+    dataframe[['vl_macd', 'vl_macd_hist', 'vl_macd_signal']] = dataframe.groupby(
+        'symbol')['close'].apply(lambda x: ta.macd(x)).reset_index(drop=True)
+    dataframe['vl_macd_delta'] = dataframe['vl_macd'] - \
+        dataframe['vl_macd_signal']
+    dataframe['qt_days_macd_delta_positive'] = count_positive_reset(
+        dataframe['vl_macd_delta'])
 
     return dataframe
 
 
-def filter_indicators_today(dataframe, vl_adx_min = 25, date = '2024-02-14' ,vl_macd_hist_min = 0, vl_macd_delta_min = 0.01, qt_days_supertrend_positive = 1):
+def filter_indicators_today(dataframe, vl_adx_min=25, date='2024-02-14', vl_macd_hist_min=0, vl_macd_delta_min=0.01, qt_days_supertrend_positive=1):
     """
     Filters the concatenated DataFrame to select specific indicators for the current date.
 
@@ -129,32 +142,32 @@ def filter_indicators_today(dataframe, vl_adx_min = 25, date = '2024-02-14' ,vl_
 
         # # vl_macd histogram greater than 0 and signal greater than vl_macd
         (dataframe['vl_macd_hist'] >= vl_macd_hist_min) &
-        (dataframe['vl_macd_delta'] >= vl_macd_delta_min) 
+        (dataframe['vl_macd_delta'] >= vl_macd_delta_min)
         # (dataframe['qt_days_supertrend_positive'] >= qt_days_supertrend_positive)
     ]
 
-        # Drop unnecessary columns
+    # Drop unnecessary columns
     df_indicators = df_indicators.drop(
-        columns = [
+        columns=[
             'open',
             'close',
             'high',
             'low',
             'volume',
             'dividends',
-            'vl_dmp', 
-            'vl_dmn', 
-            'vl_leading_span_a', 
-            'vl_leading_span_b', 
+            'vl_dmp',
+            'vl_dmn',
+            'vl_leading_span_a',
+            'vl_leading_span_b',
             'vl_lagging_span',
-            'vl_conversion_line', 
+            'vl_conversion_line',
             'vl_base_line',
             'vl_price_over_conv_line',
-            'vl_macd', 
-            'vl_macd_hist', 
+            'vl_macd',
+            'vl_macd_hist',
             'vl_macd_signal'
-            ]
-        )
+        ]
+    )
 
     df_indicators.set_index('date', inplace=True)
     return df_indicators
@@ -167,7 +180,7 @@ db_connection = {
     'database': config.get('Database', 'database'),
     'user': config.get('Database', 'user'),
     'password': config.get('Database', 'password')
-}   
+}
 
 # Specify the name of the table in the database
 table_name = 'crypto_historical_price'
@@ -185,6 +198,4 @@ with engine.connect() as conn:
     print(f'Code finished in: {end - start} sec')
 
     yesterday_date = datetime.today().date() - timedelta(days=2)
-    result = filter_indicators_today(df1, date = yesterday_date)
-
-    
+    result = filter_indicators_today(df1, date=yesterday_date)
