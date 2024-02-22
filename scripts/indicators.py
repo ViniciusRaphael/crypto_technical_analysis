@@ -89,6 +89,10 @@ def add_indicators(dataframe):
     # Calculate and add the minimum and maximum values for a 50-day rolling window
     dataframe['min_50'] = dataframe.groupby('symbol')['close'].transform(
         lambda x: x.shift(1).rolling(window=50).min())
+    
+    # Calculate the percentage of risk based on the difference between the close price and the 50-day minimum, relative to the close price, rounded to two decimal places
+    dataframe['percent_risk'] = round(
+            ((dataframe['close'] - dataframe['min_50']) / dataframe['close']) * 100, 2)
     dataframe['max_50'] = dataframe.groupby('symbol')['close'].transform(
         lambda x: x.shift(1).rolling(window=50).max())
 
@@ -150,7 +154,6 @@ def filter_indicators_today(dataframe, vl_adx_min=25, date='2024-02-14', vl_macd
     df_indicators = df_indicators.drop(
         columns=[
             'open',
-            'close',
             'high',
             'low',
             'volume',
@@ -197,5 +200,7 @@ with engine.connect() as conn:
     end = time.time()
     print(f'Code finished in: {end - start} sec')
 
-    yesterday_date = datetime.today().date() - timedelta(days=2)
+    yesterday_date = datetime.today().date() - timedelta(days=1)
     result = filter_indicators_today(df1, date=yesterday_date)
+
+result
