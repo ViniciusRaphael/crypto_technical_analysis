@@ -130,10 +130,13 @@ def filter_indicators_today(dataframe, vl_adx_min=25, date='2024-02-14'):
         (dataframe['close'] > dataframe['vl_conversion_line']) &
         (dataframe['close'] > dataframe['vl_base_line']) &
 
+        # MACD
+        (dataframe['signal_line'] > dataframe['macd']) &
         # Price above EMAs
         (dataframe['close'] > dataframe['ema_12']) &
         (dataframe['ema_12'] > dataframe['ema_26']) &
         (dataframe['ema_26'] > dataframe['ema_55'])
+
     ]
 
     # Drop unnecessary columns
