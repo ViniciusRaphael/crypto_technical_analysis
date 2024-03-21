@@ -73,43 +73,36 @@ def add_indicators(dataframe):
     Returns:
     - pd.DataFrame: Updated DataFrame with added technical indicators.
     """
+    # Convert numerical columns to float
+    dataframe[['open', 'close', 'high', 'low']] = dataframe[['open', 'close', 'high', 'low']].astype(float)
+    
     # Sort DataFrame by 'symbol' and 'date', convert date column to datetime
-    dataframe[['open', 'close', 'high', 'low']] = dataframe[[
-        'open', 'close', 'high', 'low']].astype(float)
-    # dataframe = dataframe.drop(columns = ['count_duplicate'])
-    dataframe = dataframe.sort_values(
-        by=['symbol', 'date']).reset_index(drop=True)
+    dataframe = dataframe.sort_values(by=['symbol', 'date']).reset_index(drop=True)
     dataframe['date'] = pd.to_datetime(dataframe['date'])
 
-    # Calculate and add EMAs
+    # Calculate and add Exponential Moving Averages (EMAs)
     for window in [14, 26, 55]:
         dataframe[f'ema_{window}'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.ema(x, window))
 
     # Calculate and add the minimum and maximum values for a 50-day rolling window
-    dataframe['min_50'] = dataframe.groupby('symbol')['close'].transform(
-        lambda x: x.shift(1).rolling(window=50).min())
+    dataframe['min_50'] = dataframe.groupby('symbol')['close'].transform(lambda x: x.shift(1).rolling(window=50).min())
     
     # Calculate the percentage of risk based on the difference between the close price and the 50-day minimum, relative to the close price, rounded to two decimal places
-    dataframe['percent_risk'] = round(
-            ((dataframe['close'] - dataframe['min_50']) / dataframe['close']) * 100, 2)
+    dataframe['percent_risk'] = round(((dataframe['close'] - dataframe['min_50']) / dataframe['close']) * 100, 2)
 
-    # # Calculate ADX
-    dataframe[['vl_adx', 'vl_dmp', 'vl_dmn']] = dataframe.groupby('symbol').apply(
-        lambda x: ta.adx(x['high'], x['low'], x['close'], length=14)).reset_index(drop=True)
+    # Calculate Average Directional Index (ADX)
+    dataframe[['vl_adx', 'vl_dmp', 'vl_dmn']] = dataframe.groupby('symbol').apply(lambda x: ta.adx(x['high'], x['low'], x['close'], length=14)).reset_index(drop=True)
     dataframe['nm_adx_trend'] = dataframe['vl_adx'].transform(classify_adx_value)
 
-    # # Calculate RSI
-    dataframe['rsi'] = dataframe.groupby(
-        'symbol')['close'].transform(lambda x: ta.rsi(x))
+    # Calculate Relative Strength Index (RSI)
+    dataframe['rsi'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.rsi(x))
 
-    # # Calculate Ichimoku Cloud indicators
-    dataframe[['vl_leading_span_a', 'vl_leading_span_b', 'vl_conversion_line', 'vl_base_line', 'vl_lagging_span']] = dataframe.groupby(
-        'symbol').apply(lambda x: ta.ichimoku(x['high'], x['low'], x['close'])[0]).reset_index(drop=True)
+    # Calculate Ichimoku Cloud indicators
+    dataframe[['vl_leading_span_a', 'vl_leading_span_b', 'vl_conversion_line', 'vl_base_line', 'vl_lagging_span']] = dataframe.groupby('symbol').apply(lambda x: ta.ichimoku(x['high'], x['low'], x['close'])[0]).reset_index(drop=True)
     dataframe['vl_price_over_conv_line'] = dataframe['close'] - dataframe['vl_conversion_line']
     dataframe['qt_days_ichimoku_positive'] = count_positive_reset(dataframe['vl_price_over_conv_line'])
 
     return dataframe
-
 
 def filter_indicators_today(dataframe, vl_adx_min=25, date='2024-02-14'):
     """
