@@ -81,7 +81,7 @@ def add_indicators(dataframe):
     dataframe['date'] = pd.to_datetime(dataframe['date'])
 
     # Calculate and add Exponential Moving Averages (EMAs)
-    for window in [14, 26, 55]:
+    for window in [12, 26, 55]:
         dataframe[f'ema_{window}'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.ema(x, window))
 
     # Calculate and add the minimum and maximum values for a 50-day rolling window
@@ -101,6 +101,13 @@ def add_indicators(dataframe):
     dataframe[['vl_leading_span_a', 'vl_leading_span_b', 'vl_conversion_line', 'vl_base_line', 'vl_lagging_span']] = dataframe.groupby('symbol').apply(lambda x: ta.ichimoku(x['high'], x['low'], x['close'])[0]).reset_index(drop=True)
     dataframe['vl_price_over_conv_line'] = dataframe['close'] - dataframe['vl_conversion_line']
     dataframe['qt_days_ichimoku_positive'] = count_positive_reset(dataframe['vl_price_over_conv_line'])
+
+    # Financial Result
+    dataframe['loss_profit_7_days'] = dataframe.groupby('symbol')['close'].transform(lambda x: (x / x.shift(7) - 1) * 100).round(2)
+
+    # Calculate the MACD and Signal Line
+    dataframe['macd'] = dataframe['ema_12'] - dataframe['ema_26']
+    dataframe['signal_line'] = dataframe.groupby('symbol')['macd'].transform(lambda x: x.ewm(span=9).mean())
 
     return dataframe
 
@@ -124,8 +131,8 @@ def filter_indicators_today(dataframe, vl_adx_min=25, date='2024-02-14'):
         (dataframe['close'] > dataframe['vl_base_line']) &
 
         # Price above EMAs
-        (dataframe['close'] > dataframe['ema_14']) &
-        (dataframe['ema_14'] > dataframe['ema_26']) &
+        (dataframe['close'] > dataframe['ema_12']) &
+        (dataframe['ema_12'] > dataframe['ema_26']) &
         (dataframe['ema_26'] > dataframe['ema_55'])
     ]
 
@@ -145,7 +152,7 @@ def filter_indicators_today(dataframe, vl_adx_min=25, date='2024-02-14'):
             'vl_conversion_line',
             'vl_base_line',
             'vl_price_over_conv_line',
-            'ema_14',
+            'ema_12',
             'ema_26',
             'ema_55',
             'vl_adx'
@@ -184,5 +191,6 @@ with engine.connect() as conn:
 
     yesterday_date = datetime.today().date() - timedelta(days=1)
     result = filter_indicators_today(df1, date=yesterday_date)
+
 
 result
