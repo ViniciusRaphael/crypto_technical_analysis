@@ -9,7 +9,7 @@ import yfinance as yf
 from sqlalchemy import create_engine, inspect, text
 
 # My own libraries or custom modules
-import crypto_symbols_util as cs
+import utils.crypto_symbols_util as cs
 
 # Read configuration from 'config.ini' file
 config = ConfigParser()
@@ -22,7 +22,7 @@ kucoin_list = cs.get_kucoin_symbols()
 crypto_list = [i[:-1] for i in kucoin_list]
 
 
-def connect_to_database(connection_params):
+def db_connection():
     """
     Connect to the PostgreSQL database.
 
@@ -32,6 +32,15 @@ def connect_to_database(connection_params):
     Returns:
     - sqlalchemy.engine.Engine: SQLAlchemy engine for database connection.
     """
+        # Configuration parameters for the PostgreSQL database
+    connection_params = {
+        'host': config.get('Database', 'host'),
+        'port': config.getint('Database', 'port'),
+        'database': config.get('Database', 'database'),
+        'user': config.get('Database', 'user'),
+        'password': config.get('Database', 'password')
+    }
+
     try:
         engine = create_engine(
             f"postgresql://{connection_params['user']}:{connection_params['password']}@{connection_params['host']}:{connection_params['port']}/{connection_params['database']}")
@@ -42,32 +51,68 @@ def connect_to_database(connection_params):
         return None
 
 
-def create_table(conn, table_name):
+def create_raw_table(conn, data_type, table_name):
     """
-    Create a table in the database.
+    Create a table in the database based on the provided data type.
 
     Parameters:
     - conn: SQLAlchemy database connection.
+    - data_type (str): Type of data. Either 'raw' for raw data or 'indicators' for indicator data.
     - table_name (str): Name of the table to be created.
     """
-    sql_code = f"""CREATE TABLE {table_name}(
-                    date DATE,
-                    open NUMERIC,
-                    high NUMERIC,
-                    low NUMERIC,
-                    close NUMERIC,
-                    volume BIGINT,
-                    dividends NUMERIC,
-                    symbol VARCHAR(50))
-                """
-    # Execute a command: create datacamp_courses table
+    if data_type == 'raw':
+        sql_code = f"""CREATE TABLE {table_name}(
+                        date DATE,
+                        open NUMERIC,
+                        high NUMERIC,
+                        low NUMERIC,
+                        close NUMERIC,
+                        volume BIGINT,
+                        dividends NUMERIC,
+                        symbol VARCHAR(50))
+                    """
+    
+    if data_type == 'indicators':
+        sql_code = f"""CREATE TABLE {table_name}(
+                        date DATE,
+                        open NUMERIC,
+                        high NUMERIC,
+                        low NUMERIC,
+                        close NUMERIC,
+                        volume NUMERIC,
+                        dividends NUMERIC,
+                        symbol VARCHAR(50),
+                        ema_12 NUMERIC,
+                        ema_26 NUMERIC,
+                        ema_55 NUMERIC,
+                        min_50 NUMERIC,
+                        percent_risk NUMERIC,
+                        vl_adx NUMERIC,
+                        vl_dmp NUMERIC,
+                        vl_dmn NUMERIC,
+                        nm_adx_trend VARCHAR(50),
+                        rsi NUMERIC,
+                        vl_leading_span_a NUMERIC,
+                        vl_leading_span_b NUMERIC,
+                        vl_conversion_line NUMERIC,
+                        vl_base_line NUMERIC,
+                        vl_lagging_span NUMERIC,
+                        vl_price_over_conv_line NUMERIC,
+                        qt_days_ichimoku_positive NUMERIC,
+                        vl_macd NUMERIC,
+                        vl_macd_signal NUMERIC,
+                        vl_macd_delta NUMERIC,
+                        qt_days_macd_delta_positive NUMERIC,
+                        percent_loss_profit_7_days NUMERIC,
+                        percent_loss_profit_14_days NUMERIC)
+            """
+    # Execute the SQL command to create the table
     conn.execute(text(sql_code))
 
-    # Make the changes to the database persistent
+    # Commit the changes to the database
     conn.commit()
     conn.close()
-
-
+    
 def get_api_data(conn, table):
     sql_query = f"""
                     SELECT *
@@ -232,7 +277,7 @@ def load_data_into_database(df, engine, table_name, if_exists='append'):
         print(f'Error loading data into the database: {e}')
 
 
-def get_db_data(conn, table):
+def get_db_data(conn, table_name):
     """
     Retrieve data from a specific table in the database using the provided connection.
 
@@ -247,7 +292,7 @@ def get_db_data(conn, table):
     # Construct the SQL query to select all columns from the specified table
     sql_query = f"""
                     SELECT *
-                    FROM {table}
+                    FROM {table_name}
                 """
 
     # Execute the SQL query using the provided connection
@@ -257,50 +302,3 @@ def get_db_data(conn, table):
     result = pd.DataFrame(output.fetchall())
 
     return result
-
-
-def main():
-    # Configuration parameters for the PostgreSQL database
-    db_connection = {
-        'host': config.get('Database', 'host'),
-        'port': config.getint('Database', 'port'),
-        'database': config.get('Database', 'database'),
-        'user': config.get('Database', 'user'),
-        'password': config.get('Database', 'password')
-    }
-
-    # Specify the name of the table in the database
-    table_name = 'crypto_historical_price'
-
-    # Uncomment and modify the following line if reading data from a CSV file
-    # df = read_csv(csv_file_path)
-
-    # Connect to the PostgreSQL database using the specified connection parameters
-    engine = connect_to_database(db_connection)
-
-    # Use a context manager to handle the connection and automatically close it when done
-    with engine.connect() as conn:
-        # Check if the engine is successfully created
-        if engine is None:
-            return  # Exit the function if the connection is not established
-        else:
-            # Check if the specified table exists in the database
-            table_exists = inspect(engine).has_table(table_name)
-
-            # If the table does not exist, create it
-            if table_exists is False:
-                create_table(conn, table_name)
-                print("Table has been created.")
-            else:
-                # If the table already exists, print a message
-                print('Table exists')
-
-                # Retrieve data from the database using a specific query
-                df = get_api_data(conn, table_name)
-
-                # Load the retrieved data into the database
-                load_data_into_database(df, engine, table_name)
-
-
-if __name__ == "__main__":
-    main()

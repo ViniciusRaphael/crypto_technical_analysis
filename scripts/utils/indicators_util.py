@@ -1,20 +1,6 @@
-# Python standard libraries
-from datetime import datetime, timedelta
-import time
-from configparser import ConfigParser
-
 # Third-party libraries
 import pandas as pd
 import pandas_ta as ta
-import plotly.graph_objects as go
-from sqlalchemy import text
-
-# My own libraries or custom modules
-import db_util as du
-
-# Read configuration from 'config.ini' file
-config = ConfigParser()
-config.read('../config.ini')
 
 def classify_adx_value(value):
     """
@@ -39,7 +25,6 @@ def classify_adx_value(value):
             return name
     return None
 
-
 def count_positive_reset(df_column):
     """
     Counts consecutive positive values in a DataFrame column and resets count on encountering negative values.
@@ -61,7 +46,6 @@ def count_positive_reset(df_column):
         counts.append(count)
 
     return counts
-
 
 def add_indicators(dataframe):
     """
@@ -102,16 +86,19 @@ def add_indicators(dataframe):
     dataframe['vl_price_over_conv_line'] = dataframe['close'] - dataframe['vl_conversion_line']
     dataframe['qt_days_ichimoku_positive'] = count_positive_reset(dataframe['vl_price_over_conv_line'])
 
-    # Financial Result
-    dataframe['loss_profit_7_days'] = dataframe.groupby('symbol')['close'].transform(lambda x: (x / x.shift(7) - 1) * 100).round(2)
-
     # Calculate the MACD and Signal Line
-    dataframe['macd'] = dataframe['ema_12'] - dataframe['ema_26']
-    dataframe['signal_line'] = dataframe.groupby('symbol')['macd'].transform(lambda x: x.ewm(span=9).mean())
+    dataframe['vl_macd'] = dataframe['ema_12'] - dataframe['ema_26']
+    dataframe['vl_macd_signal'] = dataframe.groupby('symbol')['vl_macd'].transform(lambda x: x.ewm(span=9).mean())
+    dataframe['vl_macd_delta'] = dataframe['vl_macd'] - dataframe['vl_macd_signal']
+    dataframe['qt_days_macd_delta_positive'] = count_positive_reset(dataframe['vl_macd_delta'])
+
+    # Financial Result
+    for window in [7, 14]:
+        dataframe[f'percent_loss_profit_{window}_days'] = dataframe.groupby('symbol')['close'].transform(lambda x: round((x / x.shift(window) - 1) * 100, 2))
 
     return dataframe
 
-def filter_indicators_today(dataframe, vl_adx_min=25, date='2024-02-14'):
+def filter_indicators_today(dataframe, vl_adx_min=25, vl_macd_delta_min = 0.01, date='2024-02-14'):
     """
     Filters the concatenated DataFrame to select specific indicators for the current date.
 
@@ -131,7 +118,8 @@ def filter_indicators_today(dataframe, vl_adx_min=25, date='2024-02-14'):
         (dataframe['close'] > dataframe['vl_base_line']) &
 
         # MACD
-        (dataframe['signal_line'] > dataframe['macd']) &
+        (dataframe['qt_days_macd_delta_positive'] >= vl_macd_delta_min) &
+
         # Price above EMAs
         (dataframe['close'] > dataframe['ema_12']) &
         (dataframe['ema_12'] > dataframe['ema_26']) &
@@ -140,60 +128,31 @@ def filter_indicators_today(dataframe, vl_adx_min=25, date='2024-02-14'):
     ]
 
     # Drop unnecessary columns
-    df_indicators = df_indicators.drop(
-        columns=[
-            'open',
-            'high',
-            'low',
-            'volume',
-            'dividends',
-            'vl_dmp',
-            'vl_dmn',
-            'vl_leading_span_a',
-            'vl_leading_span_b',
-            'vl_lagging_span',
-            'vl_conversion_line',
-            'vl_base_line',
-            'vl_price_over_conv_line',
-            'ema_12',
-            'ema_26',
-            'ema_55',
-            'vl_adx'
+    columns_to_drop = [
+        'open',
+        'high',
+        'low',
+        'volume',
+        'dividends',
+        'vl_dmp',
+        'vl_dmn',
+        'vl_leading_span_a',
+        'vl_leading_span_b',
+        'vl_lagging_span',
+        'vl_conversion_line',
+        'vl_base_line',
+        'vl_price_over_conv_line',
+        'ema_12',
+        'ema_26',
+        'ema_55',
+        'vl_adx',
+        'vl_macd',
+        'vl_macd_signal',
+        'vl_macd_delta'
+    ]
 
-
-        ]
-    )
+    df_indicators = df_indicators.drop(columns=columns_to_drop)
     
     df_indicators.set_index('date', inplace=True)
     return df_indicators
 
-
-# Configuration parameters for the PostgreSQL database
-db_connection = {
-    'host': config.get('Database', 'host'),
-    'port': config.getint('Database', 'port'),
-    'database': config.get('Database', 'database'),
-    'user': config.get('Database', 'user'),
-    'password': config.get('Database', 'password')
-}
-
-# Specify the name of the table in the database
-table_name = 'crypto_historical_price'
-
-engine = du.connect_to_database(db_connection)
-
-# Use a context manager to handle the connection and automatically close it when done
-with engine.connect() as conn:
-    df = du.get_db_data(conn, table_name)
-
-    # Ordenar o DataFrame por 'Nome do Grupo' e 'Data'
-    start = time.time()
-    df1 = add_indicators(df)
-    end = time.time()
-    print(f'Code finished in: {end - start} sec')
-
-    yesterday_date = datetime.today().date() - timedelta(days=1)
-    result = filter_indicators_today(df1, date=yesterday_date)
-
-
-result
