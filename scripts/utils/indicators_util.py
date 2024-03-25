@@ -59,9 +59,6 @@ def add_indicators(dataframe):
     Returns:
     - pd.DataFrame: Updated DataFrame with added technical indicators.
     """
-    # Convert numerical columns to float
-    dataframe[['open', 'close', 'high', 'low']] = dataframe[['open', 'close', 'high', 'low']].astype(float)
-    
     # Sort DataFrame by 'symbol' and 'date', convert date column to datetime
     dataframe = dataframe.sort_values(by=['symbol', 'date']).reset_index(drop=True)
     dataframe['date'] = pd.to_datetime(dataframe['date'])

@@ -124,8 +124,8 @@ def get_api_data(conn, table):
                         ) AS p
                     WHERE p.qualify = 1
                     """
-    output = conn.execute(text(sql_query))
-    result = pd.DataFrame(output.fetchall())
+    
+    result = pd.read_sql(sql = sql_query, con = conn)
     # If the table doesn't exist, create dataframes for historical cryptocurrency data
     if result.empty:
         return download_all_cryptos()
@@ -287,11 +287,7 @@ def get_db_data(conn, table_name):
                     SELECT *
                     FROM {table_name}
                 """
-
-    # Execute the SQL query using the provided connection
-    output = conn.execute(text(sql_query))
-
-    # Convert the query result to a DataFrame
-    result = pd.DataFrame(output.fetchall())
+    
+    result = pd.read_sql(sql = sql_query, con = conn)
 
     return result
