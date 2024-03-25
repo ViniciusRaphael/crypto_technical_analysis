@@ -1,5 +1,4 @@
-
-from sqlalchemy import create_engine, inspect, text
+from sqlalchemy import inspect
 
 # My own libraries or custom modules
 import utils.db_util as db

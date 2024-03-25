@@ -2,6 +2,8 @@
 import pandas as pd
 import pandas_ta as ta
 
+
+
 def classify_adx_value(value):
     """
     Checks the ADX value against predefined ranges and returns the corresponding trend category.
@@ -98,7 +100,7 @@ def add_indicators(dataframe):
 
     return dataframe
 
-def filter_indicators_today(dataframe, vl_adx_min=25, vl_macd_delta_min = 0.01, date='2024-02-14'):
+def filter_daily_indicators(dataframe, vl_adx_min=25, vl_macd_delta_min = 0.01, date='2024-02-14'):
     """
     Filters the concatenated DataFrame to select specific indicators for the current date.
 
@@ -108,10 +110,11 @@ def filter_indicators_today(dataframe, vl_adx_min=25, vl_macd_delta_min = 0.01, 
     Returns:
         pandas.DataFrame: Filtered DataFrame based on specific indicators for the current date.
     """
+    dataframe['date'] = pd.to_datetime(dataframe['date'])
 
     df_indicators = dataframe.loc[
+        (dataframe['date'] == date) &
         (dataframe['vl_adx'] >= vl_adx_min) &
-        (dataframe['date'] == str(date)) &
 
         # Ichimoku with price above conversion line and base line
         (dataframe['close'] > dataframe['vl_conversion_line']) &
@@ -151,8 +154,9 @@ def filter_indicators_today(dataframe, vl_adx_min=25, vl_macd_delta_min = 0.01, 
         'vl_macd_delta'
     ]
 
-    df_indicators = df_indicators.drop(columns=columns_to_drop)
-    
-    df_indicators.set_index('date', inplace=True)
-    return df_indicators
 
+    df_indicators = df_indicators.drop(columns=columns_to_drop)
+
+    df_indicators.set_index('date', inplace=True)
+
+    return df_indicators
