@@ -203,28 +203,22 @@ def update_cryptos(dataframe, crypto_list=crypto_list, timesleep=1):
     # List to store dataframes for each cryptocurrency
     empty_dataframe = []
 
-    # Counter to keep track of the iteration
-    count = 0
-
     # Loop through the list of cryptocurrencies
     for count, crypto in enumerate(crypto_list, start=1):
         print(f'Processing {crypto} ({count} of {len(crypto_list)})')
 
         # Check if the symbol is already present in the existing data
         if crypto in dataframe['symbol'].values:
-            print(f'{crypto} found in existing data.')
 
             # Get the maximum date for the given cryptocurrency in the existing data
             max_date = dataframe[dataframe['symbol'] == crypto]['date'].max()
-            if max_date == datetime.today().date():
-                pass
-            else:
-                start_date = max_date + timedelta(days=1)
+            start_date = max_date + timedelta(days=1)
 
-                # Convert max_date to datetime if needed
-                start_date = pd.to_datetime(
-                    start_date) if start_date is not pd.NaT else pd.to_datetime('2020-01-01')
+            # Convert max_date to datetime if needed
+            start_date = pd.to_datetime(start_date)
 
+            # Check if the start_date is not today's date
+            if start_date <= datetime.today().date():
                 # Get historical data from the last recorded date in the existing data
                 crypto_data = yf.Ticker(crypto).history(start=start_date)
                 crypto_data['symbol'] = crypto
@@ -249,7 +243,6 @@ def update_cryptos(dataframe, crypto_list=crypto_list, timesleep=1):
     dataframes.columns = dataframes.columns.str.lower()
     # Return the list of dataframes
     return dataframes
-
 
 def load_data_into_database(df, engine, table_name, if_exists='append'):
     """
