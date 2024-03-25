@@ -25,7 +25,7 @@ def main():
 
             # If the table does not exist, create it
             if table_exists is False:
-                db.create_raw_table(conn, table_name, data_type = 'raw')
+                db.create_raw_table(conn, data_type = 'raw', table_name=table_name)
                 print("Table has been created.")
             else:
                 # If the table already exists, print a message
