@@ -215,10 +215,10 @@ def update_cryptos(dataframe, crypto_list=crypto_list, timesleep=1):
             start_date = max_date + timedelta(days=1)
 
             # Convert max_date to datetime if needed
-            start_date = pd.to_datetime(start_date)
+            start_date = pd.Timestamp(start_date)
 
             # Check if the start_date is not today's date
-            if start_date <= datetime.today().date():
+            if start_date <= datetime.today():
                 # Get historical data from the last recorded date in the existing data
                 crypto_data = yf.Ticker(crypto).history(start=start_date)
                 crypto_data['symbol'] = crypto
