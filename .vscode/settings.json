@@ -1,0 +1,33 @@
+{"[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.background": "#000000"
+  },
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [
+      {"scope": ["comment.line.number-sign.python", "comment.line.double-slash.js"], "settings": {"foreground": "#808080"}},
+      {"scope": ["storage.type.function.python", "keyword.control.flow.python", "keyword.control.import.python"], "settings": {"foreground": "#0098CF"}},
+      {"scope": ["entity.name.function.python", "support.type.property-name.json"], "settings": {"foreground": "#EC3479"}},
+      {"scope": ["variable.parameter.function.language.python", "entity.name.namespace", "variable.other.property", "parameter"], "settings": {"foreground": "#FFFFFF"}},
+      {"scope": ["constant.numeric"], "settings": {"foreground": "#E43375"}},
+      {"scope": ["support.function.builtin.python"], "settings": {"foreground": "#F5922F"}},
+      {"scope": ["string.quoted.docstring.multi.python", "string.quoted.single.python", "string.quoted.double.json.comments"], "settings": {"foreground": "#00A37E"}}
+    ]
+  },
+  "editor.semanticTokenColorCustomizations": {
+    "enabled": true,
+    "rules": {
+      "function": "#FFFFFF",
+      "function.builtin": "#F5922F",
+      "function.declaration": "#EC3479",
+      "parameter": "#FFFFFF",
+      "parameter.declaration": "#FFFFFF",
+      "variable": "#FFFFFF",
+      "class": "#F5922F"
+    }
+  },
+  "workbench.colorCustomizations": {
+    "editor.background": "#232222",
+    "editor.foreground": "#FFFFFF",
+    "notebook.cellEditorBackground": "#000000",
+    "notebook.focusedCellBackground": "#1F1F1F"
+  }}

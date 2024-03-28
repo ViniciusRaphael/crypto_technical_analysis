@@ -27,6 +27,7 @@ def classify_adx_value(value):
             return name
     return None
 
+
 def count_positive_reset(df_column):
     """
     Counts consecutive positive values in a DataFrame column and resets count on encountering negative values.
@@ -101,7 +102,26 @@ def add_indicators(dataframe):
 
     # Financial Result
     for window in [7, 14]:
-        dataframe[f'percent_loss_profit_{window}_days'] = dataframe.groupby('symbol')['close'].transform(lambda x: round((x / x.shift(window) - 1) * 100, 2))
+        dataframe[f'percent_loss_profit_{window}_days'] = dataframe.groupby('symbol')[['qt_days_tendency_positive', ]].transform(lambda x: round((x / x.shift(window) - 1) * 100, 2))
+
+    # Buy/Sell Flag
+    # dataframe['buy_sell'] = dataframe.groupby('symbol').apply(lambda x: buy_sell(x['qt_days_tendency_positive'], x['qt_days_macd_delta_positive'],  x['qt_days_tendency_positive'])).reset_index(drop=True)
+    
+    dataframe['buy_sell'] = None  # Initialize the column with None
+
+    # Buy condition
+    buy_condition = (dataframe['qt_days_tendency_positive'] == 3) & (dataframe['qt_days_macd_delta_positive'] > 1)
+
+    # Sell condition
+    sell_condition = (dataframe['tendency'] < 0) & \
+                    (dataframe['qt_days_tendency_positive'].diff() <= -3) & \
+                    (dataframe['qt_days_macd_delta_positive'] > 0)
+
+    # Assign 'Buy' for the rows that satisfy the buy condition
+    dataframe.loc[buy_condition, 'buy_sell'] = 'Buy'
+
+    # Assign 'Sell' for the rows that satisfy the sell condition
+    dataframe.loc[sell_condition, 'buy_sell'] = 'Sell'
 
     return dataframe
 
