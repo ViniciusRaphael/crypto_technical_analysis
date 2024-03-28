@@ -64,12 +64,20 @@ def add_indicators(dataframe):
     dataframe['date'] = pd.to_datetime(dataframe['date'])
 
     # Calculate and add Exponential Moving Averages (EMAs)
-    for window in [12, 26, 55]:
+    for window in [21, 55]:
         dataframe[f'ema_{window}'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.ema(x, window))
+
+    # Calculate and add Simple Moving Averages (EMAs)
+    for window in [233]:
+        dataframe[f'sma_{window}'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.sma(x, window))
+
+    # # Calculate Tendency
+    dataframe['tendency'] = dataframe.groupby('symbol')['sma_233'].diff()
+    dataframe['qt_days_tendency_positive'] = count_positive_reset(dataframe['tendency'])
+            
 
     # Calculate and add the minimum and maximum values for a 50-day rolling window
     dataframe['min_50'] = dataframe.groupby('symbol')['close'].transform(lambda x: x.shift(1).rolling(window=50).min())
-    
     # Calculate the percentage of risk based on the difference between the close price and the 50-day minimum, relative to the close price, rounded to two decimal places
     dataframe['percent_risk'] = round(((dataframe['close'] - dataframe['min_50']) / dataframe['close']) * 100, 2)
 
@@ -86,8 +94,8 @@ def add_indicators(dataframe):
     dataframe['qt_days_ichimoku_positive'] = count_positive_reset(dataframe['vl_price_over_conv_line'])
 
     # Calculate the MACD and Signal Line
-    dataframe['vl_macd'] = dataframe['ema_12'] - dataframe['ema_26']
-    dataframe['vl_macd_signal'] = dataframe.groupby('symbol')['vl_macd'].transform(lambda x: x.ewm(span=9).mean())
+    dataframe['vl_macd'] = dataframe['ema_21'] - dataframe['ema_55']
+    dataframe['vl_macd_signal'] = dataframe.groupby('symbol')['vl_macd'].transform(lambda x: x.ewm(span=13).mean())
     dataframe['vl_macd_delta'] = dataframe['vl_macd'] - dataframe['vl_macd_signal']
     dataframe['qt_days_macd_delta_positive'] = count_positive_reset(dataframe['vl_macd_delta'])
 
@@ -97,7 +105,7 @@ def add_indicators(dataframe):
 
     return dataframe
 
-def filter_daily_indicators(dataframe, vl_adx_min=25, vl_macd_delta_min = 0.01, date='2024-02-14'):
+def filter_daily_indicators(dataframe, vl_adx_min=25, vl_macd_delta_min = 0.01, qt_days_tendency_positive = 1, date='2024-02-14'):
     """
     Filters the concatenated DataFrame to select specific indicators for the current date.
 
@@ -120,11 +128,7 @@ def filter_daily_indicators(dataframe, vl_adx_min=25, vl_macd_delta_min = 0.01, 
         # MACD
         (dataframe['qt_days_macd_delta_positive'] >= vl_macd_delta_min) &
 
-        # Price above EMAs
-        (dataframe['close'] > dataframe['ema_12']) &
-        (dataframe['ema_12'] > dataframe['ema_26']) &
-        (dataframe['ema_26'] > dataframe['ema_55'])
-
+        (dataframe['qt_days_tendency_positive'] >= qt_days_tendency_positive)
     ]
 
     # Drop unnecessary columns
@@ -142,8 +146,9 @@ def filter_daily_indicators(dataframe, vl_adx_min=25, vl_macd_delta_min = 0.01, 
         'vl_conversion_line',
         'vl_base_line',
         'vl_price_over_conv_line',
-        'ema_12',
-        'ema_26',
+        'sma_233',
+        'tendency',
+        'ema_21',
         'ema_55',
         'vl_adx',
         'vl_macd',
