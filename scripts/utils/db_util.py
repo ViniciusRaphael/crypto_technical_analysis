@@ -211,19 +211,19 @@ def update_cryptos(dataframe, crypto_list=crypto_list, timesleep=1):
         print(f'Processing {crypto} ({count} of {len(crypto_list)})')
 
         # Check if the symbol is already present in the existing data
-        if crypto in dataframe['symbol'].values:
+        if crypto in df['symbol'].unique():
 
             # Get the maximum date for the given cryptocurrency in the existing data
             max_date = dataframe[dataframe['symbol'] == crypto]['date'].max()
-            start_date = max_date + timedelta(days=1)
+            latest_date = max_date + timedelta(days=1)
 
-            # Convert max_date to datetime if needed
-            start_date = pd.Timestamp(start_date)
+            # # Convert max_date to datetime if needed
+            # latest_date = pd.Timestamp(latest_date)
 
-            # Check if the start_date is not today's date
-            if start_date <= datetime.today():
+            # Check if the latest_date is not today's date
+            if latest_date < datetime.today():
                 # Get historical data from the last recorded date in the existing data
-                crypto_data = yf.Ticker(crypto).history(start=start_date)
+                crypto_data = yf.Ticker(crypto).history(start=latest_date)
                 crypto_data['symbol'] = crypto
                 # Check if the retrieved data is not empty before appending to empty_dataframe
                 if not crypto_data.empty:
