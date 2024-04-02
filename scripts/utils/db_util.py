@@ -128,7 +128,7 @@ def get_api_data(conn, table):
                     WHERE p.qualify = 1
                     """
     
-    result = pd.read_sql(sql = sql_query, con = conn)
+    result = pd.read_sql(sql_query, conn)
     # If the table doesn't exist, create dataframes for historical cryptocurrency data
     if result.empty:
         return download_all_cryptos()
@@ -211,14 +211,14 @@ def update_cryptos(dataframe, crypto_list=crypto_list, timesleep=1):
         print(f'Processing {crypto} ({count} of {len(crypto_list)})')
 
         # Check if the symbol is already present in the existing data
-        if crypto in df['symbol'].unique():
+        if crypto in dataframe['symbol'].unique():
 
             # Get the maximum date for the given cryptocurrency in the existing data
             max_date = dataframe[dataframe['symbol'] == crypto]['date'].max()
             latest_date = max_date + timedelta(days=1)
 
             # # Convert max_date to datetime if needed
-            # latest_date = pd.Timestamp(latest_date)
+            latest_date = pd.Timestamp(latest_date)
 
             # Check if the latest_date is not today's date
             if latest_date < datetime.today():
@@ -247,7 +247,7 @@ def update_cryptos(dataframe, crypto_list=crypto_list, timesleep=1):
     # Return the list of dataframes
     return dataframes
 
-def load_data_into_database(df, engine, table_name, if_exists='append'):
+def load_data_into_database(df, engine, table_name, if_exists='replace'):
     """
     Load DataFrame data into the PostgreSQL database.
 

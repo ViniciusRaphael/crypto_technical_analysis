@@ -104,18 +104,14 @@ def add_indicators(dataframe):
     for window in [7, 14]:
         dataframe[f'percent_loss_profit_{window}_days'] = dataframe.groupby('symbol')[['qt_days_tendency_positive', ]].transform(lambda x: round((x / x.shift(window) - 1) * 100, 2))
 
-    # Buy/Sell Flag
-    # dataframe['buy_sell'] = dataframe.groupby('symbol').apply(lambda x: buy_sell(x['qt_days_tendency_positive'], x['qt_days_macd_delta_positive'],  x['qt_days_tendency_positive'])).reset_index(drop=True)
-    
     dataframe['buy_sell'] = None  # Initialize the column with None
 
     # Buy condition
-    buy_condition = (dataframe['qt_days_tendency_positive'] == 3) & (dataframe['qt_days_macd_delta_positive'] > 1)
+    buy_condition = (dataframe['qt_days_tendency_positive'] >= 3) & (dataframe['qt_days_macd_delta_positive'] == 1)
 
     # Sell condition
     sell_condition = (dataframe['tendency'] < 0) & \
-                    (dataframe['qt_days_tendency_positive'].diff() <= -3) & \
-                    (dataframe['qt_days_macd_delta_positive'] > 0)
+                    (dataframe['qt_days_tendency_positive'].diff() <= -3)
 
     # Assign 'Buy' for the rows that satisfy the buy condition
     dataframe.loc[buy_condition, 'buy_sell'] = 'Buy'
@@ -125,7 +121,7 @@ def add_indicators(dataframe):
 
     return dataframe
 
-def filter_daily_indicators(dataframe, vl_adx_min=25, vl_macd_delta_min = 0.01, qt_days_tendency_positive = 1, date='2024-02-14'):
+def filter_daily_indicators(dataframe, date='2024-02-14', buy_sell='Buy'):
     """
     Filters the concatenated DataFrame to select specific indicators for the current date.
 
@@ -139,16 +135,7 @@ def filter_daily_indicators(dataframe, vl_adx_min=25, vl_macd_delta_min = 0.01, 
 
     df_indicators = dataframe.loc[
         (dataframe['date'] == date) &
-        (dataframe['vl_adx'] >= vl_adx_min) &
-
-        # Ichimoku with price above conversion line and base line
-        (dataframe['close'] > dataframe['vl_conversion_line']) &
-        (dataframe['close'] > dataframe['vl_base_line']) &
-
-        # MACD
-        (dataframe['qt_days_macd_delta_positive'] >= vl_macd_delta_min) &
-
-        (dataframe['qt_days_tendency_positive'] >= qt_days_tendency_positive)
+        (dataframe['buy_sell'] == buy_sell)
     ]
 
     # Drop unnecessary columns
