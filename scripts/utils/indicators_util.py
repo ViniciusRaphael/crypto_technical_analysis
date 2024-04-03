@@ -104,24 +104,9 @@ def add_indicators(dataframe):
     for window in [7, 14]:
         dataframe[f'percent_loss_profit_{window}_days'] = dataframe.groupby('symbol')[['qt_days_tendency_positive', ]].transform(lambda x: round((x / x.shift(window) - 1) * 100, 2))
 
-    dataframe['buy_sell'] = None  # Initialize the column with None
-
-    # Buy condition
-    buy_condition = (dataframe['qt_days_tendency_positive'] >= 3) & (dataframe['qt_days_macd_delta_positive'] == 1)
-
-    # Sell condition
-    sell_condition = (dataframe['tendency'] < 0) & \
-                    (dataframe['qt_days_tendency_positive'].diff() <= -3)
-
-    # Assign 'Buy' for the rows that satisfy the buy condition
-    dataframe.loc[buy_condition, 'buy_sell'] = 'Buy'
-
-    # Assign 'Sell' for the rows that satisfy the sell condition
-    dataframe.loc[sell_condition, 'buy_sell'] = 'Sell'
-
     return dataframe
 
-def filter_daily_indicators(dataframe, date='2024-02-14', buy_sell='Buy'):
+def filter_daily_indicators(dataframe, date='2024-02-14', vl_adx = 25, vl_macd_delta_min = 0.01, buy_sell='Buy'):
     """
     Filters the concatenated DataFrame to select specific indicators for the current date.
 
@@ -135,7 +120,16 @@ def filter_daily_indicators(dataframe, date='2024-02-14', buy_sell='Buy'):
 
     df_indicators = dataframe.loc[
         (dataframe['date'] == date) &
-        (dataframe['buy_sell'] == buy_sell)
+        (dataframe['vl_adx'] >= vl_adx) &
+
+        # # Ichimoku with price above conversion line and base line
+        # (dataframe['close'] > dataframe['vl_conversion_line']) &
+        # (dataframe['close'] > dataframe['vl_base_line']) &
+
+        # MACD
+        (dataframe['vl_macd'] > dataframe['vl_macd_signal']) &
+        (dataframe['vl_macd_delta'] >= vl_macd_delta_min)
+        # (dataframe['buy_sell'] == buy_sell)
     ]
 
     # Drop unnecessary columns

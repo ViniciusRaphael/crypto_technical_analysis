@@ -106,8 +106,7 @@ def create_raw_table(conn, data_type, table_name):
                         vl_macd_delta NUMERIC,
                         qt_days_macd_delta_positive NUMERIC,
                         percent_loss_profit_7_days NUMERIC,
-                        percent_loss_profit_14_days NUMERIC,
-                        buy_sell VARCHAR(50))
+                        percent_loss_profit_14_days NUMERIC)
             """
     # Execute the SQL command to create the table
     conn.execute(text(sql_code))
