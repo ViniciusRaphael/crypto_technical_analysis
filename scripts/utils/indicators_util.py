@@ -102,7 +102,8 @@ def add_indicators(dataframe):
 
     # Financial Result
     for window in [7, 14]:
-        dataframe[f'percent_loss_profit_{window}_days'] = dataframe.groupby('symbol')[['qt_days_tendency_positive', ]].transform(lambda x: round((x / x.shift(window) - 1) * 100, 2))
+        # dataframe[f'percent_loss_profit_{window}_days'] = dataframe.groupby('symbol')['close'].transform(lambda x: round((x / x.shift(window) - 1), 2))
+        dataframe[f'percent_loss_profit_{window}_days'] = dataframe.groupby('symbol')['close'].transform(lambda x: x.pct_change(periods=7))
 
     return dataframe
 
