@@ -40,7 +40,7 @@ def save_parquet_file(dataframe, file_path):
     table = pa.Table.from_pandas(dataframe)
     pq.write_table(table=table, where=file_path, compression='snappy')
 
-def get_crypto_historical_data():
+def main():
     # Get a list of cryptocurrency symbols from Kucoin
     kucoin_symbols = get_kucoin_symbols()
 
@@ -71,4 +71,4 @@ def get_crypto_historical_data():
         print("No data fetched.")
 
 if __name__ == "__main__":
-    get_crypto_historical_data()
+    main()
