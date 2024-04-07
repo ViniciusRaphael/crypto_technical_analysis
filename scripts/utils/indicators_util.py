@@ -60,72 +60,71 @@ def add_indicators(dataframe):
     Returns:
     - pd.DataFrame: Updated DataFrame with added technical indicators.
     """
-    # Sort DataFrame by 'symbol' and 'date', convert date column to datetime
-    dataframe = dataframe.sort_values(by=['symbol', 'date']).reset_index(drop=True)
-    dataframe['date'] = pd.to_datetime(dataframe['date'])
+    # Sort DataFrame by 'Symbol' and 'Date', convert Date column to Datetime
+    dataframe = dataframe.sort_values(by=['Symbol', 'Date']).reset_index(drop=True)
 
     # Calculate and add Exponential Moving Averages (EMAs)
     for window in [21, 55]:
-        dataframe[f'ema_{window}'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.ema(x, window))
+        dataframe[f'ema_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ema(x, window))
 
     # Calculate and add Simple Moving Averages (EMAs)
     for window in [233]:
-        dataframe[f'sma_{window}'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.sma(x, window))
+        dataframe[f'sma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.sma(x, window))
 
     # # Calculate Tendency
-    dataframe['tendency'] = dataframe.groupby('symbol')['sma_233'].diff()
+    dataframe['tendency'] = dataframe.groupby('Symbol')['sma_233'].diff()
     dataframe['qt_days_tendency_positive'] = count_positive_reset(dataframe['tendency'])
             
 
     # Calculate and add the minimum and maximum values for a 50-day rolling window
-    dataframe['min_50'] = dataframe.groupby('symbol')['close'].transform(lambda x: x.shift(1).rolling(window=50).min())
-    # Calculate the percentage of risk based on the difference between the close price and the 50-day minimum, relative to the close price, rounded to two decimal places
-    dataframe['percent_risk'] = round(((dataframe['close'] - dataframe['min_50']) / dataframe['close']) * 100, 2)
+    dataframe['min_50'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: x.shift(1).rolling(window=50).min())
+    # Calculate the percentage of risk based on the difference between the Close price and the 50-day minimum, relative to the Close price, rounded to two decimal places
+    dataframe['percent_risk'] = round(((dataframe['Close'] - dataframe['min_50']) / dataframe['Close']) * 100, 2)
 
     # Calculate Average Directional Index (ADX)
-    dataframe[['vl_adx', 'vl_dmp', 'vl_dmn']] = dataframe.groupby('symbol').apply(lambda x: ta.adx(x['high'], x['low'], x['close'], length=14)).reset_index(drop=True)
+    dataframe[['vl_adx', 'vl_dmp', 'vl_dmn']] = dataframe.groupby('Symbol').apply(lambda x: ta.adx(x['High'], x['Low'], x['Close'], length=14)).reset_index(drop=True)
     dataframe['nm_adx_trend'] = dataframe['vl_adx'].transform(classify_adx_value)
 
     # Calculate Relative Strength Index (RSI)
-    dataframe['rsi'] = dataframe.groupby('symbol')['close'].transform(lambda x: ta.rsi(x))
+    dataframe['rsi'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.rsi(x))
 
     # Calculate Ichimoku Cloud indicators
-    dataframe[['vl_leading_span_a', 'vl_leading_span_b', 'vl_conversion_line', 'vl_base_line', 'vl_lagging_span']] = dataframe.groupby('symbol').apply(lambda x: ta.ichimoku(x['high'], x['low'], x['close'])[0]).reset_index(drop=True)
-    dataframe['vl_price_over_conv_line'] = dataframe['close'] - dataframe['vl_conversion_line']
+    dataframe[['vl_leading_span_a', 'vl_leading_span_b', 'vl_conversion_line', 'vl_base_line', 'vl_lagging_span']] = dataframe.groupby('Symbol').apply(lambda x: ta.ichimoku(x['High'], x['Low'], x['Close'])[0]).reset_index(drop=True)
+    dataframe['vl_price_over_conv_line'] = dataframe['Close'] - dataframe['vl_conversion_line']
     dataframe['qt_days_ichimoku_positive'] = count_positive_reset(dataframe['vl_price_over_conv_line'])
 
     # Calculate the MACD and Signal Line
     dataframe['vl_macd'] = dataframe['ema_21'] - dataframe['ema_55']
-    dataframe['vl_macd_signal'] = dataframe.groupby('symbol')['vl_macd'].transform(lambda x: x.ewm(span=13).mean())
+    dataframe['vl_macd_signal'] = dataframe.groupby('Symbol')['vl_macd'].transform(lambda x: x.ewm(span=13).mean())
     dataframe['vl_macd_delta'] = dataframe['vl_macd'] - dataframe['vl_macd_signal']
     dataframe['qt_days_macd_delta_positive'] = count_positive_reset(dataframe['vl_macd_delta'])
 
     # Financial Result
     for window in [7, 14]:
-        # dataframe[f'percent_loss_profit_{window}_days'] = dataframe.groupby('symbol')['close'].transform(lambda x: round((x / x.shift(window) - 1), 2))
-        dataframe[f'percent_loss_profit_{window}_days'] = dataframe.groupby('symbol')['close'].transform(lambda x: x.pct_change(periods=7))
+        # dataframe[f'percent_loss_profit_{window}_days'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: round((x / x.shift(window) - 1), 2))
+        dataframe[f'percent_loss_profit_{window}_days'] = dataframe.groupby('Symbol')['Close'].pct_change(periods=window)
 
     return dataframe
 
-def filter_daily_indicators(dataframe, date='2024-02-14', vl_adx = 25, vl_macd_delta_min = 0.01, buy_sell='Buy'):
+def filter_daily_indicators(dataframe, Date='2024-02-14', vl_adx = 25, vl_macd_delta_min = 0.01, buy_sell='Buy'):
     """
-    Filters the concatenated DataFrame to select specific indicators for the current date.
+    Filters the concatenated DataFrame to select specific indicators for the current Date.
 
     Args:
         dataframe (pandas.DataFrame): Concatenated DataFrame containing processed data.
 
     Returns:
-        pandas.DataFrame: Filtered DataFrame based on specific indicators for the current date.
+        pandas.DataFrame: Filtered DataFrame based on specific indicators for the current Date.
     """
-    dataframe['date'] = pd.to_datetime(dataframe['date'])
+    dataframe['Date'] = pd.to_Datetime(dataframe['Date'])
 
     df_indicators = dataframe.loc[
-        (dataframe['date'] == date) &
+        (dataframe['Date'] == Date) &
         (dataframe['vl_adx'] >= vl_adx) &
 
         # # Ichimoku with price above conversion line and base line
-        # (dataframe['close'] > dataframe['vl_conversion_line']) &
-        # (dataframe['close'] > dataframe['vl_base_line']) &
+        # (dataframe['Close'] > dataframe['vl_conversion_line']) &
+        # (dataframe['Close'] > dataframe['vl_base_line']) &
 
         # MACD
         (dataframe['vl_macd'] > dataframe['vl_macd_signal']) &
@@ -135,9 +134,9 @@ def filter_daily_indicators(dataframe, date='2024-02-14', vl_adx = 25, vl_macd_d
 
     # Drop unnecessary columns
     columns_to_drop = [
-        'open',
-        'high',
-        'low',
+        'Open',
+        'High',
+        'Low',
         'volume',
         'dividends',
         'vl_dmp',
@@ -161,6 +160,6 @@ def filter_daily_indicators(dataframe, date='2024-02-14', vl_adx = 25, vl_macd_d
 
     df_indicators = df_indicators.drop(columns=columns_to_drop)
 
-    df_indicators.set_index('date', inplace=True)
+    df_indicators.set_index('Date', inplace=True)
 
     return df_indicators
