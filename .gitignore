@@ -161,7 +161,7 @@ cython_debug/
 #.idea/
 
 # Some files
-.parquet
+*.parquet
 
 # Pyre type checker
 buy_sell_control/
