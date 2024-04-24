@@ -63,18 +63,14 @@ def add_indicators(dataframe):
     # Sort DataFrame by 'Symbol' and 'Date', convert Date column to Datetime
     dataframe = dataframe.sort_values(by=['Symbol', 'Date']).reset_index(drop=True)
 
+    windows = [12, 26, 50, 100, 200]
+
     # Calculate and add Exponential Moving Averages (EMAs)
-    for window in [21, 55]:
+    for window in windows:
         dataframe[f'ema_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ema(x, window))
 
-    # Calculate and add Simple Moving Averages (EMAs)
-    for window in [233]:
-        dataframe[f'sma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.sma(x, window))
-
-    # # Calculate Tendency
-    dataframe['tendency'] = dataframe.groupby('Symbol')['sma_233'].diff()
-    dataframe['qt_days_tendency_positive'] = count_positive_reset(dataframe['tendency'])
-            
+    for window in windows[1:]:
+        dataframe[f'ema_12_above_ema_{window}'] = dataframe['ema_12'] > dataframe[ f'ema_{window}']
 
     # Calculate and add the minimum and maximum values for a 50-day rolling window
     dataframe['min_50'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: x.shift(1).rolling(window=50).min())
@@ -88,14 +84,9 @@ def add_indicators(dataframe):
     # Calculate Relative Strength Index (RSI)
     dataframe['rsi'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.rsi(x))
 
-    # Calculate Ichimoku Cloud indicators
-    dataframe[['vl_leading_span_a', 'vl_leading_span_b', 'vl_conversion_line', 'vl_base_line', 'vl_lagging_span']] = dataframe.groupby('Symbol').apply(lambda x: ta.ichimoku(x['High'], x['Low'], x['Close'])[0]).reset_index(drop=True)
-    dataframe['vl_price_over_conv_line'] = dataframe['Close'] - dataframe['vl_conversion_line']
-    dataframe['qt_days_ichimoku_positive'] = count_positive_reset(dataframe['vl_price_over_conv_line'])
-
     # Calculate the MACD and Signal Line
-    dataframe['vl_macd'] = dataframe['ema_21'] - dataframe['ema_55']
-    dataframe['vl_macd_signal'] = dataframe.groupby('Symbol')['vl_macd'].transform(lambda x: x.ewm(span=13).mean())
+    dataframe['vl_macd'] = dataframe['ema_12'] - dataframe['ema_26']
+    dataframe['vl_macd_signal'] = dataframe.groupby('Symbol')['vl_macd'].transform(lambda x: x.ewm(span=9).mean())
     dataframe['vl_macd_delta'] = dataframe['vl_macd'] - dataframe['vl_macd_signal']
     dataframe['qt_days_macd_delta_positive'] = count_positive_reset(dataframe['vl_macd_delta'])
 

@@ -23,7 +23,8 @@ input_folder = 'files'
 input_file = 'crypto_data_with_indicators.parquet'
 input_path = Path(input_folder) / input_file
 
-symbol = 'BTC-USD'
+crypto = 'ONT'
+symbol = crypto + '-USD'
 
 crypto_data = query_data(input_path, symbol)
 crypto_data['Date'] = pd.to_datetime(crypto_data['Date'])
@@ -31,17 +32,21 @@ crypto_data.set_index(['Date'], inplace=True)
 
 prices = crypto_data['Close']
 
-entrada = (crypto_data['vl_macd'] > crypto_data['vl_macd_signal']) &\
-            (crypto_data['vl_macd'] < 0 ) &\
-            ( crypto_data['qt_days_tendency_positive'] > 0)
+entrada =(crypto_data['vl_macd'] > crypto_data['vl_macd_signal']) &\
+            (crypto_data['ema_12_above_ema_26'] == True) &\
+            (crypto_data['ema_12_above_ema_50'] == True) &\
+            (crypto_data['ema_12_above_ema_100'] == True) &\
+            (crypto_data['ema_12_above_ema_200'] == True)
 
 
-saida = (crypto_data['vl_macd'] < crypto_data['vl_macd_signal']) &\
-        (crypto_data['percent_loss_profit_14_days'] <= -0.20)
-        # (crypto_data['qt_days_tendency_positive'] == 0)
-        # (crypto_data['vl_macd'] > 0 ) &\
+saida = (crypto_data['vl_macd'] < crypto_data['vl_macd_signal'])
+# (crypto_data['percent_loss_profit_14_days'] < - 0.10)        
+
+            
+
 pf = vbt.Portfolio.from_signals(close=prices, entries=entrada , exits=saida)
 profit = pf.total_profit()
+# pf.plot_positions().show()
 pf.plot().show()
 
 

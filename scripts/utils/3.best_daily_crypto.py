@@ -4,25 +4,34 @@ import pandas as pd
 
 
 def query_data(dataframe):
-    # dataframe = dataframe
     result = duckdb.sql(f"""
                     SELECT
                         Symbol,
                         Close,
                         min_50,
                         percent_risk,
-                        qt_days_tendency_positive,
                         qt_days_macd_delta_positive
-
                     FROM '{dataframe}'
                     WHERE 
                         1 = 1
-                        AND Date = CURRENT_DATE()
+                        AND Date = CURRENT_DATE()                        
                         AND vl_adx >= 25
                         AND vl_macd > vl_macd_signal
                         AND vl_macd_delta > 0.01
+                        AND rsi > 50
+                        AND ema_12_above_ema_26
+                        AND ema_12_above_ema_50
+                        AND ema_12_above_ema_100
+                        AND ema_12_above_ema_200
                         """)
     
+    # result = duckdb.sql(f"""
+    #                 SELECT *
+
+    #                 FROM '{dataframe}'
+
+    #                     """)
+        
     return result
 
 def main():
@@ -39,3 +48,4 @@ def main():
 
 if __name__ == '__main__':
     result = main()
+    display(result)
