@@ -2,6 +2,9 @@ import duckdb
 from pathlib import Path
 import pyarrow as pa
 import pyarrow.parquet as pq
+import pandas as pd
+pd.set_option("display.max_columns", None) 
+pd.set_option("display.max_rows", None) 
 
 from indicators_util import add_indicators
 
@@ -48,8 +51,9 @@ def main():
         output_path = Path(output_folder) / output_file
 
         # Save the DataFrame with indicators as a Parquet file
-        save_dataframe_to_parquet(indicators_dataframe, output_path)
-
+        display(indicators_dataframe)
+        save_dataframe_to_parquet(indicators_dataframe, output_path)        
+        
         print(f"Parquet file with indicators saved to {output_path}")
     else:
         print("No data available.")

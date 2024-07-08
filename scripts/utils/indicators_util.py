@@ -70,12 +70,16 @@ def add_indicators(dataframe):
         dataframe[f'ema_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ema(x, window))
 
     for window in windows[1:]:
-        dataframe[f'ema_12_above_ema_{window}'] = dataframe['ema_12'] > dataframe[ f'ema_{window}']
+        dataframe[f'ema_12_above_ema_{window}'] = dataframe.apply(lambda row: row['ema_12'] > row[f'ema_{window}'] , axis=1)
 
-    # Calculate and add the minimum and maximum values for a 50-day rolling window
-    dataframe['min_50'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: x.shift(1).rolling(window=50).min())
-    # Calculate the percentage of risk based on the difference between the Close price and the 50-day minimum, relative to the Close price, rounded to two decimal places
-    dataframe['percent_risk'] = round(((dataframe['Close'] - dataframe['min_50']) / dataframe['Close']) * 100, 2)
+    # Financial Result
+    targets = [10, 15, 20, 25]
+    timeframes = [7, 15, 30]
+
+    for target in targets:
+        for timeframe in timeframes:
+            dataframe[f'target_{target}_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: (1 - (x / x.shift(timeframe))))
+            dataframe[f'bl_target_{target}_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: (1 - (x / x.shift(timeframe))) >= target / 100).astype(int)
 
     # Calculate Average Directional Index (ADX)
     dataframe[['vl_adx', 'vl_dmp', 'vl_dmn']] = dataframe.groupby('Symbol').apply(lambda x: ta.adx(x['High'], x['Low'], x['Close'], length=14)).reset_index(drop=True)
@@ -89,10 +93,5 @@ def add_indicators(dataframe):
     dataframe['vl_macd_signal'] = dataframe.groupby('Symbol')['vl_macd'].transform(lambda x: x.ewm(span=9).mean())
     dataframe['vl_macd_delta'] = dataframe['vl_macd'] - dataframe['vl_macd_signal']
     dataframe['qt_days_macd_delta_positive'] = count_positive_reset(dataframe['vl_macd_delta'])
-
-    # Financial Result
-    for window in [7, 14]:
-        # dataframe[f'percent_loss_profit_{window}_days'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: round((x / x.shift(window) - 1), 2))
-        dataframe[f'percent_loss_profit_{window}_days'] = dataframe.groupby('Symbol')['Close'].pct_change(periods=window)
 
     return dataframe
