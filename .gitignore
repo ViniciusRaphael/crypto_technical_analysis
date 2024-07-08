@@ -128,6 +128,7 @@ ENV/
 env.bak/
 venv.bak/
 ta_venv/
+*env/
 
 # Spyder project settings
 .spyderproject
