@@ -77,7 +77,8 @@ def add_indicators(dataframe):
 
     for target in targets:
         for timeframe in timeframes:
-            dataframe[f'target_{target}_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: (1 - (x / x.shift(timeframe))) >= target / 100).astype(int)
+            dataframe[f'target_{target}_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: (1 - (x / x.shift(timeframe))))
+            dataframe[f'bl_target_{target}_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: (1 - (x / x.shift(timeframe))) >= target / 100).astype(int)
     
     # Calculate and add the minimum and maximum values for a 50-day rolling window
     dataframe['min_50'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: x.shift(1).rolling(window=50).min())
