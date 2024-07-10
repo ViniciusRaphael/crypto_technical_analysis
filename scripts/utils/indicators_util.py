@@ -78,8 +78,8 @@ def add_indicators(dataframe):
 
     for target in targets:
         for timeframe in timeframes:
-            dataframe[f'target_{target}_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: (1 - (x / x.shift(timeframe))))
-            dataframe[f'bl_target_{target}_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: (1 - (x / x.shift(timeframe))) >= target / 100).astype(int)
+            dataframe[f'target_{target}_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: (1 - (x / x.shift(-timeframe))))
+            dataframe[f'bl_target_{target}_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: (1 - (x / x.shift(-timeframe))) >= target / 100).astype(int)
 
     # Calculate Average Directional Index (ADX)
     dataframe[['vl_adx', 'vl_dmp', 'vl_dmn']] = dataframe.groupby('Symbol').apply(lambda x: ta.adx(x['High'], x['Low'], x['Close'], length=14)).reset_index(drop=True)

@@ -51,7 +51,7 @@ def main():
         output_path = Path(output_folder) / output_file
 
         # Save the DataFrame with indicators as a Parquet file
-        display(indicators_dataframe)
+        print(indicators_dataframe)
         save_dataframe_to_parquet(indicators_dataframe, output_path)        
         
         print(f"Parquet file with indicators saved to {output_path}")
