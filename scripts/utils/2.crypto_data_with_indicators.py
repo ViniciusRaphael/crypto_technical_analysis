@@ -4,7 +4,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import pandas as pd
 pd.set_option("display.max_columns", None) 
-pd.set_option("display.max_rows", None) 
+# pd.set_option("display.max_rows", None) 
 
 from indicators_util import add_indicators
 
