@@ -8,11 +8,13 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+
 def get_kucoin_symbols():
     resp = re.get('https://api.kucoin.com/api/v2/symbols')
     ticker_list = json.loads(resp.content)
     symbols_list = [ticker['symbol'] for ticker in ticker_list['data'] if str(ticker['symbol'][-4:]) == 'USDT']
     return symbols_list
+
 
 def fetch_crypto_data(symbols, start_date):
     df_list = []
@@ -36,9 +38,11 @@ def fetch_crypto_data(symbols, start_date):
     else:
         return None
 
+
 def save_parquet_file(dataframe, file_path):
     table = pa.Table.from_pandas(dataframe)
     pq.write_table(table=table, where=file_path, compression='snappy')
+
 
 def main():
     # Get a list of cryptocurrency symbols from Kucoin
