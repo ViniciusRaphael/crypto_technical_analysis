@@ -27,6 +27,34 @@ def classify_adx_value(value):
             return name
     return None
 
+def classify_rsi_value(value):
+    """
+    Checks the RSI value against predefined ranges and returns the corresponding category.
+
+    Args:
+        value (float): The RSI value to be categorized.
+
+    Returns:
+        str or None: The category name for the provided RSI value.
+    """
+    RSI_GROUP = {
+        '0-10': 'rsi_0_to_10',
+        '11-20': 'rsi_11_to_20',
+        '21-30': 'rsi_21_to_30',
+        '31-40': 'rsi_31_to_40',
+        '41-50': 'rsi_41_to_50',
+        '51-60': 'rsi_51_to_60',
+        '61-70': 'rsi_61_to_70',
+        '71-80': 'rsi_71_to_80',
+        '81-90': 'rsi_81_to_90',
+        '91-100': 'rsi_91_to_100'
+    }
+
+    for key, name in RSI_GROUP.items():
+        range_start, range_end = map(int, key.split('-'))
+        if range_start <= value < range_end:
+            return name
+    return None
 
 def count_positive_reset(df_column):
     """
@@ -69,8 +97,11 @@ def add_indicators(dataframe):
     for window in windows:
         dataframe[f'ema_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ema(x, window))
 
-    for window in windows[1:]:
-        dataframe[f'ema_12_above_ema_{window}'] = dataframe.apply(lambda row: row['ema_12'] > row[f'ema_{window}'] , axis=1)
+    for base_window in windows:
+        for compare_window in windows:
+            if base_window != compare_window:
+                col_name = f'ema_{base_window}_above_ema_{compare_window}'
+                dataframe[col_name] = dataframe.apply(lambda row: row[f'ema_{base_window}'] > row[f'ema_{compare_window}'], axis=1)
 
     # Financial Result
     targets = [10, 15, 20, 25]
@@ -87,6 +118,7 @@ def add_indicators(dataframe):
 
     # Calculate Relative Strength Index (RSI)
     dataframe['rsi'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.rsi(x))
+    dataframe['nm_rsi_trend'] = dataframe['rsi'].transform(classify_rsi_value)
 
     # Calculate the MACD and Signal Line
     dataframe['vl_macd'] = dataframe['ema_12'] - dataframe['ema_26']
