@@ -18,13 +18,14 @@ def data_clean(dados:pd.DataFrame, target_list:list, data_return:str):
     # Removing cols that won't be used in the model
     # removing_cols = ['Symbol', 'Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Dividends', 'Stock Splits']
     removing_cols = ['Date']
+    # removing_cols = ['Date', 'Symbol']
 
     # Define the target in a list of target (for futher iteration)
     dados_y = dados_treat[target_list]
 
     # Removing target from base to avoid data leakage
     dados_x = dados_treat.drop(dados_treat[target_list], axis=1)
-    dados_x = dados_treat.drop(dados_treat[removing_cols], axis=1)
+    dados_x = dados_x.drop(dados_x[removing_cols], axis=1)
 
     if data_return == 'Y':
         return dados_y
@@ -169,8 +170,8 @@ for target_eval in target_list_bol:
     # separando em test e treino
     X_train, X_test, y_train, y_test = split_data(dados_x, dados_y, 0.3)
 
-    # balanceando classes (0 é sem balanceamento, já está balanceado no classificador do modelo)
-    X_train, y_train = balance_sample(X_train, y_train, 0)
+    # balanceando classes (Caso necessário)
+    X_train, y_train = balance_sample(X_train, y_train, 2)
 
     # Normalizando datasets de treino e teste
     X_train = norm_scale(X_train)
