@@ -4,11 +4,6 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 
-pd.set_option("display.max_columns", None)
-
-input_path = r'D:\Github\Forked\crypto_technical_analysis\files\crypto_data_with_indicators.parquet'
-
-dados = pd.read_parquet(input_path)
 
 def data_clean(dados:pd.DataFrame, target_list:list, data_return:str):
     # Removing NA
@@ -20,10 +15,9 @@ def data_clean(dados:pd.DataFrame, target_list:list, data_return:str):
     # Removendo linhas com valores NaN
     dados_treat.dropna(inplace=True)
 
-    # Removing symbol and date columns
-    removing_cols = ['Symbol', 'Date']
-    # removing_cols = ['Date']
-
+    # Removing cols that won't be used in the model
+    # removing_cols = ['Symbol', 'Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Dividends', 'Stock Splits']
+    removing_cols = ['Date']
 
     # Define the target in a list of target (for futher iteration)
     dados_y = dados_treat[target_list]
@@ -41,6 +35,7 @@ def data_clean(dados:pd.DataFrame, target_list:list, data_return:str):
 def get_target(dados_y:pd.DataFrame, col_target:str):
     return dados_y[col_target]
 
+
 def split_data(dados_x:pd.DataFrame, dados_y:pd.DataFrame, test_size:float=0.3):
 
     # Getting dummies values. This way we can use categorical columns to train the models
@@ -54,7 +49,7 @@ def split_data(dados_x:pd.DataFrame, dados_y:pd.DataFrame, test_size:float=0.3):
     # See below an example of the return 
     # X_train, X_test, y_train, y_test = split_data(dados_x, dados_y, 0.3)
 
-    return train_test_split(X, y, test_size=0.3, random_state=45)
+    return train_test_split(X, y, test_size=test_size, stratify=y, random_state=45)
 
 
 def norm_scale(X_norm_scale):
@@ -76,11 +71,29 @@ def norm_scale(X_norm_scale):
     # print(standardized_data)
 
     # print(standardized_data.shape)
-
-    X_norm_scale = standardized_data
     
-    return X_norm_scale
+    return standardized_data
 
+# Balanceando as classes 
+def balance_sample(X_train, y_train, type):
+
+    from imblearn.under_sampling import RandomUnderSampler # pip install imblearn
+    from imblearn.over_sampling import SMOTE
+
+    # Reduzir amostra
+    if type == 1:
+        undersampler = RandomUnderSampler(random_state=42)
+        return undersampler.fit_resample(X_train, y_train)
+
+    # Aumentar amostra
+    if type == 2:
+        smote = SMOTE(random_state=42)
+        return smote.fit_resample(X_train, y_train)
+    
+    # Sem mudanças
+    if type == 0:
+        return X_train, y_train   
+    
 
 def eval_model(classifier, X_test, y_test):
 
@@ -88,7 +101,7 @@ def eval_model(classifier, X_test, y_test):
     from sklearn import metrics
 
     # Fazendo a previsão das classes
-    y_pred2 = clf.predict(X_test)
+    y_pred2 = classifier.predict(X_test)
 
     # Avaliando o erro
     print('Confusion Matrix')
@@ -122,6 +135,12 @@ def load_model(name_model:str):
     return clf_loaded
 
 
+# Data Flow
+
+input_path = r'D:\Github\Forked\crypto_technical_analysis\files\crypto_data_with_indicators.parquet'
+
+dados = pd.read_parquet(input_path)
+
 target_list_bol =   [
     # boleanos
     'bl_target_10_7d','bl_target_15_7d','bl_target_20_7d','bl_target_25_7d',
@@ -144,16 +163,21 @@ dados_y_all = data_clean(dados, remove_target_list, 'Y')
 
 for target_eval in target_list_bol:
 
+    # escolhendo o target
     dados_y = get_target(dados_y_all, target_eval)
 
+    # separando em test e treino
     X_train, X_test, y_train, y_test = split_data(dados_x, dados_y, 0.3)
 
+    # balanceando classes (0 é sem balanceamento, já está balanceado no classificador do modelo)
+    X_train, y_train = balance_sample(X_train, y_train, 0)
+
     # Normalizando datasets de treino e teste
-    norm_scale(X_train)
-    norm_scale(X_test)
+    X_train = norm_scale(X_train)
+    X_test = norm_scale(X_test)
 
     # Criando o modelo
-    model = LogisticRegression(random_state=0,max_iter=1000)
+    model = LogisticRegression(class_weight='balanced',random_state=0,max_iter=1000)
 
     # Treinando o modelo
     model.fit(X_train, y_train)
