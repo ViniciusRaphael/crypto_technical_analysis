@@ -21,16 +21,17 @@ def fetch_crypto_data(symbols, start_date):
 
     for count, symbol in enumerate(symbols):
         print(f'Processing {symbol} ({count + 1} of {len(symbols)})')
+        try:
+            # Get historical data using yfinance for the given symbol since start_date
+            crypto_data = yf.Ticker(symbol).history(start=start_date)
+            # Add a 'symbol' column to the DataFrame to identify the cryptocurrency
+            crypto_data['Symbol'] = symbol
 
-        # Get historical data using yfinance for the given symbol since start_date
-        crypto_data = yf.Ticker(symbol).history(start=start_date)
-
-        # Add a 'symbol' column to the DataFrame to identify the cryptocurrency
-        crypto_data['Symbol'] = symbol
-
-        # Append the DataFrame to the list if it's not empty
-        if not crypto_data.empty:
-            df_list.append(crypto_data)
+            # Append the DataFrame to the list if it's not empty
+            if not crypto_data.empty:
+                df_list.append(crypto_data)
+        except:
+            pass
 
     # Concatenate the list of DataFrames into a single DataFrame
     if df_list:
