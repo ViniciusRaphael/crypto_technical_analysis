@@ -17,8 +17,9 @@ def data_clean(dados:pd.DataFrame, target_list:list, data_return:str):
 
     # Removing cols that won't be used in the model
     # removing_cols = ['Symbol', 'Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Dividends', 'Stock Splits']
-    removing_cols = ['Date']
+    # removing_cols = ['Date']
     # removing_cols = ['Date', 'Symbol']
+    removing_cols = ['Date', 'Symbol', 'Dividends', 'Stock Splits']
 
     # Define the target in a list of target (for futher iteration)
     dados_y = dados_treat[target_list]
@@ -156,6 +157,8 @@ target_list_val =   [
     'target_10_30d','target_15_30d','target_20_30d','target_25_30d', 
 ]
 
+version_model = 'v1'
+
 remove_target_list = target_list_bol + target_list_val
 
 dados_x = data_clean(dados, remove_target_list, 'X')
@@ -187,4 +190,4 @@ for target_eval in target_list_bol:
 
     eval_model(clf, X_test, y_test)
 
-    save_model(clf, 'logistic_regression_model_' + target_eval)
+    save_model(clf, 'logistic_regression_model_' + version_model + '_' + target_eval)
