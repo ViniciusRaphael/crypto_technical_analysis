@@ -109,6 +109,26 @@ def build_var_name(model_name, prefix):
     return build_name
 
 
+def build_compound_proba(dados, accuracy_models_dict):
+    dados['score'] = 0
+
+    for col in dados.columns:
+        # Feito apenas para as colunas de probabilide (que possuem _pb_)
+        try: 
+            if col.split('_pb_')[1] is not None:
+                # Coletando a acurácia do modelo
+                score_model = accuracy_models_dict[col.split('_pb_')[0] + '_ac_' + col.split('_pb_')[1]]
+                # Normalizar os pesos para que somem 1
+                pondered_score = score_model / sum(accuracy_models_dict.values())
+                # Probabilidade ponderada entre targets
+                pondered_proba = dados[col] * pondered_score
+                dados['score'] = dados['score'] + pondered_proba
+        except:
+            pass
+
+    return dados.sort_values(by='score', ascending=False)
+
+
 input_path = r'D:\Github\Forked\crypto_technical_analysis\files\crypto_data_with_indicators.parquet'
 
 dados = pd.read_parquet(input_path)
@@ -138,6 +158,22 @@ remove_target_list = target_list_bol + target_list_val
 
 removing_cols = ['Date', 'Symbol', 'Dividends', 'Stock Splits']
 
+# Acuária dos modelos
+accuracy_models = {
+    'lr_ac_10_7d': 0.6048148473284414,
+    'lr_ac_15_7d': 0.5965732167662444,
+    'lr_ac_20_7d': 0.5683833287718628,
+    'lr_ac_25_7d': 0.35522150673118136,
+    'lr_ac_10_15d': 0.6551115150451069,
+    'lr_ac_15_15d': 0.6507789786781375,
+    'lr_ac_20_15d': 0.6411998905247068,
+    'lr_ac_25_15d': 0.62837269107828,
+    'lr_ac_10_30d': 0.6880883651517421,
+    'lr_ac_15_30d': 0.6821911583208968,
+    'lr_ac_20_30d': 0.6725914144517715,
+    'lr_ac_25_30d': 0.6631775720238987
+}
+
 dataset_ref = eval_data(dados, '')
 
 dummies_input = build_dummies(dataset_ref, remove_target_list, removing_cols)
@@ -157,8 +193,10 @@ for model in models:
 
     compiled_dataset = add_proba_target(clf, padronized_dummies, compiled_dataset, var_proba_name)
 
-print(compiled_dataset)
+# Mede a probabilidade de todos os targets / modelos, e compoe apenas uma métrica
+compound_proba = build_compound_proba(compiled_dataset, accuracy_models)
 
+print(compound_proba)
 
-
-
+# Salvar o DataFrame em um arquivo CSV
+compound_proba.to_csv(f'models/results/proba_scores_{str(compound_proba['Date'].max())}.csv', index=True)
