@@ -134,7 +134,7 @@ input_path = r'D:\Github\Forked\crypto_technical_analysis\files\crypto_data_with
 dados = pd.read_parquet(input_path)
 
 # Definir o diretório que você quer listar os arquivos
-directory = 'models/trained_v1/'
+directory = 'models/trained/v1/'
 
 # Listar todos os itens no diretório e filtrar apenas os arquivos
 models = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
@@ -174,6 +174,8 @@ accuracy_models = {
     'lr_ac_25_30d': 0.6631775720238987
 }
 
+# Colocar '' caso deseje a data mais recente presente na base. 
+# Caso colocar em uma data em específico seguir o exemplo: 2024-07-12 
 dataset_ref = eval_data(dados, '')
 
 dummies_input = build_dummies(dataset_ref, remove_target_list, removing_cols)
@@ -200,3 +202,6 @@ print(compound_proba)
 
 # Salvar o DataFrame em um arquivo CSV
 compound_proba.to_csv(f'models/results/proba_scores_{str(compound_proba['Date'].max())}.csv', index=True)
+
+print(f'Arquivo salvo em models/results/proba_scores/{str(compound_proba['Date'].max())}.csv')
+
