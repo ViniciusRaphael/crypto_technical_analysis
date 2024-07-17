@@ -98,7 +98,7 @@ def correcting_numbers_discrepancy(dataframe):
     dataframe.drop(dataframe.filter(regex='new_').columns, axis=1, inplace=True)
     
     # Rename the corrected columns to their original names
-    dataframe.rename(columns=lambda x: re.sub('_2', '', x), inplace=True)
+    dataframe.rename(columns=lambda x: reg.sub('_2', '', x), inplace=True)
     
     return dataframe
 
