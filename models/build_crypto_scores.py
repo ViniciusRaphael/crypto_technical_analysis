@@ -174,34 +174,49 @@ accuracy_models = {
     'lr_ac_25_30d': 0.6631775720238987
 }
 
-# Colocar '' caso deseje a data mais recente presente na base. 
-# Caso colocar em uma data em específico seguir o exemplo: 2024-07-12 
-dataset_ref = eval_data(dados, '')
+def main(choosen_data_input = ''):
+    # Colocar '' caso deseje a data mais recente presente na base. 
+    # Caso colocar em uma data em específico seguir o exemplo: 2024-07-12 
+    dataset_ref = eval_data(dados, choosen_data_input)
 
-dummies_input = build_dummies(dataset_ref, remove_target_list, removing_cols)
+    dummies_input = build_dummies(dataset_ref, remove_target_list, removing_cols)
 
-dados_x_all = data_clean(dados, remove_target_list, 'X')
-dados_x_all_dummies = pd.get_dummies(dados_x_all)
+    dados_x_all = data_clean(dados, remove_target_list, 'X')
+    dados_x_all_dummies = pd.get_dummies(dados_x_all)
 
-padronized_dummies = padronize_dummies(dummies_input, dados_x_all_dummies)
+    padronized_dummies = padronize_dummies(dummies_input, dados_x_all_dummies)
 
-compiled_dataset = dataset_ref[['Symbol', 'Date', 'Close']]
+    compiled_dataset = dataset_ref[['Symbol', 'Date', 'Close']]
 
-# Iteração para cada modelo na pasta de modelos
-for model in models:
-    clf = joblib.load(directory + model)
+    # Iteração para cada modelo na pasta de modelos
+    for model in models:
+        clf = joblib.load(directory + model)
 
-    var_proba_name = build_var_name(model, '_pb_')
+        var_proba_name = build_var_name(model, '_pb_')
 
-    compiled_dataset = add_proba_target(clf, padronized_dummies, compiled_dataset, var_proba_name)
+        compiled_dataset = add_proba_target(clf, padronized_dummies, compiled_dataset, var_proba_name)
 
-# Mede a probabilidade de todos os targets / modelos, e compoe apenas uma métrica
-compound_proba = build_compound_proba(compiled_dataset, accuracy_models)
+    # Mede a probabilidade de todos os targets / modelos, e compoe apenas uma métrica
+    compound_proba = build_compound_proba(compiled_dataset, accuracy_models)
 
-print(compound_proba)
+    print(compound_proba)
 
-# Salvar o DataFrame em um arquivo CSV
-compound_proba.to_csv(f'models/results/proba_scores_{str(compound_proba['Date'].max())}.csv', index=True)
+    # Salvar o DataFrame em um arquivo CSV
+    compound_proba.to_csv(f'models/results/proba_scores_{str(compound_proba['Date'].max())}.csv', index=True)
 
-print(f'Arquivo salvo em models/results/proba_scores/{str(compound_proba['Date'].max())}.csv')
+    print(f'Arquivo salvo em models/results/proba_scores/{str(compound_proba['Date'].max())}.csv')
 
+
+if __name__ == "__main__":
+
+    # # Gerar um range de datas
+    # datas = pd.date_range(start='2024-01-01', end='2024-06-30', freq='D')
+
+    # # Converter para formato YYYY-MM-DD
+    # datas_formatadas = datas.strftime('%Y-%m-%d')
+
+    # for data in datas_formatadas:
+
+    #     main(data)
+
+    main()
