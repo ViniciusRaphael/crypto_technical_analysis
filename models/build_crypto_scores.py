@@ -3,6 +3,7 @@ import joblib
 from pathlib import Path
 import pandas as pd
 import numpy as np
+from datetime import datetime
 pd.set_option("display.max_columns", None)
 
 
@@ -160,21 +161,22 @@ removing_cols = ['Date', 'Symbol', 'Dividends', 'Stock Splits']
 
 # Acuária dos modelos
 accuracy_models = {
-    'lr_ac_10_7d': 0.6048148473284414,
-    'lr_ac_15_7d': 0.5965732167662444,
-    'lr_ac_20_7d': 0.5683833287718628,
-    'lr_ac_25_7d': 0.35522150673118136,
-    'lr_ac_10_15d': 0.6551115150451069,
-    'lr_ac_15_15d': 0.6507789786781375,
-    'lr_ac_20_15d': 0.6411998905247068,
-    'lr_ac_25_15d': 0.62837269107828,
-    'lr_ac_10_30d': 0.6880883651517421,
-    'lr_ac_15_30d': 0.6821911583208968,
-    'lr_ac_20_30d': 0.6725914144517715,
-    'lr_ac_25_30d': 0.6631775720238987
+    'lr_ac_10_7d': 0.6033583533235317,
+    'lr_ac_15_7d': 0.6057262245608604,
+    'lr_ac_20_7d': 0.5993706311743919,
+    'lr_ac_25_7d': 0.47673656787639607,
+    'lr_ac_10_15d': 0.6551471536536924,
+    'lr_ac_15_15d': 0.6536407954809255,
+    'lr_ac_20_15d': 0.648430447006629,
+    'lr_ac_25_15d': 0.6413319920555083,
+    'lr_ac_10_30d': 0.6895148185405866,
+    'lr_ac_15_30d': 0.685279475869896,
+    'lr_ac_20_30d': 0.6801568263303155,
+    'lr_ac_25_30d': 0.6732234517268952
 }
 
-def main(choosen_data_input = ''):
+
+def main(dados, choosen_data_input = '', backtest = 0):
     # Colocar '' caso deseje a data mais recente presente na base. 
     # Caso colocar em uma data em específico seguir o exemplo: 2024-07-12 
     dataset_ref = eval_data(dados, choosen_data_input)
@@ -199,24 +201,50 @@ def main(choosen_data_input = ''):
     # Mede a probabilidade de todos os targets / modelos, e compoe apenas uma métrica
     compound_proba = build_compound_proba(compiled_dataset, accuracy_models)
 
-    print(compound_proba)
+    if backtest == 0:
+        print(compound_proba)
 
-    # Salvar o DataFrame em um arquivo CSV
-    compound_proba.to_csv(f'models/results/proba_scores_{str(compound_proba['Date'].max())}.csv', index=True)
+        # Salvar o DataFrame em um arquivo CSV
+        compound_proba.to_csv(f'models/results/proba_scores_{str(compound_proba['Date'].max())}.csv', index=True)
 
-    print(f'Arquivo salvo em models/results/proba_scores/{str(compound_proba['Date'].max())}.csv')
+        print(f'Arquivo salvo em models/results/proba_scores/{str(compound_proba['Date'].max())}.csv')
+    else:
+
+        return compound_proba
+    
+
 
 
 if __name__ == "__main__":
 
-    # # Gerar um range de datas
-    # datas = pd.date_range(start='2024-01-01', end='2024-06-30', freq='D')
+    # 1 For backtest and build one file for the historical 
+    # 0 For the last available date
+    backtest = 1
 
-    # # Converter para formato YYYY-MM-DD
-    # datas_formatadas = datas.strftime('%Y-%m-%d')
+    if backtest == 1:
+        start_date = '2024-01-01'
+        # today_date = datetime.today().strftime('%Y-%m-%d')
+        last_date = str(dados['Date'].max().strftime('%Y-%m-%d'))
 
-    # for data in datas_formatadas:
+        # Gerar um range de datas
+        datas = pd.date_range(start=start_date, end=last_date, freq='D')
 
-    #     main(data)
+        # Converter para formato YYYY-MM-DD
+        datas_formatadas = datas.strftime('%Y-%m-%d')
+        
+        output_dataset = pd.DataFrame()
+        
+        for data in datas_formatadas:
 
-    main()
+            output_dataset_date = main(dados, data, 1)
+
+            output_dataset = pd.concat([output_dataset, output_dataset_date])
+            
+            # print(output_dataset)
+        # Salvar o DataFrame em um arquivo CSV
+        output_dataset.to_csv(f'models/results/compound_historical.csv', index=True)
+
+        print(f'Arquivo salvo em models/results/compound_historical.csv')
+    
+    else:
+        print(main(dados, '', 0))
