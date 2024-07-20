@@ -1,0 +1,64 @@
+Confusion Matrix
+[[74406 38134]
+ [11643 16012]]
+Acurácia: 0.6449445415314383
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-2_bl_target_10_7d.joblib
+Confusion Matrix
+[[82731 38695]
+ [ 7660 11109]]
+Acurácia: 0.6693534006205643
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-2_bl_target_15_7d.joblib
+Confusion Matrix
+[[89259 37752]
+ [ 5327  7857]]
+Acurácia: 0.6927208530974713
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-2_bl_target_20_7d.joblib
+Confusion Matrix
+[[94172 36448]
+ [ 3720  5855]]
+Acurácia: 0.7134847890438318
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-2_bl_target_25_7d.joblib
+Confusion Matrix
+[[75653 27979]
+ [14434 22129]]
+Acurácia: 0.697471379150469
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-2_bl_target_10_15d.joblib
+Confusion Matrix
+[[82658 29097]
+ [11048 17392]]
+Acurácia: 0.7136488462498662
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-2_bl_target_15_15d.joblib
+Confusion Matrix
+[[85662 32150]
+ [ 7771 14612]]
+Acurácia: 0.7152466207782018
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-2_bl_target_20_15d.joblib
+Confusion Matrix
+[[91238 31090]
+ [ 6227 11640]]
+Acurácia: 0.7338207496701024
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-2_bl_target_25_15d.joblib
+Confusion Matrix
+[[72739 25172] 
+ [13289 28995]]
+Acurácia: 0.7256606869003888
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-2_bl_target_10_30d.joblib
+Confusion Matrix
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-2_bl_target_10_30d.joblib
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-2_bl_target_10_30d.joblib
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-2_bl_target_10_30d.joblib
+Confusion Matrix
+[[79302 24672]
+ [11784 24437]]
+Acurácia: 0.739962195513392
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-2_bl_target_15_30d.joblib
+Confusion Matrix
+[[81148 27906] 
+ [ 9278 21863]]
+Acurácia: 0.7347694282963015
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-2_bl_target_20_30d.joblib
+Confusion Matrix
+[[85781 27556] 
+ [ 8098 18760]]
+Acurácia: 0.7456827989585934
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-2_bl_target_25_30d.joblib

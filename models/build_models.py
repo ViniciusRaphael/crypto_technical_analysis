@@ -54,27 +54,48 @@ def split_data(dados_x:pd.DataFrame, dados_y:pd.DataFrame, test_size:float=0.3):
     return train_test_split(X, y, test_size=test_size, stratify=y, random_state=45)
 
 
+# def norm_scale(X_norm_scale):
+
+#     # normalizando e padronizando os dados
+#     # MinMaxScaler é usado para normalizar as variáveis, e StandardScaler é usado para padronizar
+#     from sklearn.preprocessing import MinMaxScaler, StandardScaler
+
+#     # normalizando
+#     scaler = MinMaxScaler()
+#     scaler.fit(X_norm_scale)
+#     normalized_data = scaler.transform(X_norm_scale)
+#     # print(normalized_data)
+
+#     # Padronizando
+#     scaler = StandardScaler()
+#     scaler.fit(X_norm_scale)
+#     standardized_data = scaler.transform(X_norm_scale)
+#     # print(standardized_data)
+
+#     # print(standardized_data.shape)
+    
+#     return standardized_data
+
 def norm_scale(X_norm_scale):
 
     # normalizando e padronizando os dados
-    # MinMaxScaler é usado para normalizar as variáveis, e StandardScaler é usado para padronizar
+    # MinMaxScaler é usado para normalizar as variáveis, colocando em uma mesma escala,
+    # e StandardScaler é usado para padronizar, fazendo com que a média seja 0 e o desvio padrão seja 1
     from sklearn.preprocessing import MinMaxScaler, StandardScaler
-
-    # normalizando
-    scaler = MinMaxScaler()
-    scaler.fit(X_norm_scale)
-    normalized_data = scaler.transform(X_norm_scale)
-    # print(normalized_data)
 
     # Padronizando
     scaler = StandardScaler()
     scaler.fit(X_norm_scale)
     standardized_data = scaler.transform(X_norm_scale)
-    # print(standardized_data)
-
     # print(standardized_data.shape)
+
+    # normalizando
+    scaler = MinMaxScaler()
+    scaler.fit(standardized_data)
+    normalized_data = scaler.transform(standardized_data)
+    # print(normalized_data)
     
-    return standardized_data
+    return normalized_data
 
 # Balanceando as classes 
 def balance_sample(X_train, y_train, type):
@@ -139,7 +160,7 @@ def load_model(name_model:str):
 
 # Data Flow
 
-input_path = r'D:\Github\Forked\crypto_technical_analysis\files\crypto_data_with_indicators.parquet'
+input_path = r'D:\Github\Forked\crypto_technical_analysis\files\crypto_data_prep_models.parquet'
 
 dados = pd.read_parquet(input_path)
 
@@ -157,7 +178,7 @@ target_list_val =   [
     'target_10_30d','target_15_30d','target_20_30d','target_25_30d', 
 ]
 
-version_model = 'v1'
+version_model = 'v1-2'
 
 remove_target_list = target_list_bol + target_list_val
 
