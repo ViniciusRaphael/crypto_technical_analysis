@@ -1,4 +1,74 @@
 Confusion Matrix
+[[61582 35078]
+ [ 9758 13650]]
+Acurácia: 0.6265782723123563
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3_bl_target_10_7d.joblib
+Confusion Matrix
+[[69301 34931]
+ [ 6400  9436]]
+Acurácia: 0.6557700636306093
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3_bl_target_15_7d.joblib
+Confusion Matrix
+[[80109 28889]
+ [ 5008  6062]]
+Acurácia: 0.7176849785121764
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3_bl_target_20_7d.joblib
+Confusion Matrix
+[[78263 33822]
+ [ 2951  5032]]
+Acurácia: 0.6937318852650165
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3_bl_target_25_7d.joblib
+Confusion Matrix
+[[63524 25293]
+ [12340 18911]]
+Acurácia: 0.6865692774094679
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3_bl_target_10_15d.joblib
+Confusion Matrix
+[[73305 22599]
+ [10459 13705]]
+Acurácia: 0.724672685478229
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3_bl_target_15_15d.joblib
+Confusion Matrix
+[[73189 27978]
+ [ 6841 12060]]
+Acurácia: 0.7100059966019255
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3_bl_target_20_15d.joblib
+Confusion Matrix
+[[74089 31013]
+ [ 4771 10195]]
+Acurácia: 0.7019688842988973
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3_bl_target_25_15d.joblib
+Confusion Matrix
+[[59517 24404]
+ [10597 25550]]
+Acurácia: 0.7084901888929607
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3_bl_target_10_30d.joblib
+Confusion Matrix
+[[66852 22385]
+ [ 9890 20941]]
+Acurácia: 0.7311939900722924
+[[68743 24933]
+ [ 7818 18574]]
+Acurácia: 0.7272295699103841
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3_bl_target_20_30d.joblib
+Confusion Matrix
+[[80543 16880]
+ [ 9143 13502]]
+Acurácia: 0.783264483459373
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3_bl_target_25_30d.joblib
+
+
+
+
+
+
+
+ SEM O FILTRO DE VALOR EM 15 e 30 DIAS
+
+
+
+
+Confusion Matrix
 [[74406 38134]
  [11643 16012]]
 Acurácia: 0.6449445415314383
