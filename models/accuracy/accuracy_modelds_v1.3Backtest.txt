@@ -1,0 +1,62 @@
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  dados_treat.dropna(inplace=True)
+Confusion Matrix
+[[65052 31906]
+ [10561 13343]]
+Acurácia: 0.6486323244692294
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3-backtest_bl_target_10_7d.joblib
+Confusion Matrix
+[[71118 33461]
+ [ 6667  9616]]
+Acurácia: 0.6679849745991295
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3-backtest_bl_target_15_7d.joblib
+Confusion Matrix
+[[76983 32408]
+ [ 4610  6861]]
+Acurácia: 0.6937168009796296
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3-backtest_bl_target_20_7d.joblib
+Confusion Matrix
+[[79008 33503]
+ [ 3043  5308]]
+Acurácia: 0.6976220813820722
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3-backtest_bl_target_25_7d.joblib
+Confusion Matrix
+[[62446 26513]
+ [11959 19944]]
+Acurácia: 0.681686551604309
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3-backtest_bl_target_10_15d.joblib
+Confusion Matrix
+[[69759 26303]
+ [ 9444 15356]]
+Acurácia: 0.704232926809088
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3-backtest_bl_target_15_15d.joblib
+Confusion Matrix
+[[74289 27049]
+ [ 7147 12377]]
+Acurácia: 0.7170657444027072
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3-backtest_bl_target_20_15d.joblib
+Confusion Matrix
+[[77600 27692]
+ [ 5341 10229]]
+Acurácia: 0.7266882891231322
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3-backtest_bl_target_25_15d.joblib
+Confusion Matrix
+[[62648 21351]
+ [11943 24920]]
+Acurácia: 0.724528801442968
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3-backtest_bl_target_10_30d.joblib
+Confusion Matrix
+[[66630 22686]
+ [ 9882 21664]]
+Acurácia: 0.7305356522314707
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3-backtest_bl_target_15_30d.joblib
+Confusion Matrix
+[[70574 23181]
+ [ 8382 18725]]
+Acurácia: 0.7388509208849763
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3-backtest_bl_target_20_30d.joblib
+Confusion Matrix
+[[73671 23831]
+ [ 7009 16351]]
+Acurácia: 0.7448329499760057
+Modelo savo no diretório atual com o nome de logistic_regression_model_v1-3-backtest_bl_target_25_30d.joblib
