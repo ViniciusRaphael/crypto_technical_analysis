@@ -41,15 +41,15 @@ def data_clean(dados:pd.DataFrame, target_list:list, data_return:str):
 
 def eval_data(dados, date_eval = None):
 
-    dados['Date'] = pd.to_datetime(dados['Date'])
-    dados['Date'] = dados['Date'].dt.strftime('%Y-%m-%d')
+    # dados['Date'] = pd.to_datetime(dados['Date'])
+    # dados['Date'] = dados['Date'].dt.strftime('%Y-%m-%d')
 
     if date_eval is None or date_eval == '':
         choosen_date = dados['Date'].max()
     else:
         choosen_date = date_eval
         
-    filtered_data = dados[dados['Date'] == choosen_date]
+    filtered_data = dados[dados['Date'] == str(choosen_date)]
 
     return filtered_data
 
@@ -80,22 +80,22 @@ def padronize_dummies(dummies_input, dummies_ref):
     return valid_dummies
 
 
-def add_proba_target(classifier, dummies_input, dataset_ref, col_name_output):
+def add_proba_target(classifier, dummies_input, dummies0, dataset_ref, col_name_output):
 
     #Fazendo a previsão das probabilidades
     proba = classifier.predict_proba(dummies_input)
 
     # Probabilidade de ser o target:
     proba_target = proba[:,1] # array
-
-    proba_dataset = dummies_input[[]] # pegando apenas os índices do dataset de input (que já contém os dados de retorno)
+    # print(proba_target)
+    proba_dataset = dummies0[[]] # pegando apenas os índices do dataset de input (que já contém os dados de retorno)
 
     proba_dataset[col_name_output] = proba_target
 
     # proba_crypto_date = dataset_ref[['Symbol', 'Date', 'Close']]
 
     build_dataset_proba = pd.merge(dataset_ref, proba_dataset, left_index=True, right_index=True)
-    
+    print(build_dataset_proba)
     return build_dataset_proba
 
 
@@ -129,13 +129,34 @@ def build_compound_proba(dados, accuracy_models_dict):
 
     return dados.sort_values(by='score', ascending=False)
 
+def norm_scale(X_norm_scale):
 
-input_path = r'D:\Github\Forked\crypto_technical_analysis\files\crypto_data_with_indicators.parquet'
+    # normalizando e padronizando os dados
+    # MinMaxScaler é usado para normalizar as variáveis, colocando em uma mesma escala,
+    # e StandardScaler é usado para padronizar, fazendo com que a média seja 0 e o desvio padrão seja 1
+    from sklearn.preprocessing import MinMaxScaler, StandardScaler
+
+    # Padronizando
+    scaler = StandardScaler()
+    scaler.fit(X_norm_scale)
+    standardized_data = scaler.transform(X_norm_scale)
+    # print(standardized_data.shape)
+
+    # normalizando
+    scaler = MinMaxScaler()
+    scaler.fit(standardized_data)
+    normalized_data = scaler.transform(standardized_data)
+    # print(normalized_data)
+    
+    return normalized_data
+
+
+input_path = r'D:\Github\Forked\crypto_technical_analysis\files\crypto_data_prep_models.parquet'
 
 dados = pd.read_parquet(input_path)
 
 # Definir o diretório que você quer listar os arquivos
-directory = 'models/trained/v1/'
+directory = 'models/trained/v1.3/'
 
 # Listar todos os itens no diretório e filtrar apenas os arquivos
 models = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
@@ -161,19 +182,20 @@ removing_cols = ['Date', 'Symbol', 'Dividends', 'Stock Splits']
 
 # Acuária dos modelos
 accuracy_models = {
-    'lr_ac_10_7d': 0.6033583533235317,
-    'lr_ac_15_7d': 0.6057262245608604,
-    'lr_ac_20_7d': 0.5993706311743919,
-    'lr_ac_25_7d': 0.47673656787639607,
-    'lr_ac_10_15d': 0.6551471536536924,
-    'lr_ac_15_15d': 0.6536407954809255,
-    'lr_ac_20_15d': 0.648430447006629,
-    'lr_ac_25_15d': 0.6413319920555083,
-    'lr_ac_10_30d': 0.6895148185405866,
-    'lr_ac_15_30d': 0.685279475869896,
-    'lr_ac_20_30d': 0.6801568263303155,
-    'lr_ac_25_30d': 0.6732234517268952
+    'lr_ac_10_7d': 0.6449445415314383,
+    'lr_ac_15_7d': 0.6693534006205643,
+    'lr_ac_20_7d': 0.6927208530974713,
+    'lr_ac_25_7d': 0.7134847890438318,
+    'lr_ac_10_15d': 0.697471379150469,
+    'lr_ac_15_15d': 0.7136488462498662,
+    'lr_ac_20_15d': 0.7152466207782018,
+    'lr_ac_25_15d': 0.7338207496701024,
+    'lr_ac_10_30d': 0.7256606869003888,
+    'lr_ac_15_30d': 0.739962195513392,
+    'lr_ac_20_30d': 0.7347694282963015,
+    'lr_ac_25_30d': 0.7456827989585934
 }
+
 
 
 def main(dados, choosen_data_input = '', backtest = 0):
@@ -185,8 +207,17 @@ def main(dados, choosen_data_input = '', backtest = 0):
 
     dados_x_all = data_clean(dados, remove_target_list, 'X')
     dados_x_all_dummies = pd.get_dummies(dados_x_all)
+    
+    
+    # dummies_input = norm_scale(dummies_input)
+    # dados_x_all_dummies = norm_scale(dados_x_all_dummies)
+    # print(dados_x_all_dummies)
+    padronized_dummies0 = padronize_dummies(dummies_input, dados_x_all_dummies)
+    # print(padronized_dummies)
+    padronized_dummies = norm_scale(padronized_dummies0)
+    print(padronized_dummies)
 
-    padronized_dummies = padronize_dummies(dummies_input, dados_x_all_dummies)
+    # padronized_dummies = np.array(padronized_dummies.values)
 
     compiled_dataset = dataset_ref[['Symbol', 'Date', 'Close']]
 
@@ -196,7 +227,7 @@ def main(dados, choosen_data_input = '', backtest = 0):
 
         var_proba_name = build_var_name(model, '_pb_')
 
-        compiled_dataset = add_proba_target(clf, padronized_dummies, compiled_dataset, var_proba_name)
+        compiled_dataset = add_proba_target(clf, padronized_dummies, padronized_dummies0, compiled_dataset, var_proba_name)
 
     # Mede a probabilidade de todos os targets / modelos, e compoe apenas uma métrica
     compound_proba = build_compound_proba(compiled_dataset, accuracy_models)
@@ -224,7 +255,7 @@ if __name__ == "__main__":
     if backtest == 1:
         start_date = '2024-01-01'
         # today_date = datetime.today().strftime('%Y-%m-%d')
-        last_date = str(dados['Date'].max().strftime('%Y-%m-%d'))
+        last_date = str(dados['Date'].max())
 
         # Gerar um range de datas
         datas = pd.date_range(start=start_date, end=last_date, freq='D')
@@ -236,7 +267,7 @@ if __name__ == "__main__":
         
         for data in datas_formatadas:
 
-            output_dataset_date = main(dados, data, 1)
+            output_dataset_date = main(dados, str(data), 1)
 
             output_dataset = pd.concat([output_dataset, output_dataset_date])
             
