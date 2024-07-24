@@ -30,8 +30,8 @@ def specific_crypto_return(input_path, crypto = 'BTC'):
     df['Date'] = pd.to_datetime(df['Date'])
     df.set_index(['Date'], inplace=True)
 
-    prices = df['Close']
-    entrada = df['buy_signal'] == 1
+    prices = df['Close_x']
+    entrada = df['final_buy_signal'] == 1
     saida = df['sell_signal'] == 1
     
     pf = vbt.Portfolio.from_signals(close=prices, entries=entrada , exits=saida)    
@@ -49,8 +49,8 @@ def all_crypto_return(input_path):
         df1.set_index(['Date'], inplace=True)
         df1 = df1.loc[(df1['Symbol'] == crypto)]
 
-        prices = df1['Close']
-        entrada = df1['buy_signal'] == 1
+        prices = df1['Close_x']
+        entrada = df1['final_buy_signal'] == 1
         saida = df1['sell_signal'] == 1
         
         try:
