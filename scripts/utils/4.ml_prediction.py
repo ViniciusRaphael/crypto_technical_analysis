@@ -22,8 +22,8 @@ def query_data(dataframe, symbol=None):
        
     return table.df()
 
-def specific_crypto_return(input_path):
-    crypto = 'BTC'
+def specific_crypto_return(input_path, crypto = 'BTC'):
+    global df
     symbol = crypto + '-USD'
 
     df = query_data(input_path, symbol)
@@ -38,6 +38,7 @@ def specific_crypto_return(input_path):
     return pf.plot().show()
 
 def all_crypto_return(input_path):
+    global df
     df = query_data(input_path)
     symbol = df['Symbol'].unique()
     result = []
@@ -76,8 +77,8 @@ def main():
     input_file = 'crypto_indicators_and_signals.parquet'
     input_path = Path(input_folder) / input_file
 
-    total_return = all_crypto_return(input_path)
-    # return specific_crypto_return()
+    # total_return = all_crypto_return(input_path)
+    return specific_crypto_return(input_path, 'FLY')
     return total_return
 
 if __name__ == '__main__':

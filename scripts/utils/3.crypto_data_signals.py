@@ -3,6 +3,7 @@ import duckdb
 from pathlib import Path
 import pyarrow as pa
 import pyarrow.parquet as pq
+import numpy as np
 
 def read_parquet_to_dataframe(parquet_path):
     """
@@ -42,60 +43,55 @@ def save_dataframe_to_parquet(dataframe, file_path):
     table = pa.Table.from_pandas(dataframe)
     pq.write_table(table=table, where=file_path, compression='snappy')
 
-def table_query(model_percentage_cut=0.7):
-    table = duckdb.sql(
-        f"""
-        WITH join_tables AS (
-            SELECT 
-                ci.*,
-                COALESCE(lr_pb_25_30d, 0) AS lr_pb_25_30d
-            FROM crypto_indicators AS ci
-            LEFT JOIN crypto_signals AS cs
-            ON ci.Symbol = cs.Symbol
-            AND CAST(ci.Date AS DATE) = CAST(cs.Date AS DATE)
-            ),
-        
-        buy_signal_logic AS (
-            SELECT 
-                *,   
-                IF(lr_pb_25_30d > {model_percentage_cut},
-                    1, 
-                    0
-                ) AS all_buy_signal
-            FROM join_tables
-        ),
+def table_query(crypto_indicators, crypto_signals, model_percentage_cut=0.7):
+    crypto_indicators['Date'] = pd.to_datetime(crypto_indicators['Date']).dt.date
+    crypto_signals['Date'] = pd.to_datetime(crypto_signals['Date']).dt.date
 
-        remove_sequential_buy_signals AS (
-            SELECT * EXCLUDE(all_buy_signal),
-            IF(
-                all_buy_signal = 1
-                AND SUM(all_buy_signal) OVER (PARTITION BY Symbol ORDER BY Date ASC ROWS BETWEEN 25 PRECEDING AND 1 PRECEDING) = 0,
-                1,
-                0
-            ) AS buy_signal
-            FROM buy_signal_logic
-        )
+    # Step 1: Join the tables
+    joined_tables = pd.merge(crypto_indicators, crypto_signals, how='left', on=['Symbol', 'Date'])
 
-        SELECT 
-            *,
-            COALESCE(
-                LAG(buy_signal, 25) OVER (PARTITION BY Symbol ORDER BY Date ASC),
-                0
-            ) AS sell_signal
-        FROM remove_sequential_buy_signals         
-        """
-    )
+    # Step 2: Handle missing values
+    joined_tables['lr_pb_25_30d'] = joined_tables['lr_pb_25_30d'].fillna(0)
 
-    return table
+    # Step 3: Calculate initial buy signal
+    joined_tables['all_buy_signal'] = np.where(joined_tables['lr_pb_25_30d'] > model_percentage_cut, 1, 0)
+
+    # Step 4: Apply the rule that no two buy signals are within 25 days of each other
+    joined_tables['final_buy_signal'] = 0
+    last_buy_date = {}
+    
+    for idx, row in joined_tables.iterrows():
+        symbol = row['Symbol']
+        if row['all_buy_signal'] == 1:
+            if symbol in last_buy_date:
+                if (row['Date'] - last_buy_date[symbol]).days > 25:
+                    joined_tables.at[idx, 'final_buy_signal'] = 1
+                    last_buy_date[symbol] = row['Date']
+            else:
+                joined_tables.at[idx, 'final_buy_signal'] = 1
+                last_buy_date[symbol] = row['Date']
+
+    # Step 5: Create sell signal 25 days after final_buy_signal
+    joined_tables['sell_signal'] = 0
+    buy_dates = joined_tables[joined_tables['final_buy_signal'] == 1][['Symbol', 'Date']]
+    
+    for _, buy_row in buy_dates.iterrows():
+        sell_date = buy_row['Date'] + pd.Timedelta(days=25)
+        sell_idx = joined_tables[(joined_tables['Symbol'] == buy_row['Symbol']) & (joined_tables['Date'] == sell_date)].index
+        if not sell_idx.empty:
+            joined_tables.at[sell_idx[0], 'sell_signal'] = 1
+
+    return joined_tables
+
 
 def main():
     global crypto_indicators, crypto_signals, crypto_indicators_and_signals
     crypto_indicators = crypto_indicators()
     crypto_signals = crypto_signals()
 
-    indicators_and_signals_join = table_query(0.6)
+    indicators_and_signals_join = table_query(crypto_indicators, crypto_signals, 0.6)
 
-    crypto_indicators_and_signals = indicators_and_signals_join.df()
+    crypto_indicators_and_signals = indicators_and_signals_join
     output_folder = 'files'
     output_file = 'crypto_indicators_and_signals.parquet'
     output_path = Path(output_folder) / output_file
