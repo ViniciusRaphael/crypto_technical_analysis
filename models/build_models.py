@@ -197,12 +197,19 @@ def build_log_model(name_file, name_model, target_col, eval_model_tuple, version
     return df
 
 
-def save_model(classifier, name_model:str):
+def save_model(classifier, name_model:str, version_id:str):
     # Lib to save the model in a compressed way
     import joblib
+    import os
+
+    root_path = rf'D:\Github\Forked\crypto_technical_analysis\models\trained\{version_id}'
+
+    if not os.path.exists(root_path):
+        # Cria a pasta
+        os.makedirs(root_path)
 
     # Save the model that has been trained
-    joblib.dump(classifier, name_model + '.joblib')
+    joblib.dump(classifier, root_path + '\\' + name_model + '.joblib')
 
     print(f'Modelo savo no diretório atual com o nome de {name_model}.joblib')
 
@@ -237,7 +244,8 @@ target_list_val =   [
     'target_10_30d','target_15_30d','target_20_30d','target_25_30d', 
 ]
 
-version_model = 'v1.4'
+## vai gerar a pasta em models/trained/versao se a versa já estiver criada, sobrescreve, se não, cria a pasta
+version_model = 'v1.5'
 
 remove_target_list = target_list_bol + target_list_val
 
@@ -276,4 +284,4 @@ for target_eval in target_list_bol:
 
     build_log_model(name_model, var_proba_name, target_eval, eval_model_tuple, version_model)
 
-    save_model(clf, name_model)
+    save_model(clf, name_model, version_model)
