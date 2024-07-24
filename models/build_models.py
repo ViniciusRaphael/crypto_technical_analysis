@@ -164,7 +164,7 @@ def build_var_name(model_name, prefix):
     return build_name
 
 
-def build_log_model(name_model, eval_model_tuple, version): 
+def build_log_model(name_file, name_model, target_col, eval_model_tuple, version): 
 
     from datetime import datetime
 
@@ -172,7 +172,9 @@ def build_log_model(name_model, eval_model_tuple, version):
     
     # Exemplo de dados
     data = {
-        'name': [name_model],
+        'name_file': [name_file],
+        'name_model': [name_model],
+        'target': [target_col],
         'version': [version],
         'date_add': datetime.today().strftime('%Y-%m-%d'),
         'true_negative': [matrix[0,0]],
@@ -245,8 +247,6 @@ dados_y_all = data_clean(dados, remove_target_list, 'Y')
 
 for target_eval in target_list_bol:
 
-    var_proba_name = build_var_name(target_eval, '_pb_')
-
     # escolhendo o target
     dados_y = get_target(dados_y_all, target_eval)
 
@@ -270,6 +270,10 @@ for target_eval in target_list_bol:
 
     eval_model_tuple = eval_model(clf, X_test, y_test)
 
-    build_log_model(var_proba_name, eval_model_tuple, version_model)
+    name_model = 'logistic_regression_model_' + version_model + '_' + target_eval
 
-    save_model(clf, 'logistic_regression_model_' + version_model + '_' + target_eval)
+    var_proba_name = build_var_name(name_model, '_pb_')
+
+    build_log_model(name_model, var_proba_name, target_eval, eval_model_tuple, version_model)
+
+    save_model(clf, name_model)
