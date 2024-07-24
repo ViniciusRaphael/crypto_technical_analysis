@@ -155,7 +155,7 @@ def eval_model(classifier, X_test, y_test):
 
 def build_var_name(model_name, prefix):
 
-    string_name = model_name.split('.')[0]
+    string_name = model_name.split('.joblib')[0]
 
     splited_list = string_name.split('_')
     
@@ -237,7 +237,7 @@ target_list_val =   [
     'target_10_30d','target_15_30d','target_20_30d','target_25_30d', 
 ]
 
-version_model = 'v1-2'
+version_model = 'v1.4'
 
 remove_target_list = target_list_bol + target_list_val
 
