@@ -101,7 +101,7 @@ def add_proba_target(classifier, dummies_input, dummies0, dataset_ref, col_name_
 
 def build_var_name(model_name, prefix):
 
-    string_name = model_name.split('.')[0]
+    string_name = model_name.split('.joblib')[0]
 
     splited_list = string_name.split('_')
     
@@ -150,13 +150,34 @@ def norm_scale(X_norm_scale):
     
     return normalized_data
 
+def accuracy_models(log_models, version):
+
+    accuracy_dict = {}
+
+    log_models_select = log_models[log_models['version'] == version]
+    
+    # só vai ter o problema se o modelo estiver rodando as meia noite, porque ai vai ter dois dias
+    log_models_select = log_models_select[log_models_select['date_add'] == log_models_select['date_add'].max()]
+
+    for idx, row in log_models_select.iterrows():
+        name_model_select = row['name_model']
+        accuracy_model_select = row['accuracy']
+
+        accuracy_dict[name_model_select] = accuracy_model_select
+    
+    return accuracy_dict
 
 input_path = r'D:\Github\Forked\crypto_technical_analysis\files\crypto_data_prep_models.parquet'
+log_models_path = r'D:\Github\Forked\crypto_technical_analysis\models\accuracy\log_models.csv'
 
 dados = pd.read_parquet(input_path)
 
 # Definir o diretório que você quer listar os arquivos
-directory = 'models/trained/v1.3/'
+version_id = 'v1.4'
+directory = f'models/trained/{version_id}/'
+
+log_models = pd.read_csv(log_models_path)
+
 
 # Listar todos os itens no diretório e filtrar apenas os arquivos
 models = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
@@ -181,20 +202,7 @@ remove_target_list = target_list_bol + target_list_val
 removing_cols = ['Date', 'Symbol', 'Dividends', 'Stock Splits']
 
 # Acuária dos modelos
-accuracy_models = {
-    'lr_ac_10_7d': 0.6265782723123563,
-    'lr_ac_15_7d': 0.6557700636306093,
-    'lr_ac_20_7d': 0.7176849785121764,
-    'lr_ac_25_7d': 0.6937318852650165,
-    'lr_ac_10_15d': 0.6865692774094679,
-    'lr_ac_15_15d': 0.724672685478229,
-    'lr_ac_20_15d': 0.7100059966019255,
-    'lr_ac_25_15d': 0.7019688842988973,
-    'lr_ac_10_30d': 0.7084901888929607,
-    'lr_ac_15_30d': 0.739962195513392,
-    'lr_ac_20_30d': 0.7311939900722924,
-    'lr_ac_25_30d': 0.783264483459373
-}
+accuracy_models_select = accuracy_models(log_models, version_id)
 
 def main(dados, choosen_data_input = '', backtest = 0):
     # Colocar '' caso deseje a data mais recente presente na base. 
@@ -228,7 +236,7 @@ def main(dados, choosen_data_input = '', backtest = 0):
         compiled_dataset = add_proba_target(clf, padronized_dummies, padronized_dummies0, compiled_dataset, var_proba_name)
 
     # Mede a probabilidade de todos os targets / modelos, e compoe apenas uma métrica
-    compound_proba = build_compound_proba(compiled_dataset, accuracy_models)
+    compound_proba = build_compound_proba(compiled_dataset, accuracy_models_select)
 
     if backtest == 0:
         print(compound_proba)
