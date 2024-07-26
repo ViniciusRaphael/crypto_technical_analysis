@@ -41,6 +41,9 @@ def main():
     # Read Parquet file into a Pandas DataFrame
     df = read_parquet_to_dataframe(str(input_path))
 
+    # Remove companies with discrepant numbers
+    company_code = 'MYRIA-USD'
+    df = df[df['Symbol'] != company_code]
     # Add indicators to the DataFrame
     indicators_dataframe = add_indicators(df)
 

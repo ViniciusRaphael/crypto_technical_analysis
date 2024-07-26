@@ -64,7 +64,7 @@ def table_query(crypto_indicators, crypto_signals, model_percentage_cut=0.7):
         symbol = row['Symbol']
         if row['all_buy_signal'] == 1:
             if symbol in last_buy_date:
-                if (row['Date'] - last_buy_date[symbol]).days > 25:
+                if (row['Date'] - last_buy_date[symbol]).days > 30:
                     joined_tables.at[idx, 'final_buy_signal'] = 1
                     last_buy_date[symbol] = row['Date']
             else:
@@ -76,7 +76,7 @@ def table_query(crypto_indicators, crypto_signals, model_percentage_cut=0.7):
     buy_dates = joined_tables[joined_tables['final_buy_signal'] == 1][['Symbol', 'Date']]
     
     for _, buy_row in buy_dates.iterrows():
-        sell_date = buy_row['Date'] + pd.Timedelta(days=25)
+        sell_date = buy_row['Date'] + pd.Timedelta(days=30)
         sell_idx = joined_tables[(joined_tables['Symbol'] == buy_row['Symbol']) & (joined_tables['Date'] == sell_date)].index
         if not sell_idx.empty:
             joined_tables.at[sell_idx[0], 'sell_signal'] = 1

@@ -167,14 +167,19 @@ def accuracy_models(log_models, version):
     
     return accuracy_dict
 
-input_path = r'D:\Github\Forked\crypto_technical_analysis\files\crypto_data_prep_models.parquet'
-log_models_path = r'D:\Github\Forked\crypto_technical_analysis\models\accuracy\log_models.csv'
-
+input_folder = '../scripts/utils/files/'
+input_file = 'crypto_data_prep_models.parquet'
+input_path = Path(input_folder) / input_file
 dados = pd.read_parquet(input_path)
+
+input_folder = '../models/'
+input_file2 = 'accuracy/log_models.csv'
+log_models_path = Path(input_folder) / input_file2
 
 # Definir o diretório que você quer listar os arquivos
 version_id = 'v1.4'
-directory = f'models/trained/{version_id}/'
+input_folder = '../models/'
+directory = f'trained/{version_id}/'
 
 log_models = pd.read_csv(log_models_path)
 
@@ -242,7 +247,7 @@ def main(dados, choosen_data_input = '', backtest = 0):
         print(compound_proba)
 
         # Salvar o DataFrame em um arquivo CSV
-        compound_proba.to_csv(f'models/results/proba_scores_{str(compound_proba['Date'].max())}.csv', index=True)
+        compound_proba.to_csv(f'../models/results/proba_scores_{str(compound_proba['Date'].max())}.csv', index=True)
 
         print(f'Arquivo salvo em models/results/proba_scores/{str(compound_proba['Date'].max())}.csv')
     else:
@@ -279,7 +284,7 @@ if __name__ == "__main__":
             
             # print(output_dataset)
         # Salvar o DataFrame em um arquivo CSV
-        output_dataset.to_csv(f'models/results/compound_historical.csv', index=True)
+        output_dataset.to_csv(f'../models/results/compound_historical.csv', index=True)
 
         print(f'Arquivo salvo em models/results/compound_historical.csv')
     
