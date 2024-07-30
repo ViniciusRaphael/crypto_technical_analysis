@@ -80,7 +80,7 @@ def padronize_dummies(dummies_input, dummies_ref):
     return valid_dummies
 
 
-def add_proba_target(classifier, dummies_input, dummies0, dataset_ref, col_name_output):
+def add_proba_target(classifier, dummies_input, dummies_before_norm, dataset_ref, col_name_output):
 
     #Fazendo a previsão das probabilidades
     proba = classifier.predict_proba(dummies_input)
@@ -88,7 +88,7 @@ def add_proba_target(classifier, dummies_input, dummies0, dataset_ref, col_name_
     # Probabilidade de ser o target:
     proba_target = proba[:,1] # array
     # print(proba_target)
-    proba_dataset = dummies0[[]] # pegando apenas os índices do dataset de input (que já contém os dados de retorno)
+    proba_dataset = dummies_before_norm[[]] # pegando apenas os índices do dataset de input (que já contém os dados de retorno)
 
     proba_dataset[col_name_output] = proba_target
 
@@ -167,19 +167,29 @@ def accuracy_models(log_models, version):
     
     return accuracy_dict
 
-input_folder = '../scripts/utils/files/'
+# input_folder = '../scripts/utils/files/'
+input_folder = 'files/'
+
 input_file = 'crypto_data_prep_models.parquet'
 input_path = Path(input_folder) / input_file
 dados = pd.read_parquet(input_path)
 
-input_folder = '../models/'
+dados = dados[dados['Symbol'] == 'SOL-USD']
+
+# input_folder = '../models/'
+input_folder = 'models/'
+
 input_file2 = 'accuracy/log_models.csv'
 log_models_path = Path(input_folder) / input_file2
 
 # Definir o diretório que você quer listar os arquivos
-version_id = 'v1.4'
-input_folder = '../models/'
+version_id = 'v1.5'
+# input_folder = '../models/'
+input_folder = 'models/'
+
 directory = f'trained/{version_id}/'
+directory = f'models/trained/{version_id}/'
+
 
 log_models = pd.read_csv(log_models_path)
 
@@ -189,17 +199,19 @@ models = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(direct
 
 # Constants
 target_list_bol =   [
-    # boleanos
-    'bl_target_10_7d','bl_target_15_7d','bl_target_20_7d','bl_target_25_7d',
-    'bl_target_10_15d','bl_target_15_15d','bl_target_20_15d','bl_target_25_15d', 
-    'bl_target_10_30d','bl_target_15_30d','bl_target_20_30d','bl_target_25_30d' 
+    # booleans positive
+    'bl_target_10P_7d','bl_target_15P_7d','bl_target_20P_7d','bl_target_25P_7d',
+    'bl_target_10P_15d','bl_target_15P_15d','bl_target_20P_15d','bl_target_25P_15d', 
+    'bl_target_10P_30d','bl_target_15P_30d','bl_target_20P_30d','bl_target_25P_30d',
+    # booleans negative
+    'bl_target_10N_7d','bl_target_15N_7d','bl_target_20N_7d','bl_target_25N_7d',
+    'bl_target_10N_15d','bl_target_15N_15d','bl_target_20N_15d','bl_target_25N_15d', 
+    'bl_target_10N_30d','bl_target_15N_30d','bl_target_20N_30d','bl_target_25N_30d' 
 ]
 
 target_list_val =   [
-    # percentual
-    'target_10_7d','target_15_7d','target_20_7d','target_25_7d',
-    'target_10_15d','target_15_15d','target_20_15d','target_25_15d', 
-    'target_10_30d','target_15_30d','target_20_30d','target_25_30d', 
+    # real percentual
+    'target_7d','target_15d','target_30d'
 ]
 
 remove_target_list = target_list_bol + target_list_val
@@ -223,22 +235,23 @@ def main(dados, choosen_data_input = '', backtest = 0):
     # dummies_input = norm_scale(dummies_input)
     # dados_x_all_dummies = norm_scale(dados_x_all_dummies)
     # print(dados_x_all_dummies)
-    padronized_dummies0 = padronize_dummies(dummies_input, dados_x_all_dummies)
+    padronized_dummies = padronize_dummies(dummies_input, dados_x_all_dummies)
     # print(padronized_dummies)
-    padronized_dummies = norm_scale(padronized_dummies0)
-    print(padronized_dummies)
+    padronized_dummies_norm = norm_scale(padronized_dummies)
+    print(padronized_dummies_norm)
 
-    # padronized_dummies = np.array(padronized_dummies.values)
+    # padronized_dummies_norm = np.array(padronized_dummies_norm.values)
 
     compiled_dataset = dataset_ref[['Symbol', 'Date', 'Close']]
 
     # Iteração para cada modelo na pasta de modelos
     for model in models:
+
         clf = joblib.load(directory + model)
 
         var_proba_name = build_var_name(model, '_pb_')
 
-        compiled_dataset = add_proba_target(clf, padronized_dummies, padronized_dummies0, compiled_dataset, var_proba_name)
+        compiled_dataset = add_proba_target(clf, padronized_dummies_norm, padronized_dummies, compiled_dataset, var_proba_name)
 
     # Mede a probabilidade de todos os targets / modelos, e compoe apenas uma métrica
     compound_proba = build_compound_proba(compiled_dataset, accuracy_models_select)
