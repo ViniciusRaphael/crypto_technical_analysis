@@ -95,7 +95,7 @@ def add_proba_target(classifier, dummies_input, dummies_before_norm, dataset_ref
     # proba_crypto_date = dataset_ref[['Symbol', 'Date', 'Close']]
 
     build_dataset_proba = pd.merge(dataset_ref, proba_dataset, left_index=True, right_index=True)
-    print(build_dataset_proba)
+    # print(build_dataset_proba)
     return build_dataset_proba
 
 
@@ -109,25 +109,52 @@ def build_var_name(model_name, prefix):
     
     return build_name
 
+# def build_compound_proba(dados, accuracy_models_dict):
+#     dados['score'] = 0
 
-def build_compound_proba(dados, accuracy_models_dict):
-    dados['score'] = 0
+#     for col in dados.columns:
+#         # Feito apenas para as colunas de probabilide (que possuem _pb_)
+#         try: 
+#             if col.split('_pb_')[1] is not None:
+#                 # Coletando a acurácia do modelo
+#                 score_model = accuracy_models_dict[col.split('_pb_')[0] + '_ac_' + col.split('_pb_')[1]]
+#                 # Normalizar os pesos para que somem 1
+#                 pondered_score = score_model / sum(accuracy_models_dict.values())
+#                 # Probabilidade ponderada entre targets
+#                 pondered_proba = dados[col] * pondered_score
+#                 dados['score'] = dados['score'] + pondered_proba
+#         except:
+#             pass
+
+#     return dados.sort_values(by='score', ascending=False)
+
+# score_var = 'P_30d'
+
+def build_compound_proba(dados, accuracy_models_dict, score_var_end):
+
+    score_var = 'score_' + score_var_end
+
+    dados[score_var] = 0
+
+    # selecionando os target que possuem o mesmo timeframe e a mesma tendência (Positivo ou Negativo)
+    accuracy_models_dict_var = {k: v for k, v in accuracy_models_dict.items() if k.endswith(score_var_end)}
 
     for col in dados.columns:
         # Feito apenas para as colunas de probabilide (que possuem _pb_)
         try: 
             if col.split('_pb_')[1] is not None:
-                # Coletando a acurácia do modelo
-                score_model = accuracy_models_dict[col.split('_pb_')[0] + '_ac_' + col.split('_pb_')[1]]
-                # Normalizar os pesos para que somem 1
-                pondered_score = score_model / sum(accuracy_models_dict.values())
-                # Probabilidade ponderada entre targets
-                pondered_proba = dados[col] * pondered_score
-                dados['score'] = dados['score'] + pondered_proba
+                if col.endswith(score_var_end):
+                    # Coletando a acurácia do modelo
+                    score_model = accuracy_models_dict_var[col.split('_pb_')[0] + '_ac_' + col.split('_pb_')[1]]
+                    # Normalizar os pesos para que somem 1
+                    pondered_score = score_model / sum(accuracy_models_dict_var.values())
+                    # Probabilidade ponderada entre targets
+                    pondered_proba = dados[col] * pondered_score
+                    dados[score_var] = dados[score_var] + pondered_proba
         except:
             pass
 
-    return dados.sort_values(by='score', ascending=False)
+    return dados.sort_values(by=score_var, ascending=False)
 
 def norm_scale(X_norm_scale):
 
@@ -220,6 +247,7 @@ removing_cols = ['Date', 'Symbol', 'Dividends', 'Stock Splits']
 
 # Acuária dos modelos
 accuracy_models_select = accuracy_models(log_models, version_id)
+print(accuracy_models_select)
 
 def main(dados, choosen_data_input = '', backtest = 0):
     # Colocar '' caso deseje a data mais recente presente na base. 
@@ -238,7 +266,7 @@ def main(dados, choosen_data_input = '', backtest = 0):
     padronized_dummies = padronize_dummies(dummies_input, dados_x_all_dummies)
     # print(padronized_dummies)
     padronized_dummies_norm = norm_scale(padronized_dummies)
-    print(padronized_dummies_norm)
+    # print(padronized_dummies_norm)
 
     # padronized_dummies_norm = np.array(padronized_dummies_norm.values)
 
@@ -246,21 +274,24 @@ def main(dados, choosen_data_input = '', backtest = 0):
 
     # Iteração para cada modelo na pasta de modelos
     for model in models:
-
         clf = joblib.load(directory + model)
 
         var_proba_name = build_var_name(model, '_pb_')
-
         compiled_dataset = add_proba_target(clf, padronized_dummies_norm, padronized_dummies, compiled_dataset, var_proba_name)
 
-    # Mede a probabilidade de todos os targets / modelos, e compoe apenas uma métrica
-    compound_proba = build_compound_proba(compiled_dataset, accuracy_models_select)
+        # Mede a probabilidade de todos os targets / modelos, e compoe apenas uma métrica
+        compound_proba = build_compound_proba(compiled_dataset, accuracy_models_select, 'P_30d')
+
+    print('passou aqui3')
+
 
     if backtest == 0:
         print(compound_proba)
 
         # Salvar o DataFrame em um arquivo CSV
-        compound_proba.to_csv(f'../models/results/proba_scores_{str(compound_proba['Date'].max())}.csv', index=True)
+        compound_proba.to_csv(f'models/results/proba_scores_{str(compound_proba['Date'].max())}.csv', index=True)
+        # compound_proba.to_csv(f'../models/results/proba_scores_{str(compound_proba['Date'].max())}.csv', index=True)
+
 
         print(f'Arquivo salvo em models/results/proba_scores/{str(compound_proba['Date'].max())}.csv')
     else:
@@ -274,7 +305,7 @@ if __name__ == "__main__":
 
     # 1 For backtest and build one file for the historical 
     # 0 For the last available date
-    backtest = 1
+    backtest = 0
 
     if backtest == 1:
         start_date = '2024-01-01'
@@ -297,7 +328,9 @@ if __name__ == "__main__":
             
             # print(output_dataset)
         # Salvar o DataFrame em um arquivo CSV
-        output_dataset.to_csv(f'../models/results/compound_historical.csv', index=True)
+        # output_dataset.to_csv(f'../models/results/compound_historical.csv', index=True)
+        output_dataset.to_csv(f'models/results/compound_historical.csv', index=True)
+
 
         print(f'Arquivo salvo em models/results/compound_historical.csv')
     
