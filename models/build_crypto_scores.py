@@ -129,6 +129,7 @@ def build_var_name(model_name, prefix):
 #     return dados.sort_values(by='score', ascending=False)
 
 # score_var = 'P_30d'
+from IPython.display import display
 
 def build_compound_proba(dados, accuracy_models_dict, score_var_end):
 
@@ -139,21 +140,25 @@ def build_compound_proba(dados, accuracy_models_dict, score_var_end):
     # selecionando os target que possuem o mesmo timeframe e a mesma tendência (Positivo ou Negativo)
     accuracy_models_dict_var = {k: v for k, v in accuracy_models_dict.items() if k.endswith(score_var_end)}
 
+    print(accuracy_models_dict_var)
     for col in dados.columns:
         # Feito apenas para as colunas de probabilide (que possuem _pb_)
         try: 
-            if col.split('_pb_')[1] is not None:
-                if col.endswith(score_var_end):
-                    # Coletando a acurácia do modelo
-                    score_model = accuracy_models_dict_var[col.split('_pb_')[0] + '_ac_' + col.split('_pb_')[1]]
-                    # Normalizar os pesos para que somem 1
-                    pondered_score = score_model / sum(accuracy_models_dict_var.values())
-                    # Probabilidade ponderada entre targets
-                    pondered_proba = dados[col] * pondered_score
-                    dados[score_var] = dados[score_var] + pondered_proba
+            if (col.split('_pb_')[1] is not None) and col.endswith(score_var_end):
+                # print(dados)
+                print(col.endswith(score_var_end))
+                # Coletando a acurácia do modelo
+                score_model = accuracy_models_dict_var[col]
+                # Normalizar os pesos para que somem 1
+                pondered_score = score_model / sum(accuracy_models_dict_var.values())
+                print(score_model)
+                # print(sum(accuracy_models_dict_var.values()))
+                # Probabilidade ponderada entre targets
+                pondered_proba = dados[col] * pondered_score
+                dados[score_var] = dados[score_var] + pondered_proba
         except:
             pass
-
+    # print(dados)
     return dados.sort_values(by=score_var, ascending=False)
 
 def norm_scale(X_norm_scale):
@@ -281,8 +286,11 @@ def main(dados, choosen_data_input = '', backtest = 0):
 
         # Mede a probabilidade de todos os targets / modelos, e compoe apenas uma métrica
         compound_proba = build_compound_proba(compiled_dataset, accuracy_models_select, 'P_30d')
-
-    print('passou aqui3')
+        compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'P_15d')
+        compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'P_7d')
+        compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'N_7d')
+        compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'N_15d')
+        compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'N_7d')
 
 
     if backtest == 0:
