@@ -207,7 +207,7 @@ def load_model(name_model:str):
     return clf_loaded
 
 
-def create_model (model_cls, model_name, version_model, target_eval, X_train, y_train, X_test, y_test):
+def create_model (model_cls, model_name, version_model, root_path, target_eval, X_train, y_train, X_test, y_test):
         
     clf = model_cls.fit(X_train, y_train)
 
@@ -219,15 +219,26 @@ def create_model (model_cls, model_name, version_model, target_eval, X_train, y_
 
     build_log_model(name_model, var_proba_name, target_eval, eval_model_tuple, version_model)
 
-    save_model(clf, name_model, version_model)
+    save_model(clf, root_path, name_model, version_model)
 
 # Data Flow
 
-input_path = r'D:\Github\Forked\crypto_technical_analysis\files\crypto_data_prep_models.parquet'
-root_path = rf'D:\Github\Forked\crypto_technical_analysis\models\trained'
+# input_path = r'D:\Github\Forked\crypto_technical_analysis\files\crypto_data_prep_models.parquet'
+# root_path = rf'D:\Github\Forked\crypto_technical_analysis\models\trained'
 
 
+# input_folder = '../scripts/utils/files/'
+input_folder = 'files/'
+input_file = 'crypto_data_prep_models.parquet'
+input_path = Path(input_folder) / input_file
 dados = pd.read_parquet(input_path)
+
+dados = dados[dados['Symbol'] == 'SOL-USD']
+
+# input_folder = '../scripts/utils/files/'
+save_in_folder = 'models/trained/'
+root_path = str(Path(save_in_folder))
+
 
 target_list_bol =   [
     # boleanos
@@ -252,7 +263,6 @@ dados_x = data_clean(dados, remove_target_list, 'X')
 dados_y_all = data_clean(dados, remove_target_list, 'Y')
 
 
-
 for target_eval in target_list_bol:
 
     # escolhendo o target
@@ -269,89 +279,10 @@ for target_eval in target_list_bol:
     X_test_norm = norm_scale(X_test)
 
     # Utilizam dados normalizados
-    create_model(LogisticRegression(class_weight='balanced',random_state=0,max_iter=1000), 'logistic_regression', version_model, target_eval, X_train_norm, y_train, X_test_norm, y_test)
-    create_model(SVC(), 'SVC', version_model, target_eval, X_train_norm, y_train, X_test_norm, y_test)
+    create_model(LogisticRegression(class_weight='balanced',random_state=0,max_iter=1000), 'logistic_regression', version_model, root_path, target_eval, X_train_norm, y_train, X_test_norm, y_test)
+    create_model(SVC(probability=True), 'SVC', version_model, root_path, target_eval, X_train_norm, y_train, X_test_norm, y_test)
     
     # Não necessitam de dados normalizados
-    create_model(RandomForestClassifier(), 'random_forest', version_model, target_eval, X_train, y_train, X_test, y_test)
-    create_model(XGBClassifier(), 'XGB', version_model, target_eval, X_train, y_train, X_test, y_test)
-
-
-#  "Logistic Regression": LogisticRegression(class_weight='balanced',random_state=0,max_iter=1000),
-#     "Random Forest": RandomForestClassifier(),
-#     "SVM": SVC(),
-#     "XGB": xgb.XGBClassifier()
-
-
-
-    # # Criando o modelo
-    # model = LogisticRegression(class_weight='balanced',random_state=0,max_iter=1000)
-
-    # # Treinando o modelo
-    # model.fit(X_train, y_train)
-
-    # clf = LogisticRegression(random_state=45,max_iter=1000).fit(X_train, y_train)
-
-    # eval_model_tuple = eval_model(clf, X_test, y_test)
-
-    # name_model = 'logistic_regression_model_' + version_model + '_' + target_eval
-
-    # var_proba_name = build_var_name(name_model, '_pb_')
-
-    # build_log_model(name_model, var_proba_name, target_eval, eval_model_tuple, version_model)
-
-    # save_model(clf, name_model, version_model)
-
-
-        
-    # # Padronizar os dados
-    # scaler = StandardScaler()
-    # X_train_scaled = scaler.fit_transform(X_train)
-    # X_test_scaled = scaler.transform(X_test)
-
-    # Treinar e avaliar o modelo de Regressão Logística
-    # log_reg = LogisticRegression()
-    # log_reg.fit(X_train_scaled, y_train)
-    # y_pred_log_reg = log_reg.predict(X_test_scaled)
-    # accuracy_log_reg = accuracy_score(y_test, y_pred_log_reg)
-    # print(f"Acurácia da Regressão Logística: {accuracy_log_reg}")
-    # print(f"Probabilidades da Regressão Logística:\n{log_reg.predict_proba(X_test_scaled)}")
-
-    # Treinar e avaliar o modelo de SVM
-    # svc = SVC(probability=True)
-    # svc.fit(X_train_scaled, y_train)
-    # y_pred_svc = svc.predict(X_test_scaled)
-    # accuracy_svc = accuracy_score(y_test, y_pred_svc)
-    # print(f"Acurácia do SVM: {accuracy_svc}")
-    # print(f"Probabilidades do SVM:\n{svc.predict_proba(X_test_scaled)}")
-
-    # Treinar e avaliar o modelo de XGBoost
-    # xgb_model = xgb.XGBClassifier()
-    # xgb_model.fit(X_train, y_train)  # Note que o XGBoost não precisa de dados escalados
-    # y_pred_xgb = xgb_model.predict(X_test)
-    # accuracy_xgb = accuracy_score(y_test, y_pred_xgb)
-    # print(f"Acurácia do XGBoost: {accuracy_xgb}")
-    # print(f"Probabilidades do XGBoost:\n{xgb_model.predict_proba(X_test)}")
-
-    # Treinar e avaliar o modelo de Random Forest
-    # rf_model = RandomForestClassifier()
-    # rf_model.fit(X_train, y_train)  # Random Forest também lida bem com diferentes escalas
-    # y_pred_rf = rf_model.predict(X_test)
-    # accuracy_rf = accuracy_score(y_test, y_pred_rf)
-    # print(f"Acurácia do Random Forest: {accuracy_rf}")
-    # print(f"Probabilidades do Random Forest:\n{rf_model.predict_proba(X_test)}")
-
-#     models_cls = {
-#     "Logistic Regression": LogisticRegression(class_weight='balanced',random_state=0,max_iter=1000),
-#     "Random Forest": RandomForestClassifier(),
-#     "SVM": SVC(),
-#     "XGB": xgb.XGBClassifier()
-# }
-    
-#     # Treinar e avaliar os modelos
-#     for name, model in models_cls.items():
-#         model.fit(X_train, y_train)
-#         y_pred = model.predict(X_test)
-#         accuracy = accuracy_score(y_test, y_pred)
-#         print(f"{name} Accuracy: {accuracy}")
+    create_model(RandomForestClassifier(), 'random_forest', version_model, root_path, target_eval, X_train, y_train, X_test, y_test)
+    create_model(XGBClassifier(), 'XGB', version_model, root_path, target_eval, X_train, y_train, X_test, y_test)
 
