@@ -185,8 +185,6 @@ def save_model(classifier, root_path, name_model:str, version_id:str):
     import joblib
     import os
 
-    # root_path = rf'D:\Github\Forked\crypto_technical_analysis\models\trained\{version_id}'
-
     if not os.path.exists(root_path):
         # Cria a pasta
         os.makedirs(root_path)
@@ -241,17 +239,19 @@ root_path = str(Path(save_in_folder))
 
 
 target_list_bol =   [
-    # boleanos
-    'bl_target_10_7d','bl_target_15_7d','bl_target_20_7d','bl_target_25_7d',
-    'bl_target_10_15d','bl_target_15_15d','bl_target_20_15d','bl_target_25_15d', 
-    'bl_target_10_30d','bl_target_15_30d','bl_target_20_30d','bl_target_25_30d' 
+    # booleans positive
+    'bl_target_10P_7d','bl_target_15P_7d','bl_target_20P_7d','bl_target_25P_7d',
+    'bl_target_10P_15d','bl_target_15P_15d','bl_target_20P_15d','bl_target_25P_15d', 
+    'bl_target_10P_30d','bl_target_15P_30d','bl_target_20P_30d','bl_target_25P_30d',
+    # booleans negative
+    'bl_target_10N_7d','bl_target_15N_7d','bl_target_20N_7d','bl_target_25N_7d',
+    'bl_target_10N_15d','bl_target_15N_15d','bl_target_20N_15d','bl_target_25N_15d', 
+    'bl_target_10N_30d','bl_target_15N_30d','bl_target_20N_30d','bl_target_25N_30d' 
 ]
 
 target_list_val =   [
-    # percentual
-    'target_10_7d','target_15_7d','target_20_7d','target_25_7d',
-    'target_10_15d','target_15_15d','target_20_15d','target_25_15d', 
-    'target_10_30d','target_15_30d','target_20_30d','target_25_30d', 
+    # real percentual
+    'target_7d','target_15d','target_30d'
 ]
 
 ## vai gerar a pasta em models/trained/versao se a versa já estiver criada, sobrescreve, se não, cria a pasta

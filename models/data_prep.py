@@ -5,7 +5,9 @@ import pyarrow.parquet as pq
 
 # input_path = r'/Users/vinicius.sousa/vini_github/crypto_technical_analysis/crypto_data_with_indicators.parquet'
 
-input_folder = '../scripts/utils/files/'
+# input_folder = '../scripts/utils/files/'
+input_folder = 'files/'
+
 input_file = 'crypto_data_with_indicators.parquet'
 input_path = Path(input_folder) / input_file
 
@@ -20,7 +22,7 @@ active = (dados[dados['Date'] == max_date])
 active = active[['Symbol']]
 
 # Filter to clean data
-dados_prep = pd.merge(active, dados[(dados['Close'] != 0) & (dados['Volume'] > 250_000) & (dados['target_10_7d'] < 3) & (dados['target_10_7d'] > - 0.9) & (dados['target_10_15d'] < 3) & (dados['target_10_15d'] > - 0.9) & (dados['target_10_30d'] < 3) & (dados['target_10_30d'] > - 0.9)], on=['Symbol'], how='inner')
+dados_prep = pd.merge(active, dados[(dados['Close'] != 0) & (dados['Volume'] > 250_000) & (dados['target_7d'] < 3) & (dados['target_7d'] > - 0.9) & (dados['target_15d'] < 3) & (dados['target_15d'] > - 0.9) & (dados['target_30d'] < 3) & (dados['target_30d'] > - 0.9)], on=['Symbol'], how='inner')
 
 def save_dataframe_to_parquet(dataframe, file_path):
     """
@@ -34,7 +36,8 @@ def save_dataframe_to_parquet(dataframe, file_path):
     pq.write_table(table=table, where=file_path, compression='snappy')
 
 
-output_folder = '../scripts/utils/files/'
+# output_folder = '../scripts/utils/files/'
+output_folder = 'files/'
 output_file = 'crypto_data_prep_models.parquet'
 output_path = Path(output_folder) / output_file
 
