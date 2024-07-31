@@ -192,7 +192,7 @@ def save_model(classifier, root_path, name_model:str, version_id:str):
     # Save the model that has been trained
     joblib.dump(classifier, root_path + '\\' + version_id + '\\' + name_model + '.joblib')
 
-    print(f'Modelo savo no diretório atual com o nome de {name_model}.joblib')
+    print(f'Modelo salvo em {root_path} com o nome de {name_model}.joblib')
 
 
 def load_model(name_model:str):
@@ -231,7 +231,7 @@ input_file = 'crypto_data_prep_models.parquet'
 input_path = Path(input_folder) / input_file
 dados = pd.read_parquet(input_path)
 
-dados = dados[dados['Symbol'] == 'SOL-USD']
+# dados = dados[dados['Symbol'] == 'SOL-USD']
 
 # input_folder = '../scripts/utils/files/'
 save_in_folder = 'models/trained/'

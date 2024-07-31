@@ -109,27 +109,6 @@ def build_var_name(model_name, prefix):
     
     return build_name
 
-# def build_compound_proba(dados, accuracy_models_dict):
-#     dados['score'] = 0
-
-#     for col in dados.columns:
-#         # Feito apenas para as colunas de probabilide (que possuem _pb_)
-#         try: 
-#             if col.split('_pb_')[1] is not None:
-#                 # Coletando a acurácia do modelo
-#                 score_model = accuracy_models_dict[col.split('_pb_')[0] + '_ac_' + col.split('_pb_')[1]]
-#                 # Normalizar os pesos para que somem 1
-#                 pondered_score = score_model / sum(accuracy_models_dict.values())
-#                 # Probabilidade ponderada entre targets
-#                 pondered_proba = dados[col] * pondered_score
-#                 dados['score'] = dados['score'] + pondered_proba
-#         except:
-#             pass
-
-#     return dados.sort_values(by='score', ascending=False)
-
-# score_var = 'P_30d'
-from IPython.display import display
 
 def build_compound_proba(dados, accuracy_models_dict, score_var_end):
 
@@ -140,18 +119,20 @@ def build_compound_proba(dados, accuracy_models_dict, score_var_end):
     # selecionando os target que possuem o mesmo timeframe e a mesma tendência (Positivo ou Negativo)
     accuracy_models_dict_var = {k: v for k, v in accuracy_models_dict.items() if k.endswith(score_var_end)}
 
-    print(accuracy_models_dict_var)
+    # print(accuracy_models_dict_var)
     for col in dados.columns:
         # Feito apenas para as colunas de probabilide (que possuem _pb_)
         try: 
             if (col.split('_pb_')[1] is not None) and col.endswith(score_var_end):
                 # print(dados)
-                print(col.endswith(score_var_end))
+                # print(col.endswith(score_var_end))
                 # Coletando a acurácia do modelo
                 score_model = accuracy_models_dict_var[col]
                 # Normalizar os pesos para que somem 1
                 pondered_score = score_model / sum(accuracy_models_dict_var.values())
-                print(score_model)
+                # print(score_model)
+
+
                 # print(sum(accuracy_models_dict_var.values()))
                 # Probabilidade ponderada entre targets
                 pondered_proba = dados[col] * pondered_score
@@ -206,7 +187,9 @@ input_file = 'crypto_data_prep_models.parquet'
 input_path = Path(input_folder) / input_file
 dados = pd.read_parquet(input_path)
 
-dados = dados[dados['Symbol'] == 'SOL-USD']
+# dados = dados[dados['Symbol'] == 'SOL-USD']
+
+
 
 # input_folder = '../models/'
 input_folder = 'models/'
@@ -219,7 +202,7 @@ version_id = 'v1.5'
 # input_folder = '../models/'
 input_folder = 'models/'
 
-directory = f'trained/{version_id}/'
+# directory = f'trained/{version_id}/'
 directory = f'models/trained/{version_id}/'
 
 
@@ -252,7 +235,7 @@ removing_cols = ['Date', 'Symbol', 'Dividends', 'Stock Splits']
 
 # Acuária dos modelos
 accuracy_models_select = accuracy_models(log_models, version_id)
-print(accuracy_models_select)
+# print(accuracy_models_select)
 
 def main(dados, choosen_data_input = '', backtest = 0):
     # Colocar '' caso deseje a data mais recente presente na base. 
@@ -279,18 +262,20 @@ def main(dados, choosen_data_input = '', backtest = 0):
 
     # Iteração para cada modelo na pasta de modelos
     for model in models:
+        # print(model)
         clf = joblib.load(directory + model)
 
         var_proba_name = build_var_name(model, '_pb_')
         compiled_dataset = add_proba_target(clf, padronized_dummies_norm, padronized_dummies, compiled_dataset, var_proba_name)
 
-        # Mede a probabilidade de todos os targets / modelos, e compoe apenas uma métrica
-        compound_proba = build_compound_proba(compiled_dataset, accuracy_models_select, 'P_30d')
-        compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'P_15d')
-        compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'P_7d')
-        compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'N_7d')
-        compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'N_15d')
-        compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'N_7d')
+        # print(compiled_dataset)
+    # Mede a probabilidade de todos os targets / modelos, e compoe apenas uma métrica
+    compound_proba = build_compound_proba(compiled_dataset, accuracy_models_select, 'P_30d')
+    compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'P_15d')
+    compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'P_7d')
+    compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'N_30d')
+    compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'N_15d')
+    compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'N_7d')
 
 
     if backtest == 0:
