@@ -80,7 +80,7 @@ def padronize_dummies(dummies_input, dummies_ref):
     return valid_dummies
 
 
-def add_proba_target(classifier, dummies_input, dummies0, dataset_ref, col_name_output):
+def add_proba_target(classifier, dummies_input, dummies_before_norm, dataset_ref, col_name_output):
 
     #Fazendo a previsão das probabilidades
     proba = classifier.predict_proba(dummies_input)
@@ -88,14 +88,14 @@ def add_proba_target(classifier, dummies_input, dummies0, dataset_ref, col_name_
     # Probabilidade de ser o target:
     proba_target = proba[:,1] # array
     # print(proba_target)
-    proba_dataset = dummies0[[]] # pegando apenas os índices do dataset de input (que já contém os dados de retorno)
+    proba_dataset = dummies_before_norm[[]] # pegando apenas os índices do dataset de input (que já contém os dados de retorno)
 
     proba_dataset[col_name_output] = proba_target
 
     # proba_crypto_date = dataset_ref[['Symbol', 'Date', 'Close']]
 
     build_dataset_proba = pd.merge(dataset_ref, proba_dataset, left_index=True, right_index=True)
-    print(build_dataset_proba)
+    # print(build_dataset_proba)
     return build_dataset_proba
 
 
@@ -110,24 +110,37 @@ def build_var_name(model_name, prefix):
     return build_name
 
 
-def build_compound_proba(dados, accuracy_models_dict):
-    dados['score'] = 0
+def build_compound_proba(dados, accuracy_models_dict, score_var_end):
 
+    score_var = 'score_' + score_var_end
+
+    dados[score_var] = 0
+
+    # selecionando os target que possuem o mesmo timeframe e a mesma tendência (Positivo ou Negativo)
+    accuracy_models_dict_var = {k: v for k, v in accuracy_models_dict.items() if k.endswith(score_var_end)}
+
+    # print(accuracy_models_dict_var)
     for col in dados.columns:
         # Feito apenas para as colunas de probabilide (que possuem _pb_)
         try: 
-            if col.split('_pb_')[1] is not None:
+            if (col.split('_pb_')[1] is not None) and col.endswith(score_var_end):
+                # print(dados)
+                # print(col.endswith(score_var_end))
                 # Coletando a acurácia do modelo
-                score_model = accuracy_models_dict[col.split('_pb_')[0] + '_ac_' + col.split('_pb_')[1]]
+                score_model = accuracy_models_dict_var[col]
                 # Normalizar os pesos para que somem 1
-                pondered_score = score_model / sum(accuracy_models_dict.values())
+                pondered_score = score_model / sum(accuracy_models_dict_var.values())
+                # print(score_model)
+
+
+                # print(sum(accuracy_models_dict_var.values()))
                 # Probabilidade ponderada entre targets
                 pondered_proba = dados[col] * pondered_score
-                dados['score'] = dados['score'] + pondered_proba
+                dados[score_var] = dados[score_var] + pondered_proba
         except:
             pass
-
-    return dados.sort_values(by='score', ascending=False)
+    # print(dados)
+    return dados.sort_values(by=score_var, ascending=False)
 
 def norm_scale(X_norm_scale):
 
@@ -167,19 +180,31 @@ def accuracy_models(log_models, version):
     
     return accuracy_dict
 
-input_folder = '../scripts/utils/files/'
+# input_folder = '../scripts/utils/files/'
+input_folder = 'files/'
+
 input_file = 'crypto_data_prep_models.parquet'
 input_path = Path(input_folder) / input_file
 dados = pd.read_parquet(input_path)
 
-input_folder = '../models/'
+# dados = dados[dados['Symbol'] == 'SOL-USD']
+
+
+
+# input_folder = '../models/'
+input_folder = 'models/'
+
 input_file2 = 'accuracy/log_models.csv'
 log_models_path = Path(input_folder) / input_file2
 
 # Definir o diretório que você quer listar os arquivos
-version_id = 'v1.4'
-input_folder = '../models/'
-directory = f'trained/{version_id}/'
+version_id = 'v1.5'
+# input_folder = '../models/'
+input_folder = 'models/'
+
+# directory = f'trained/{version_id}/'
+directory = f'models/trained/{version_id}/'
+
 
 log_models = pd.read_csv(log_models_path)
 
@@ -189,17 +214,19 @@ models = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(direct
 
 # Constants
 target_list_bol =   [
-    # boleanos
-    'bl_target_10_7d','bl_target_15_7d','bl_target_20_7d','bl_target_25_7d',
-    'bl_target_10_15d','bl_target_15_15d','bl_target_20_15d','bl_target_25_15d', 
-    'bl_target_10_30d','bl_target_15_30d','bl_target_20_30d','bl_target_25_30d' 
+    # booleans positive
+    'bl_target_10P_7d','bl_target_15P_7d','bl_target_20P_7d','bl_target_25P_7d',
+    'bl_target_10P_15d','bl_target_15P_15d','bl_target_20P_15d','bl_target_25P_15d', 
+    'bl_target_10P_30d','bl_target_15P_30d','bl_target_20P_30d','bl_target_25P_30d',
+    # booleans negative
+    'bl_target_10N_7d','bl_target_15N_7d','bl_target_20N_7d','bl_target_25N_7d',
+    'bl_target_10N_15d','bl_target_15N_15d','bl_target_20N_15d','bl_target_25N_15d', 
+    'bl_target_10N_30d','bl_target_15N_30d','bl_target_20N_30d','bl_target_25N_30d' 
 ]
 
 target_list_val =   [
-    # percentual
-    'target_10_7d','target_15_7d','target_20_7d','target_25_7d',
-    'target_10_15d','target_15_15d','target_20_15d','target_25_15d', 
-    'target_10_30d','target_15_30d','target_20_30d','target_25_30d', 
+    # real percentual
+    'target_7d','target_15d','target_30d'
 ]
 
 remove_target_list = target_list_bol + target_list_val
@@ -208,6 +235,7 @@ removing_cols = ['Date', 'Symbol', 'Dividends', 'Stock Splits']
 
 # Acuária dos modelos
 accuracy_models_select = accuracy_models(log_models, version_id)
+# print(accuracy_models_select)
 
 def main(dados, choosen_data_input = '', backtest = 0):
     # Colocar '' caso deseje a data mais recente presente na base. 
@@ -223,31 +251,40 @@ def main(dados, choosen_data_input = '', backtest = 0):
     # dummies_input = norm_scale(dummies_input)
     # dados_x_all_dummies = norm_scale(dados_x_all_dummies)
     # print(dados_x_all_dummies)
-    padronized_dummies0 = padronize_dummies(dummies_input, dados_x_all_dummies)
+    padronized_dummies = padronize_dummies(dummies_input, dados_x_all_dummies)
     # print(padronized_dummies)
-    padronized_dummies = norm_scale(padronized_dummies0)
-    print(padronized_dummies)
+    padronized_dummies_norm = norm_scale(padronized_dummies)
+    # print(padronized_dummies_norm)
 
-    # padronized_dummies = np.array(padronized_dummies.values)
+    # padronized_dummies_norm = np.array(padronized_dummies_norm.values)
 
     compiled_dataset = dataset_ref[['Symbol', 'Date', 'Close']]
 
     # Iteração para cada modelo na pasta de modelos
     for model in models:
+        # print(model)
         clf = joblib.load(directory + model)
 
         var_proba_name = build_var_name(model, '_pb_')
+        compiled_dataset = add_proba_target(clf, padronized_dummies_norm, padronized_dummies, compiled_dataset, var_proba_name)
 
-        compiled_dataset = add_proba_target(clf, padronized_dummies, padronized_dummies0, compiled_dataset, var_proba_name)
-
+        # print(compiled_dataset)
     # Mede a probabilidade de todos os targets / modelos, e compoe apenas uma métrica
-    compound_proba = build_compound_proba(compiled_dataset, accuracy_models_select)
+    compound_proba = build_compound_proba(compiled_dataset, accuracy_models_select, 'P_30d')
+    compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'P_15d')
+    compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'P_7d')
+    compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'N_30d')
+    compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'N_15d')
+    compound_proba = build_compound_proba(compound_proba, accuracy_models_select, 'N_7d')
+
 
     if backtest == 0:
         print(compound_proba)
 
         # Salvar o DataFrame em um arquivo CSV
-        compound_proba.to_csv(f'../models/results/proba_scores_{str(compound_proba['Date'].max())}.csv', index=True)
+        compound_proba.to_csv(f'models/results/proba_scores_{str(compound_proba['Date'].max())}.csv', index=True)
+        # compound_proba.to_csv(f'../models/results/proba_scores_{str(compound_proba['Date'].max())}.csv', index=True)
+
 
         print(f'Arquivo salvo em models/results/proba_scores/{str(compound_proba['Date'].max())}.csv')
     else:
@@ -261,7 +298,7 @@ if __name__ == "__main__":
 
     # 1 For backtest and build one file for the historical 
     # 0 For the last available date
-    backtest = 1
+    backtest = 0
 
     if backtest == 1:
         start_date = '2024-01-01'
@@ -284,7 +321,9 @@ if __name__ == "__main__":
             
             # print(output_dataset)
         # Salvar o DataFrame em um arquivo CSV
-        output_dataset.to_csv(f'../models/results/compound_historical.csv', index=True)
+        # output_dataset.to_csv(f'../models/results/compound_historical.csv', index=True)
+        output_dataset.to_csv(f'models/results/compound_historical.csv', index=True)
+
 
         print(f'Arquivo salvo em models/results/compound_historical.csv')
     
