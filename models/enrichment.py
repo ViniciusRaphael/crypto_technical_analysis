@@ -5,4 +5,4 @@ import parameters
 
 tes = Models()
 
-tes.iterate_models(parameters)
+tes.train_models(parameters)

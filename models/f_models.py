@@ -185,23 +185,12 @@ class Models():
 
         if not os.path.exists(root_path_version):
             # Cria a pasta
-            print('pasta nao existe')
             os.makedirs(root_path_version)
 
         # Save the model that has been trained
         joblib.dump(classifier, root_path_version + '\\' + name_model + '.joblib')
 
         print(f'Modelo salvo em {root_path_version} com o nome de {name_model}.joblib')
-
-
-    def load_model(self, name_model:str):
-        # Lib to save the model in a compressed way
-        import joblib
-
-        # Load the trained model
-        clf_loaded = joblib.load(name_model + '.joblib')
-
-        return clf_loaded
 
 
     def create_model(self, model_cls, model_name, version_model, root_path, target_eval, X_train, y_train, X_test, y_test):
@@ -218,50 +207,12 @@ class Models():
 
         self.save_model(clf, root_path, name_model, version_model)
 
-    # Data Flow
-
-    # input_path = r'D:\Github\Forked\crypto_technical_analysis\files\crypto_data_prep_models.parquet'
-    # root_path = rf'D:\Github\Forked\crypto_technical_analysis\models\trained'
-
-    def iterate_models(self, parameters):
-
-        # # input_folder = '../scripts/utils/files/'
-        # input_folder = 'files/'
-        # input_file = 'crypto_data_prep_models.parquet'
-        # input_path = Path(input_folder) / input_file
-        # dados = pd.read_parquet(input_path)
-
-        # # dados = dados[dados['Symbol'] == 'SOL-USD']
-
-        # # input_folder = '../scripts/utils/files/'
-        # save_in_folder = 'models/trained/'
-        # root_path = str(Path(save_in_folder))
 
 
-        # target_list_bol =   [
-        #     # booleans positive
-        #     'bl_target_10P_7d','bl_target_15P_7d','bl_target_20P_7d','bl_target_25P_7d',
-        #     'bl_target_10P_15d','bl_target_15P_15d','bl_target_20P_15d','bl_target_25P_15d', 
-        #     'bl_target_10P_30d','bl_target_15P_30d','bl_target_20P_30d','bl_target_25P_30d',
-        #     # booleans negative
-        #     'bl_target_10N_7d','bl_target_15N_7d','bl_target_20N_7d','bl_target_25N_7d',
-        #     'bl_target_10N_15d','bl_target_15N_15d','bl_target_20N_15d','bl_target_25N_15d', 
-        #     'bl_target_10N_30d','bl_target_15N_30d','bl_target_20N_30d','bl_target_25N_30d' 
-        # ]
-
-        # target_list_val =   [
-        #     # real percentual
-        #     'target_7d','target_15d','target_30d'
-        # ]
-
-        # ## vai gerar a pasta em models/trained/versao se a versa já estiver criada, sobrescreve, se não, cria a pasta
-        # version_model = 'v1.4'
-
-        # remove_target_list = target_list_bol + target_list_val
+    def train_models(self, parameters):
 
         dados_x = self.data_clean(parameters.dados, parameters.remove_target_list, 'X')
         dados_y_all = self.data_clean(parameters.dados, parameters.remove_target_list, 'Y')
-
 
         for target_eval in parameters.target_list_bol:
 
