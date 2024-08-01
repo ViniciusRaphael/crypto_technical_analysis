@@ -181,15 +181,17 @@ class Models():
     def save_model(self, classifier, root_path, name_model:str, version_id:str):
         # Lib to save the model in a compressed way
 
-        if not os.path.exists(root_path):
+        root_path_version = root_path + '\\' + version_id
+
+        if not os.path.exists(root_path_version):
             # Cria a pasta
             print('pasta nao existe')
-            os.makedirs(root_path)
+            os.makedirs(root_path_version)
 
         # Save the model that has been trained
-        joblib.dump(classifier, root_path + '\\' + version_id + '\\' + name_model + '.joblib')
+        joblib.dump(classifier, root_path_version + '\\' + name_model + '.joblib')
 
-        print(f'Modelo salvo em {root_path} com o nome de {name_model}.joblib')
+        print(f'Modelo salvo em {root_path_version} com o nome de {name_model}.joblib')
 
 
     def load_model(self, name_model:str):

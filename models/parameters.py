@@ -31,6 +31,6 @@ target_list_val =   [
 ]
 
 ## vai gerar a pasta em models/trained/versao se a versa já estiver criada, sobrescreve, se não, cria a pasta
-version_model = 'v1.6'
+version_model = 'v1.5'
 
 remove_target_list = target_list_bol + target_list_val
