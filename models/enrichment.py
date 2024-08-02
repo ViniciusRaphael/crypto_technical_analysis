@@ -1,8 +1,12 @@
-from f_models import Models
+from f_models import Models, Deploy
 import parameters
 
 # parameters = 
 
 tes = Models()
 
-tes.train_models(parameters)
+# tes.train_models(parameters)
+
+back = Deploy()
+
+back.backtest(tes, parameters)
