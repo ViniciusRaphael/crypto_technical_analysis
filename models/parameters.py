@@ -47,7 +47,7 @@ input_file_prep_models = 'crypto_data_prep_models.parquet'
 input_path_prep_models = Path(input_folder) / input_file_prep_models
 dados_prep_models = pd.read_parquet(input_path_prep_models)
 
-# dados = dados[dados['Symbol'] == 'SOL-USD']
+dados_prep_models = dados_prep_models[dados_prep_models['Symbol'] == 'SOL-USD']
 
 
 

@@ -17,6 +17,10 @@ from sklearn.metrics import roc_auc_score
 from datetime import datetime
 import joblib
 import os
+import warnings
+
+warnings.filterwarnings("ignore")
+
 
 
 
@@ -402,7 +406,7 @@ class Deploy():
 
     def backtest(self, cls_Models, parameters):
 
-        start_date = '2024-01-01'
+        start_date = '2024-06-01'
         last_date = str(parameters.dados_prep_models['Date'].max())
 
         # Gerar um range de datas
@@ -414,6 +418,8 @@ class Deploy():
         backtest_dataset = pd.DataFrame()
         
         for data in datas_formatadas:
+
+            print(f'Backtesting dia {data}')
 
             backtest_dataset_date = self.build_crypto_scores(cls_Models, parameters, str(data), True)
 
@@ -427,14 +433,15 @@ class Deploy():
         return backtest_dataset
         
     
-    def daily_outcome(self, parameters, choosen_date):
+    def daily_outcome(self, cls_Models, parameters, choosen_date):
         
-        daily_outcome = self.build_crypto_scorees(parameters, choosen_date, False)
+        daily_outcome = self.build_crypto_scores(cls_Models, parameters, choosen_date, False)
         print(daily_outcome)
 
         # Salvar o DataFrame em um arquivo CSV
-        daily_outcome.to_csv(f'{parameters.daily_outcome_path}_{str(daily_outcome['Date'].max())}.csv', index=True)
+        file_name_outcome = f"{parameters.daily_outcome_path}_{str(daily_outcome['Date'].max())}.csv"
+        daily_outcome.to_csv(file_name_outcome, index=True)
 
-        print(f'Arquivo salvo em {parameters.daily_outcome_path}')
+        print(f'Arquivo salvo em {file_name_outcome}')
 
         return daily_outcome

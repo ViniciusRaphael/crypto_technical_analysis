@@ -9,4 +9,7 @@ tes = Models()
 
 back = Deploy()
 
-back.backtest(tes, parameters)
+# back.backtest(tes, parameters)
+print(parameters.dados_indicators)
+
+back.daily_outcome(tes, parameters,'')
