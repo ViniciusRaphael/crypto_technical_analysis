@@ -78,33 +78,24 @@ class FileHandling():
                 
 
             elif file_name.split('.')[-1] == 'parquet':
-                file_content = self.read_parquet_to_dataframe(str(complete_path))
+                # A função anterior read_parquet_to_dataframe levava um __index__ como coluna (pelo menos nessa nova estrutura)
+                file_content = pd.read_parquet(complete_path)
 
             return file_content
         
-    import time
 
     def wait_for_file(self, file_path):
 
         while not os.path.exists(file_path):
             time.sleep(0.2) 
 
-    # def filtered_symbol(self, parameters):
+
+    def get_selected_symbols(self, dados, parameters):
+
+        return dados[dados['Symbol'].isin(parameters.filter_symbols)] if parameters.execute_filtered else dados
 
 
-    # def crypto_indicators():
-    #     input_folder = 'files'
-    #     input_file = 'crypto_data_with_indicators.parquet'
-    #     input_path = Path(input_folder) / input_file
-    #     crypto_data_w_indicators = self.read_parquet_to_dataframe(str(input_path))
-    #     return crypto_data_w_indicators
 
-    # def crypto_signals():
-    #     input_folder = '../../models/'
-    #     input_file = 'results/compound_historical.csv'
-    #     input_path = Path(input_folder) / input_file
-    #     crypto_signals = pd.read_csv(input_path)
-    #     return crypto_signals
 
 
 class DataIngestion():
@@ -252,6 +243,15 @@ class DataTransform():
     def __init__(self) -> None:
         pass
 
+    
+    def clean_date(self, dados_date):
+
+        dados_date['Date'] = pd.to_datetime(dados_date['Date'])
+        dados_date['Date'] = dados_date['Date'].dt.strftime('%Y-%m-%d')
+
+        return dados_date
+    
+
     def build_crypto_indicators(self, cls_FileHandling, parameters):
         # Specify the input Parquet file path
         # input_folder = 'files'
@@ -267,7 +267,7 @@ class DataTransform():
         # Add indicators to the DataFrame
         crypto_indicators_dataframe = add_indicators(df)
 
-        print(crypto_indicators_dataframe)
+        crypto_indicators_dataframe = self.clean_date(crypto_indicators_dataframe)
 
         if crypto_indicators_dataframe is not None:
             # Specify the folder and file name for saving the Parquet file
@@ -338,19 +338,20 @@ class DataPrep():
         
         dados_indicators = cls_FileHandling.read_file(parameters.input_folder, parameters.file_w_indicators)
 
-        cleaned_date = self.clean_date(dados_indicators)
+        # cleaned_date = self.clean_date(dados_indicators)
 
         active_symbols = self.get_active_symbols(dados_indicators)
 
         # Filter to clean data
-        filtered_data = cleaned_date[cleaned_date['Symbol'].isin(active_symbols)]
+        filtered_data = dados_indicators[dados_indicators['Symbol'].isin(active_symbols)]
 
         dados_prep = filtered_data[(filtered_data['Close'] != 0) & (filtered_data['Volume'] > parameters.min_volume_prep_models)]
 
         if parameters.clean_targets_prep_models == True:
             dados_prep = dados_prep[(dados_prep['target_7d'] < 3) & (dados_prep['target_7d'] > - 0.9) & (dados_prep['target_15d'] < 3) & (dados_prep['target_15d'] > - 0.9) & (dados_prep['target_30d'] < 3) & (dados_prep['target_30d'] > - 0.9)]
         
-        cls_FileHandling.save_parquet_file(dados_prep, parameters.input_path_prep_models)    
+        cls_FileHandling.save_parquet_file(dados_prep, parameters.input_path_prep_models)
+    
 
         print(f"Parquet file with indicators prep models saved to {parameters.input_path_prep_models} com {len(dados_prep)} linhas")
 
@@ -551,6 +552,8 @@ class Models():
 
         dados_prep_models = parameters.cls_FileHandling.read_file(parameters.input_folder, parameters.input_file_prep_models)
 
+        dados_prep_models = parameters.cls_FileHandling.get_selected_symbols(dados_prep_models, parameters)
+
         dados_x = self.data_clean(dados_prep_models, parameters.remove_target_list, 'X', parameters.removing_cols)
         dados_y_all = self.data_clean(dados_prep_models, parameters.remove_target_list, 'Y', parameters.removing_cols)
 
@@ -571,7 +574,7 @@ class Models():
 
 
             # Utilizam dados normalizados
-            # self.create_model(parameters, LogisticRegression(class_weight='balanced',random_state=0,max_iter=1000), 'logistic_regression', target_eval, X_train_norm, y_train, X_test_norm, y_test)
+            self.create_model(parameters, LogisticRegression(class_weight='balanced',random_state=0,max_iter=1000), 'logistic_regression', target_eval, X_train_norm, y_train, X_test_norm, y_test)
             # self.create_model(parameters, SVC(probability=True, kernel='linear', C=0.7, max_iter=1000), 'SVC', target_eval, X_train_norm, y_train, X_test_norm, y_test)
 
             # Não necessitam de dados normalizados

@@ -13,7 +13,7 @@ cls_FileHandling = FileHandling()
 
 input_path = Path(input_folder) / input_file
 # dados0 = pd.read_parquet(input_path)
-dados0 = FileHandling().read_file(input_folder, input_file)
+# dados0 = FileHandling().read_file(input_folder, input_file)
 
 # if os.path.exists(input_path) and os.stat(input_path).st_size > 0:
 #     dados0 = pd.read_csv(input_path)
@@ -21,12 +21,12 @@ dados0 = FileHandling().read_file(input_folder, input_file)
 # Suponha que 'dados_prep_models' seja o seu DataFrame
 
 
-execute_data_ingestion = False
-execute_data_indicators = False
-execute_data_prep_models = False
+execute_data_ingestion = True
+execute_data_indicators = True
+execute_data_prep_models = True
 
-execute_train_models = False
-execute_backtest = False
+execute_train_models = True
+execute_backtest = True
 execute_daily_outcome = True
 
 execute_filtered = True
@@ -45,7 +45,7 @@ filter_symbols = ['SOL-USD', 'BTC-USD', 'ETH-USD']  # Adicione os símbolos que 
 # dados_indicators_filtered =  DataPrep().clean_date(dados0[dados0['Symbol'].isin(filter_symbols)])
 # dados_indicators_all =  DataPrep().clean_date(dados0)
 # dados_indicators = dados_indicators_filtered if execute_filtered else dados_indicators_all
-dados_indicators = FileHandling().read_file(input_folder, input_file)
+# dados_indicators = FileHandling().read_file(input_folder, input_file)
 
 
 
@@ -86,14 +86,14 @@ input_file_prep_models = 'crypto_data_prep_models.parquet'
 input_path_prep_models = Path(input_folder) / input_file_prep_models
 # dados_prep_models0 = pd.read_parquet(input_path_prep_models)
 
-dados_prep_models0 = FileHandling().read_file(input_folder, input_file_prep_models)
+# dados_prep_models0 = FileHandling().read_file(input_folder, input_file_prep_models)
 
 
 
 # dados_prep_models_filtered = dados_prep_models0[dados_prep_models0['Symbol'].isin(filter_symbols)]
 # dados_prep_models_all = dados_prep_models0
 # dados_prep_models = dados_prep_models_filtered if execute_filtered else dados_prep_models_all
-dados_prep_models = FileHandling().read_file(input_folder, input_file_prep_models)
+# dados_prep_models = FileHandling().read_file(input_folder, input_file_prep_models)
 
 
 
