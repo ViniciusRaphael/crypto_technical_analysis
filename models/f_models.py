@@ -40,39 +40,6 @@ class Models():
 
     def __init__(self) -> None:
         pass
-        
-
-    # def data_clean(self, dados:pd.DataFrame, target_list:list, data_return:str, removing_cols:list = ['Date', 'Symbol', 'Dividends', 'Stock Splits']):
-        
-    #     # Suponha que você queira ignorar os NA em 'coluna1' e 'coluna2'
-    #     colunas_ignorar = target_list + removing_cols
-
-    #     # Identifique as colunas que serão consideradas para o dropna
-    #     colunas_considerar = dados.columns.difference(colunas_ignorar)
-
-    #     # Remova as linhas com NA nas colunas especificadas
-    #     dados.dropna(subset=colunas_considerar, inplace=True)
-
-    #     dados_x = dados.drop(dados[target_list], axis=1)
-    #     dados_x = dados_x.drop(dados_x[removing_cols], axis=1)
-        
-    #     # Substituindo valores infinitos por NaN
-    #     dados_x.replace([np.inf, -np.inf], np.nan, inplace=True)
-
-    #     # Removendo linhas com valores NaN
-    #     dados_x.dropna(inplace=True)
-
-    #     # Define the target in a list of target (for futher iteration)
-    #     dados_y = dados[target_list]
-
-    #     # Removing target from base to avoid data leakage
-  
-    #     print(len(dados_x))
-
-    #     if data_return == 'Y':
-    #         return dados_y
-    #     else:
-    #         return dados_x
 
 
     def data_clean(self, dados:pd.DataFrame, target_list:list, data_return:str, removing_cols:list = ['Date', 'Symbol', 'Dividends', 'Stock Splits']):
@@ -216,8 +183,8 @@ class Models():
             'recall': [matrix[1,1] / (matrix[1,1] + matrix[1,0])], #Revocação (Recall) ou Sensibilidade (Sensitivity): Proporção de casos positivos corretamente identificados.
             'auc_roc': [auc]
         }
-
         df = pd.DataFrame(data)
+
 
         df['f1_score'] = 2 * ((df['precision'] * df['recall']) / (df['precision'] + df['recall'])) # F1 Score: Média harmônica da precisão e da revocação, usada para balancear os trade-offs entre essas duas métricas.
 
@@ -227,10 +194,10 @@ class Models():
         return df
 
 
-    def save_model(self, classifier, root_path, name_model:str, version_id:str):
+    def save_model(self, parameters, classifier, name_model:str):
         # Lib to save the model in a compressed way
 
-        root_path_version = root_path + '\\' + version_id
+        root_path_version = parameters.trained_models_path + '\\' + parameters.version_model
 
         if not os.path.exists(root_path_version):
             # Cria a pasta
@@ -242,20 +209,18 @@ class Models():
         print(f'Modelo salvo em {root_path_version} com o nome de {name_model}.joblib')
 
 
-    def create_model(self, model_cls, model_name, version_model, root_path, target_eval, X_train, y_train, X_test, y_test):
+    def create_model(self, parameters, model_cls, model_name, target_eval, X_train, y_train, X_test, y_test):
             
         clf = model_cls.fit(X_train, y_train)
 
         eval_model_tuple = self.eval_model(clf, X_test, y_test)
-
-        name_model = model_name + '_' + version_model + '_' + target_eval
+    
+        name_model = model_name + '_' + parameters.version_model + '_' + target_eval
 
         var_proba_name = self.build_var_name(name_model, '_pb_')
 
-        self.build_log_model(name_model, var_proba_name, target_eval, eval_model_tuple, version_model)
-
-        self.save_model(clf, root_path, name_model, version_model)
-
+        self.build_log_model(name_model, var_proba_name, target_eval, eval_model_tuple, parameters.version_model)
+        self.save_model(parameters, clf, name_model)
 
 
     def train_models(self, parameters):
@@ -280,12 +245,12 @@ class Models():
 
 
             # Utilizam dados normalizados
-            self.create_model(LogisticRegression(class_weight='balanced',random_state=0,max_iter=1000), 'logistic_regression', parameters.version_model, parameters.root_path, target_eval, X_train_norm, y_train, X_test_norm, y_test)
-            self.create_model(SVC(probability=True, kernel='linear', C=0.7, max_iter=1000), 'SVC', parameters.version_model, parameters.root_path, target_eval, X_train_norm, y_train, X_test_norm, y_test)
+            self.create_model(parameters, LogisticRegression(class_weight='balanced',random_state=0,max_iter=1000), 'logistic_regression', target_eval, X_train_norm, y_train, X_test_norm, y_test)
+            self.create_model(parameters, SVC(probability=True, kernel='linear', C=0.7, max_iter=1000), 'SVC', target_eval, X_train_norm, y_train, X_test_norm, y_test)
 
             # Não necessitam de dados normalizados
-            self.create_model(RandomForestClassifier(), 'random_forest', parameters.version_model, parameters.root_path, target_eval, X_train, y_train, X_test, y_test)
-            self.create_model(XGBClassifier(), 'XGB', parameters.version_model, parameters.root_path, target_eval, X_train, y_train, X_test, y_test)
+            self.create_model(parameters, RandomForestClassifier(), 'random_forest', target_eval, X_train, y_train, X_test, y_test)
+            self.create_model(parameters, XGBClassifier(), 'XGB', target_eval, X_train, y_train, X_test, y_test)
 
 
 class Deploy():
@@ -404,7 +369,12 @@ class Deploy():
         models = [f for f in os.listdir(parameters.directory_models) if os.path.isfile(os.path.join(parameters.directory_models, f))]
 
         # Acuária dos modelos
+        # log_models = pd.read_csv(parameters.log_models_path)
+
         accuracy_models_select = self.accuracy_models(parameters.log_models, parameters.version_model)
+
+        # accuracy_models_select = pd.read_csv(parameters.log_models_path)
+
 
         # def main(dados, choosen_data_input = '', backtest = 0):
         # Colocar '' caso deseje a data mais recente presente na base. 
@@ -421,8 +391,7 @@ class Deploy():
         padronized_dummies_norm = cls_Models.norm_scale(padronized_dummies)
 
         compiled_dataset = dataset_ref[['Symbol', 'Date', 'Close']]
-        print((padronized_dummies.shape))
-        print((padronized_dummies_norm.shape))
+
 
         # Iteração para cada modelo na pasta de modelos
         for model in models:
@@ -441,23 +410,11 @@ class Deploy():
 
         return compound_proba
         
-            # if backtest == 0:
-            #     print(compound_proba)
-
-            #     # Salvar o DataFrame em um arquivo CSV
-            #     compound_proba.to_csv(f'models/results/proba_scores_{str(compound_proba['Date'].max())}.csv', index=True)
-            #     # compound_proba.to_csv(f'../models/results/proba_scores_{str(compound_proba['Date'].max())}.csv', index=True)
 
 
-            #     print(f'Arquivo salvo em models/results/proba_scores/{str(compound_proba['Date'].max())}.csv')
-            # else:
+    def historical_outcome(self, cls_Models, parameters):
 
-            #     return compound_proba
-            
-
-    def backtest(self, cls_Models, parameters):
-
-        start_date = '2024-06-01'
+        start_date = parameters.start_date_backtest
         last_date = str(parameters.dados_prep_models['Date'].max())
 
         # Gerar um range de datas
@@ -495,3 +452,5 @@ class Deploy():
         print(f'Arquivo salvo em {file_name_outcome}')
 
         return daily_outcome
+
+

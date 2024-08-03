@@ -1,7 +1,6 @@
 from f_models import Models, Deploy
 import parameters
 
-# parameters = 
 
 # instancia a classe
 tes = Models()
@@ -13,7 +12,7 @@ tes = Models()
 back = Deploy()
 
 # gera o arquivo de backtest
-# back.backtest(tes, parameters)
+back.historical_outcome(tes, parameters)
 # print((parameters.dados_indicators).tail())
 
 

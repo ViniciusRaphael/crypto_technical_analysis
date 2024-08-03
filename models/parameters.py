@@ -1,6 +1,7 @@
 from pathlib import Path
 import pandas as pd
 from f_models import DataPrep
+import os
 
 # input_folder = '../scripts/utils/files/'
 input_folder = 'files/'
@@ -20,7 +21,7 @@ dados_indicators =  DataPrep().clean_date(dados0[dados0['Symbol'].isin(filtros)]
 
 # input_folder = '../scripts/utils/files/'
 save_in_folder = 'models/trained/'
-root_path = str(Path(save_in_folder))
+trained_models_path = str(Path(save_in_folder))
 
 
 target_list_bol =   [
@@ -48,7 +49,7 @@ remove_target_list = target_list_bol + target_list_val
 version_model = 'v1.5'
 
 
-
+start_date_backtest = '2024-06-01'
 
 # input_folder = '../scripts/utils/files/'
 # input_folder = 'files/'
@@ -69,16 +70,25 @@ dados_prep_models = dados_prep_models0[dados_prep_models0['Symbol'].isin(filtros
 # input_folder = '../models/'
 input_folder_models = 'models/'
 
-input_file_logmodels = 'accuracy/log_models.csv'
+# input_file_logmodels = f'accuracy/log_models_{version_model}.csv'
+input_file_logmodels = f'accuracy/log_models.csv'
+
 log_models_path = Path(input_folder_models) / input_file_logmodels
 
+log_models = pd.read_csv(log_models_path)
 
 
 # directory = f'trained/{version_id}/'
 directory_models = f'models/trained/{version_model}/'
 
 
-log_models = pd.read_csv(log_models_path)
+# if os.path.exists(log_models_path) and os.stat(log_models_path).st_size > 0:
+#     log_models = pd.read_csv(log_models_path)
+# else:
+#     log_models = pd.DataFrame(columns=['name_file', 'name_model', 'target', 'version', 'date_add', 'true_negative', 'false_positive', 'false_negative', 'true_positive', 'accuracy', 'precision', 'recall', 'auc_roc', 'f1_score'])
+
+
+# log_models = pd.read_csv(log_models_path)
 
 backtest_path = f'models/results/compound_historical.csv'
 
