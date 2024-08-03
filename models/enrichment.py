@@ -1,4 +1,4 @@
-from f_models import Models, Deploy
+from f_models import Models, Deploy, DataPrep
 import parameters
 
 
@@ -19,5 +19,11 @@ if parameters.execute_backtest:
 
 
 # gera o resultado de hj
-back.daily_outcome(tes, parameters,'')
-back.daily_outcome(tes, parameters,'2024-01-10')
+# back.daily_outcome(tes, parameters,'')
+# back.daily_outcome(tes, parameters,'2024-01-10')
+
+dd = DataPrep()
+
+# dd.get_active_symbols(parameters.dados_indicators_all)
+
+dd.build_data_prep_models_file(parameters)

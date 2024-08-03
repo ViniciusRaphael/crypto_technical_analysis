@@ -9,12 +9,20 @@ input_file = 'crypto_data_with_indicators.parquet'
 input_path = Path(input_folder) / input_file
 dados0 = pd.read_parquet(input_path)
 
+# if os.path.exists(input_path) and os.stat(input_path).st_size > 0:
+#     dados0 = pd.read_csv(input_path)
+
 # Suponha que 'dados_prep_models' seja o seu DataFrame
 
 
+execute_historical_data = True
+execute_data_indicators = True
+execute_data_prep_models = True
+
 execute_train_models = False
 execute_backtest = False
-execute_filtered = True
+execute_filtered = False
+
 
 version_model = 'v1.5'
 start_date_backtest = '2024-06-01'
@@ -71,7 +79,8 @@ dados_prep_models = dados_prep_models_filtered if execute_filtered else dados_pr
 
 
 
-
+min_volume_prep_models = 250_000
+clean_targets_prep_models = True
 
 # input_folder = '../models/'
 input_folder_models = 'models/'

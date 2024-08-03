@@ -17,6 +17,8 @@ from sklearn.metrics import roc_auc_score
 from datetime import datetime
 import joblib
 import os
+import pyarrow as pa
+import pyarrow.parquet as pq
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -35,6 +37,52 @@ class DataPrep():
 
         return dados_date
     
+
+    def save_dataframe_to_parquet(self, dataframe, file_path):
+        """
+        Save a Pandas DataFrame as a Parquet file.
+
+        Parameters:
+        - dataframe (pd.DataFrame): DataFrame to be saved as a Parquet file.
+        - file_path (str): Path where the Parquet file will be saved.
+        """
+        table = pa.Table.from_pandas(dataframe)
+        pq.write_table(table=table, where=file_path, compression='snappy')
+
+
+    def get_active_symbols(self, historical_data):
+        max_date = str(historical_data['Date'].max())
+
+        active = (historical_data[historical_data['Date'] == max_date])
+        active = active['Symbol']
+
+        list_unique_active = list(set(active))
+
+        return list_unique_active
+    
+
+
+    def build_data_prep_models_file(self, parameters):
+        
+        cleaned_date = self.clean_date(parameters.dados_indicators)
+
+        active_symbols = self.get_active_symbols(parameters. dados_indicators)
+
+        # Filter to clean data
+        filtered_data = cleaned_date[cleaned_date['Symbol'].isin(active_symbols)]
+
+        dados_prep = filtered_data[(filtered_data['Close'] != 0) & (filtered_data['Volume'] > parameters.min_volume_prep_models)]
+
+        if parameters.clean_targets_prep_models == True:
+            dados_prep = dados_prep[(dados_prep['target_7d'] < 3) & (dados_prep['target_7d'] > - 0.9) & (dados_prep['target_15d'] < 3) & (dados_prep['target_15d'] > - 0.9) & (dados_prep['target_30d'] < 3) & (dados_prep['target_30d'] > - 0.9)]
+        
+        self.save_dataframe_to_parquet(dados_prep, parameters.input_path_prep_models)    
+
+        print(f"Parquet file with indicators prep models saved to {parameters.input_path_prep_models} com {len(dados_prep)} linhas")
+
+        return dados_prep
+
+
 
 class Models():
 
