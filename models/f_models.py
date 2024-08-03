@@ -29,6 +29,8 @@ import requests as re
 import yfinance as yf
 
 import duckdb
+from indicators_util import add_indicators
+
 
 
 
@@ -93,7 +95,6 @@ class FileHandling():
     def get_selected_symbols(self, dados, parameters):
 
         return dados[dados['Symbol'].isin(parameters.filter_symbols)] if parameters.execute_filtered else dados
-
 
 
 
@@ -215,12 +216,9 @@ class DataIngestion():
         crypto_dataframe_treated = self.correcting_numbers_discrepancy(crypto_dataframe)
 
         if crypto_dataframe_treated is not None:
-            # Specify the folder and file name for saving the Parquet file
-            # output_folder = 'files'
-            # output_file = 'crypto_historical_data.parquet'
-            # output_path = Path(output_folder) / output_file
 
-            output_path = Path(parameters.input_folder, parameters.file_ingestion)
+            # Specify the folder and file name for saving the Parquet file
+            output_path = Path(parameters.files_folder, parameters.file_ingestion)
 
             # Create the output folder if it doesn't exist
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -235,8 +233,6 @@ class DataIngestion():
         else:
             print("No data fetched.")
 
-
-from indicators_util import add_indicators
 
 class DataTransform():
     
@@ -254,9 +250,7 @@ class DataTransform():
 
     def build_crypto_indicators(self, cls_FileHandling, parameters):
         # Specify the input Parquet file path
-        # input_folder = 'files'
-        # input_file = 'crypto_historical_data.parquet'
-        input_path = Path(parameters.input_folder) / parameters.file_ingestion
+        input_path = Path(parameters.files_folder) / parameters.file_ingestion
 
         # Read Parquet file into a Pandas DataFrame
         df = cls_FileHandling.read_parquet_to_dataframe(str(input_path))
@@ -271,11 +265,7 @@ class DataTransform():
 
         if crypto_indicators_dataframe is not None:
             # Specify the folder and file name for saving the Parquet file
-            # output_folder = 'files'
-            # output_file = 'crypto_historical_data.parquet'
-            # output_path = Path(output_folder) / output_file
-
-            output_path = Path(parameters.input_folder, parameters.file_w_indicators)
+            output_path = Path(parameters.files_folder, parameters.file_w_indicators)
 
             # Create the output folder if it doesn't exist
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -291,35 +281,10 @@ class DataTransform():
             print("No data fetched.")
 
 
-
-
-        # if indicators_dataframe is not None:
-        #     # Specify the output Parquet file path
-        #     output_folder = 'files'
-        #     output_file = 'crypto_data_with_indicators.parquet'
-        #     output_path = Path(output_folder) / output_file
-
-        #     # Save the DataFrame with indicators as a Parquet file
-        #     # print(indicators_dataframe)
-        #     cls_FileHandling.save_parquet_file(indicators_dataframe, output_path)        
-            
-        #     print(f"Parquet file with indicators saved to {output_path} with {len(indicators_dataframe)} rows")
-        # else:
-        #     print("No data available.")
-
-
 class DataPrep():
 
     def __init__(self) -> None:
         pass
-
-    
-    def clean_date(self, dados_date):
-
-        dados_date['Date'] = pd.to_datetime(dados_date['Date'])
-        dados_date['Date'] = dados_date['Date'].dt.strftime('%Y-%m-%d')
-
-        return dados_date
 
 
     def get_active_symbols(self, historical_data):
@@ -336,9 +301,7 @@ class DataPrep():
 
     def build_data_prep_models_file(self, cls_FileHandling, parameters):
         
-        dados_indicators = cls_FileHandling.read_file(parameters.input_folder, parameters.file_w_indicators)
-
-        # cleaned_date = self.clean_date(dados_indicators)
+        dados_indicators = cls_FileHandling.read_file(parameters.files_folder, parameters.file_w_indicators)
 
         active_symbols = self.get_active_symbols(dados_indicators)
 
@@ -350,12 +313,12 @@ class DataPrep():
         if parameters.clean_targets_prep_models == True:
             dados_prep = dados_prep[(dados_prep['target_7d'] < 3) & (dados_prep['target_7d'] > - 0.9) & (dados_prep['target_15d'] < 3) & (dados_prep['target_15d'] > - 0.9) & (dados_prep['target_30d'] < 3) & (dados_prep['target_30d'] > - 0.9)]
         
-        cls_FileHandling.save_parquet_file(dados_prep, parameters.input_path_prep_models)
+        cls_FileHandling.save_parquet_file(dados_prep, parameters.path_prep_models)
     
 
-        print(f"Parquet file with indicators prep models saved to {parameters.input_path_prep_models} com {len(dados_prep)} linhas")
+        print(f"Parquet file with indicators prep models saved to {parameters.path_prep_models} with {len(dados_prep)} rows")
 
-        cls_FileHandling.wait_for_file(parameters.input_path_prep_models)
+        cls_FileHandling.wait_for_file(parameters.path_prep_models)
 
         return dados_prep
 
@@ -522,7 +485,7 @@ class Models():
     def save_model(self, parameters, classifier, name_model:str):
         # Lib to save the model in a compressed way
 
-        root_path_version = parameters.trained_models_path + '\\' + parameters.version_model
+        root_path_version = parameters.path_trained_models + '\\' + parameters.version_model
 
         if not os.path.exists(root_path_version):
             # Cria a pasta
@@ -550,7 +513,7 @@ class Models():
 
     def train_models(self, parameters):
 
-        dados_prep_models = parameters.cls_FileHandling.read_file(parameters.input_folder, parameters.input_file_prep_models)
+        dados_prep_models = parameters.cls_FileHandling.read_file(parameters.files_folder, parameters.file_prep_models)
 
         dados_prep_models = parameters.cls_FileHandling.get_selected_symbols(dados_prep_models, parameters)
 
@@ -571,7 +534,6 @@ class Models():
             # Normalizando datasets de treino e teste
             X_train_norm = self.norm_scale(X_train)
             X_test_norm = self.norm_scale(X_test)
-
 
             # Utilizam dados normalizados
             self.create_model(parameters, LogisticRegression(class_weight='balanced',random_state=0,max_iter=1000), 'logistic_regression', target_eval, X_train_norm, y_train, X_test_norm, y_test)
@@ -692,9 +654,9 @@ class Deploy():
     
     def build_crypto_scores(self, cls_Models, parameters, choosen_data_input = '', backtest = False):
         
-        dados_prep_models = parameters.cls_FileHandling.read_file(parameters.input_folder, parameters.input_file_prep_models)
+        dados_prep_models = parameters.cls_FileHandling.read_file(parameters.files_folder, parameters.file_prep_models)
 
-        dados_w_indicators = parameters.cls_FileHandling.read_file(parameters.input_folder, parameters.file_w_indicators)
+        dados_w_indicators = parameters.cls_FileHandling.read_file(parameters.files_folder, parameters.file_w_indicators)
 
         dados_input_select = dados_prep_models if backtest else dados_w_indicators
 
@@ -706,17 +668,12 @@ class Deploy():
 
         accuracy_models_select = self.accuracy_models(parameters.log_models, parameters.version_model)
 
-        # accuracy_models_select = pd.read_csv(parameters.log_models_path)
-
-
-        # def main(dados, choosen_data_input = '', backtest = 0):
-        # Colocar '' caso deseje a data mais recente presente na base. 
-        # Caso colocar em uma data em específico seguir o exemplo: 2024-07-12 
+        # Vai escolher uma data em específico, '' para a mais recente
         dataset_ref = self.eval_data(dados_input_select, choosen_data_input)
 
         dummies_input = self.build_dummies(dataset_ref, parameters.remove_target_list, parameters.removing_cols)
 
-        #aq
+        # padronize input parameters from test models x predict model 
         dados_x_all = cls_Models.data_clean(dados_input_select, parameters.remove_target_list, 'X', parameters.removing_cols)
         dados_x_all_dummies = pd.get_dummies(dados_x_all)
         
@@ -724,7 +681,6 @@ class Deploy():
         padronized_dummies_norm = cls_Models.norm_scale(padronized_dummies)
 
         compiled_dataset = dataset_ref[['Symbol', 'Date', 'Close']]
-
 
         # Iteração para cada modelo na pasta de modelos
         for model in models:
@@ -749,7 +705,7 @@ class Deploy():
 
         start_date = parameters.start_date_backtest
 
-        dados_prep_models = parameters.cls_FileHandling.read_file(parameters.input_folder, parameters.input_file_prep_models)
+        dados_prep_models = parameters.cls_FileHandling.read_file(parameters.files_folder, parameters.file_prep_models)
 
         last_date = str(dados_prep_models['Date'].max())
 
