@@ -1,4 +1,4 @@
-from f_models import Models, Deploy, DataPrep
+from f_models import Models, Deploy, DataPrep, FileHandling, DataIngestion
 import parameters
 
 
@@ -26,4 +26,10 @@ dd = DataPrep()
 
 # dd.get_active_symbols(parameters.dados_indicators_all)
 
-dd.build_data_prep_models_file(parameters)
+if parameters.execute_data_prep_models:
+    dd.build_data_prep_models_file(parameters)
+
+ff = FileHandling()
+
+DataIngestion().build_historical_data(ff, parameters)
+

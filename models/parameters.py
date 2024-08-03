@@ -15,9 +15,9 @@ dados0 = pd.read_parquet(input_path)
 # Suponha que 'dados_prep_models' seja o seu DataFrame
 
 
-execute_historical_data = True
+execute_data_ingestion = True
 execute_data_indicators = True
-execute_data_prep_models = True
+execute_data_prep_models = False
 
 execute_train_models = False
 execute_backtest = False
@@ -26,6 +26,8 @@ execute_filtered = False
 
 version_model = 'v1.5'
 start_date_backtest = '2024-06-01'
+
+start_date_ingestion = '2018-01-01'
 
 filtros = ['SOL-USD', 'BTC-USD', 'ETH-USD']  # Adicione os símbolos que deseja filtrar
 
