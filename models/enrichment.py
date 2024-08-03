@@ -1,4 +1,5 @@
-from f_models import Models, Deploy, DataPrep, FileHandling, DataIngestion
+from f_models import Models, Deploy, DataPrep, FileHandling, DataIngestion, DataTransform
+
 import parameters
 
 
@@ -31,5 +32,11 @@ if parameters.execute_data_prep_models:
 
 ff = FileHandling()
 
-DataIngestion().build_historical_data(ff, parameters)
+if parameters.execute_data_ingestion:
+    DataIngestion().build_historical_data(ff, parameters)
+
+if parameters.execute_data_indicators:
+    DataTransform().build_crypto_indicators(ff)
+
+
 

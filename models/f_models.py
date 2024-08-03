@@ -49,6 +49,21 @@ class FileHandling():
         table = pa.Table.from_pandas(dataframe)
         pq.write_table(table=table, where=file_path, compression='snappy')
 
+        
+    def read_parquet_to_dataframe(self, parquet_path):
+        """
+        Read data from a Parquet file into a Pandas DataFrame.
+
+        Parameters:
+        - parquet_path (str): Path to the Parquet file.
+
+        Returns:
+        - pd.DataFrame: DataFrame containing the data from the Parquet file.
+        """
+        table = duckdb.read_parquet(parquet_path)
+        return table.df()
+    
+
 
 class DataIngestion():
 
@@ -179,6 +194,42 @@ class DataIngestion():
         else:
             print("No data fetched.")
 
+
+from indicators_util import add_indicators
+
+class DataTransform():
+    
+    def __init__(self) -> None:
+        pass
+
+    def build_crypto_indicators(self, cls_FileHandling):
+        # Specify the input Parquet file path
+        input_folder = 'files'
+        input_file = 'crypto_historical_data.parquet'
+        input_path = Path(input_folder) / input_file
+
+        # Read Parquet file into a Pandas DataFrame
+        df = cls_FileHandling.read_parquet_to_dataframe(str(input_path))
+
+        # Remove companies with discrepant numbers
+        company_code = 'MYRIA-USD'
+        df = df[df['Symbol'] != company_code]
+        # Add indicators to the DataFrame
+        indicators_dataframe = add_indicators(df)
+
+        if indicators_dataframe is not None:
+            # Specify the output Parquet file path
+            output_folder = 'files'
+            output_file = 'crypto_data_with_indicators.parquet'
+            output_path = Path(output_folder) / output_file
+
+            # Save the DataFrame with indicators as a Parquet file
+            # print(indicators_dataframe)
+            cls_FileHandling.save_parquet_file(indicators_dataframe, output_path)        
+            
+            print(f"Parquet file with indicators saved to {output_path} with {len(indicators_dataframe)} rows")
+        else:
+            print("No data available.")
 
 
 class DataPrep():

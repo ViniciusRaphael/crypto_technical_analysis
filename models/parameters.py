@@ -15,7 +15,7 @@ dados0 = pd.read_parquet(input_path)
 # Suponha que 'dados_prep_models' seja o seu DataFrame
 
 
-execute_data_ingestion = True
+execute_data_ingestion = False
 execute_data_indicators = True
 execute_data_prep_models = False
 
