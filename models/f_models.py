@@ -312,13 +312,14 @@ class DataPrep():
 
         if parameters.clean_targets_prep_models == True:
             dados_prep = dados_prep[(dados_prep['target_7d'] < 3) & (dados_prep['target_7d'] > - 0.9) & (dados_prep['target_15d'] < 3) & (dados_prep['target_15d'] > - 0.9) & (dados_prep['target_30d'] < 3) & (dados_prep['target_30d'] > - 0.9)]
+
+        path_prep_models = Path(parameters.files_folder) / parameters.file_prep_models
         
-        cls_FileHandling.save_parquet_file(dados_prep, parameters.path_prep_models)
-    
+        cls_FileHandling.save_parquet_file(dados_prep, path_prep_models)
 
-        print(f"Parquet file with indicators prep models saved to {parameters.path_prep_models} with {len(dados_prep)} rows")
+        print(f"Parquet file with indicators prep models saved to {path_prep_models} with {len(dados_prep)} rows")
 
-        cls_FileHandling.wait_for_file(parameters.path_prep_models)
+        cls_FileHandling.wait_for_file(path_prep_models)
 
         return dados_prep
 
@@ -437,6 +438,11 @@ class Models():
         # Percentagem de acerto
         print('Acurácia:', score)
 
+        # Calcular o recall (sensibilidade)
+        print('Sensibilidade:', confusion_matrix_cal[1,1] / (confusion_matrix_cal[1,1] + confusion_matrix_cal[1,0]))
+        # Calcular a precisão
+        print('Precisão:', confusion_matrix_cal[1,1] / (confusion_matrix_cal[1,1] + confusion_matrix_cal[0,1]))
+
         return confusion_matrix_cal, auc, score
 
 
@@ -485,14 +491,14 @@ class Models():
     def save_model(self, parameters, classifier, name_model:str):
         # Lib to save the model in a compressed way
 
-        root_path_version = parameters.path_trained_models + '\\' + parameters.version_model
+        root_path_version = parameters.path_trained_models
 
         if not os.path.exists(root_path_version):
             # Cria a pasta
             os.makedirs(root_path_version)
 
         # Save the model that has been trained
-        joblib.dump(classifier, root_path_version + '\\' + name_model + '.joblib')
+        joblib.dump(classifier, root_path_version/f'{name_model}.joblib')
 
         print(f'Modelo salvo em {root_path_version} com o nome de {name_model}.joblib')
 

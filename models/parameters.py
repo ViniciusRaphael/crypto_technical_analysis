@@ -16,15 +16,15 @@ cls_FileHandling = FileHandling()
 
 
 # Files folder
-files_folder = 'files'
-file_ingestion = 'crypto_historical_data.parquet'
+files_folder = 'data'
+file_ingestion = 'crypto_data_historical.parquet'
 file_w_indicators = 'crypto_data_with_indicators.parquet'
 file_prep_models = 'crypto_data_prep_models.parquet'
 
-path_prep_models = Path(files_folder) / file_prep_models
+# path_prep_models = Path(files_folder) / file_prep_models
 
 
-version_model = 'v1.6'
+version_model = 'v1.0'
 start_date_backtest = '2024-06-01'
 filter_symbols = ['SOL-USD', 'BTC-USD', 'ETH-USD']  # Adicione os símbolos que deseja filtrar
 
@@ -33,15 +33,15 @@ clean_targets_prep_models = True
 start_date_ingestion = '2018-01-01' if execute_train_models else '2023-07-01'
 
 
-folder_trained_models = 'models/trained/'
-path_trained_models = str(Path(folder_trained_models))
+# folder_trained_models = 'output/models/'
+path_trained_models = Path(f'output/models/{version_model}')
 
 
 
 folder_models = 'models/'
 
-# input_file_logmodels = f'accuracy/log_models_{version_model}.csv'
-input_file_logmodels = f'accuracy/log_models.csv'
+input_file_logmodels = f'accuracy/log_models_{version_model}.csv'
+# input_file_logmodels = Path(f'output/accuracy/log_models.csv')
 
 log_models_path = Path(folder_models) / input_file_logmodels
 
@@ -49,13 +49,14 @@ log_models = FileHandling().read_file(folder_models, input_file_logmodels)
 
 
 
-# directory = f'trained/{version_id}/'
-directory_models = f'models/trained/{version_model}/'
+directory_models = Path(f'output/models/{version_model}/')
 
-backtest_path = f'models/results/compound_historical.csv'
+# backtest_path = f'models/results/compound_historical.csv'
+backtest_path = Path(f'output/predict/compound_historical.csv')
 
-daily_outcome_path = 'models/results/proba_scores'
 
+# daily_outcome_path = 'models/results/proba_scores'
+daily_outcome_path = Path('output/predict/proba_scores')
 
 
 target_list_bol =   [
@@ -69,15 +70,14 @@ target_list_bol =   [
     'bl_target_10N_30d','bl_target_15N_30d','bl_target_20N_30d','bl_target_25N_30d' 
 ]
 
-target_list_val =   [
-    # real percentual
-    
-    'target_7d','target_15d','target_30d'
-]
-
-removing_cols = ['Date', 'Symbol', 'Dividends', 'Stock Splits']
+# real target
+target_list_val =   ['target_7d','target_15d','target_30d']
 
 remove_target_list = target_list_bol + target_list_val
+
+# Remover colunas de treinamento
+removing_cols = ['Date', 'Symbol', 'Dividends', 'Stock Splits']
+
 
 
 
