@@ -17,16 +17,16 @@ if parameters.execute_data_indicators:
     DataTransform().build_crypto_indicators(cls_File, parameters)
 
 if parameters.execute_data_prep_models:
-    cls_DataPrep.build_data_prep_models_file(cls_File, parameters)
+    DataPrep().build_data_prep_models_file(cls_File, parameters)
 
 if parameters.execute_train_models:
-    cls_Models.train_models(parameters)
+    Models().train_models(parameters)
 
 if parameters.execute_backtest: 
-    cls_Deploy.historical_outcome(cls_Models, parameters)
+    Deploy().historical_outcome(cls_Models, parameters)
 
 if parameters.execute_daily_outcome: 
-    cls_Deploy.daily_outcome(cls_Models, parameters, '')
+    Deploy().daily_outcome(cls_Models, parameters, '')
 
 
 

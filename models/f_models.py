@@ -21,6 +21,8 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import warnings
 
+import time
+
 import re as reg
 import json
 import requests as re
@@ -80,7 +82,13 @@ class FileHandling():
 
             return file_content
         
-    
+    import time
+
+    def wait_for_file(self, file_path):
+
+        while not os.path.exists(file_path):
+            time.sleep(0.2) 
+
     # def filtered_symbol(self, parameters):
 
 
@@ -230,6 +238,9 @@ class DataIngestion():
             cls_FileHandling.save_parquet_file(crypto_dataframe_treated, output_path)
 
             print(f"Parquet file saved to {output_path} with {len(crypto_dataframe_treated)} rows")
+
+            cls_FileHandling.wait_for_file(output_path)
+            
         else:
             print("No data fetched.")
 
@@ -273,6 +284,9 @@ class DataTransform():
             cls_FileHandling.save_parquet_file(crypto_indicators_dataframe, output_path)
 
             print(f"Parquet file saved to {output_path} with {len(crypto_indicators_dataframe)} rows")
+            
+            cls_FileHandling.wait_for_file(output_path)
+
         else:
             print("No data fetched.")
 
@@ -322,9 +336,11 @@ class DataPrep():
 
     def build_data_prep_models_file(self, cls_FileHandling, parameters):
         
-        cleaned_date = self.clean_date(parameters.dados_indicators)
+        dados_indicators = cls_FileHandling.read_file(parameters.input_folder, parameters.file_w_indicators)
 
-        active_symbols = self.get_active_symbols(parameters. dados_indicators)
+        cleaned_date = self.clean_date(dados_indicators)
+
+        active_symbols = self.get_active_symbols(dados_indicators)
 
         # Filter to clean data
         filtered_data = cleaned_date[cleaned_date['Symbol'].isin(active_symbols)]
@@ -337,6 +353,8 @@ class DataPrep():
         cls_FileHandling.save_parquet_file(dados_prep, parameters.input_path_prep_models)    
 
         print(f"Parquet file with indicators prep models saved to {parameters.input_path_prep_models} com {len(dados_prep)} linhas")
+
+        cls_FileHandling.wait_for_file(parameters.input_path_prep_models)
 
         return dados_prep
 
@@ -531,8 +549,10 @@ class Models():
 
     def train_models(self, parameters):
 
-        dados_x = self.data_clean(parameters.dados_prep_models, parameters.remove_target_list, 'X', parameters.removing_cols)
-        dados_y_all = self.data_clean(parameters.dados_prep_models, parameters.remove_target_list, 'Y', parameters.removing_cols)
+        dados_prep_models = parameters.cls_FileHandling.read_file(parameters.input_folder, parameters.input_file_prep_models)
+
+        dados_x = self.data_clean(dados_prep_models, parameters.remove_target_list, 'X', parameters.removing_cols)
+        dados_y_all = self.data_clean(dados_prep_models, parameters.remove_target_list, 'Y', parameters.removing_cols)
 
         for target_eval in parameters.target_list_bol:
 
@@ -551,8 +571,8 @@ class Models():
 
 
             # Utilizam dados normalizados
-            self.create_model(parameters, LogisticRegression(class_weight='balanced',random_state=0,max_iter=1000), 'logistic_regression', target_eval, X_train_norm, y_train, X_test_norm, y_test)
-            self.create_model(parameters, SVC(probability=True, kernel='linear', C=0.7, max_iter=1000), 'SVC', target_eval, X_train_norm, y_train, X_test_norm, y_test)
+            # self.create_model(parameters, LogisticRegression(class_weight='balanced',random_state=0,max_iter=1000), 'logistic_regression', target_eval, X_train_norm, y_train, X_test_norm, y_test)
+            # self.create_model(parameters, SVC(probability=True, kernel='linear', C=0.7, max_iter=1000), 'SVC', target_eval, X_train_norm, y_train, X_test_norm, y_test)
 
             # Não necessitam de dados normalizados
             self.create_model(parameters, RandomForestClassifier(), 'random_forest', target_eval, X_train, y_train, X_test, y_test)
@@ -669,7 +689,11 @@ class Deploy():
     
     def build_crypto_scores(self, cls_Models, parameters, choosen_data_input = '', backtest = False):
         
-        dados_input_select = parameters.dados_prep_models if backtest else parameters.dados_indicators
+        dados_prep_models = parameters.cls_FileHandling.read_file(parameters.input_folder, parameters.input_file_prep_models)
+
+        dados_w_indicators = parameters.cls_FileHandling.read_file(parameters.input_folder, parameters.file_w_indicators)
+
+        dados_input_select = dados_prep_models if backtest else dados_w_indicators
 
         # Listar todos os itens no diretório e filtrar apenas os arquivos
         models = [f for f in os.listdir(parameters.directory_models) if os.path.isfile(os.path.join(parameters.directory_models, f))]
@@ -721,7 +745,10 @@ class Deploy():
     def historical_outcome(self, cls_Models, parameters):
 
         start_date = parameters.start_date_backtest
-        last_date = str(parameters.dados_prep_models['Date'].max())
+
+        dados_prep_models = parameters.cls_FileHandling.read_file(parameters.input_folder, parameters.input_file_prep_models)
+
+        last_date = str(dados_prep_models['Date'].max())
 
         # Gerar um range de datas
         datas = pd.date_range(start=start_date, end=last_date, freq='D')
