@@ -2,41 +2,34 @@ from f_models import Models, Deploy, DataPrep, FileHandling, DataIngestion, Data
 
 import parameters
 
+# instancia as classes
+cls_File = FileHandling()
+cls_Models = Models()
+cls_Deploy = Deploy()
+cls_DataPrep = DataPrep()
 
-# instancia a classe
-tes = Models()
-
-# treina e gera todos os modelos
-if parameters.execute_train_models:
-    tes.train_models(parameters)
-
-# instancia o deploy
-back = Deploy()
-
-# gera o arquivo de backtest
-if parameters.execute_backtest: 
-    back.historical_outcome(tes, parameters)
-# print((parameters.dados_indicators).tail())
-
-
-# gera o resultado de hj
-# back.daily_outcome(tes, parameters,'')
-# back.daily_outcome(tes, parameters,'2024-01-10')
-
-dd = DataPrep()
-
-# dd.get_active_symbols(parameters.dados_indicators_all)
-
-if parameters.execute_data_prep_models:
-    dd.build_data_prep_models_file(parameters)
-
-ff = FileHandling()
+# print(parameters.dados0)
 
 if parameters.execute_data_ingestion:
-    DataIngestion().build_historical_data(ff, parameters)
+    DataIngestion().build_historical_data(cls_File, parameters)
 
 if parameters.execute_data_indicators:
-    DataTransform().build_crypto_indicators(ff)
+    DataTransform().build_crypto_indicators(cls_File, parameters)
+
+if parameters.execute_data_prep_models:
+    cls_DataPrep.build_data_prep_models_file(cls_File, parameters)
+
+if parameters.execute_train_models:
+    cls_Models.train_models(parameters)
+
+if parameters.execute_backtest: 
+    cls_Deploy.historical_outcome(cls_Models, parameters)
+
+if parameters.execute_daily_outcome: 
+    cls_Deploy.daily_outcome(cls_Models, parameters, '')
+
+
+
 
 
 

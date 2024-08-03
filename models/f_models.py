@@ -64,6 +64,40 @@ class FileHandling():
         return table.df()
     
 
+    def read_file(self, folder_path, file_name):
+
+        complete_path = Path(folder_path) / file_name
+
+        if os.path.exists(complete_path) and os.stat(complete_path).st_size > 0:
+#       dados0 = pd.read_csv(input_path)
+
+            if file_name.split('.')[-1] == 'csv':
+                file_content = pd.read_csv(complete_path)
+                
+
+            elif file_name.split('.')[-1] == 'parquet':
+                file_content = self.read_parquet_to_dataframe(str(complete_path))
+
+            return file_content
+        
+    
+    # def filtered_symbol(self, parameters):
+
+
+    # def crypto_indicators():
+    #     input_folder = 'files'
+    #     input_file = 'crypto_data_with_indicators.parquet'
+    #     input_path = Path(input_folder) / input_file
+    #     crypto_data_w_indicators = self.read_parquet_to_dataframe(str(input_path))
+    #     return crypto_data_w_indicators
+
+    # def crypto_signals():
+    #     input_folder = '../../models/'
+    #     input_file = 'results/compound_historical.csv'
+    #     input_path = Path(input_folder) / input_file
+    #     crypto_signals = pd.read_csv(input_path)
+    #     return crypto_signals
+
 
 class DataIngestion():
 
@@ -164,12 +198,15 @@ class DataIngestion():
 
 
     def build_historical_data(self, cls_FileHandling, parameters):
-        # Get a list of cryptocurrency symbols from Kucoin
-        kucoin_symbols = self.get_kucoin_symbols()
 
-        # Remove the last character from each symbol in the list
-        # USDT to USD - name convention on yfinance
-        crypto_symbols = [symbol[:-1] for symbol in kucoin_symbols]
+        if parameters.execute_filtered:
+            crypto_symbols = parameters.filter_symbols
+        else:
+            # Get a list of cryptocurrency symbols from Kucoin
+            kucoin_symbols = self.get_kucoin_symbols()
+            # Remove the last character from each symbol in the list
+            # USDT to USD - name convention on yfinance
+            crypto_symbols = [symbol[:-1] for symbol in kucoin_symbols]
 
         # Define start date for historical data retrieval
         start_date = parameters.start_date_ingestion
@@ -180,9 +217,11 @@ class DataIngestion():
 
         if crypto_dataframe_treated is not None:
             # Specify the folder and file name for saving the Parquet file
-            output_folder = 'files'
-            output_file = 'crypto_historical_data.parquet'
-            output_path = Path(output_folder) / output_file
+            # output_folder = 'files'
+            # output_file = 'crypto_historical_data.parquet'
+            # output_path = Path(output_folder) / output_file
+
+            output_path = Path(parameters.input_folder, parameters.file_ingestion)
 
             # Create the output folder if it doesn't exist
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -202,11 +241,11 @@ class DataTransform():
     def __init__(self) -> None:
         pass
 
-    def build_crypto_indicators(self, cls_FileHandling):
+    def build_crypto_indicators(self, cls_FileHandling, parameters):
         # Specify the input Parquet file path
-        input_folder = 'files'
-        input_file = 'crypto_historical_data.parquet'
-        input_path = Path(input_folder) / input_file
+        # input_folder = 'files'
+        # input_file = 'crypto_historical_data.parquet'
+        input_path = Path(parameters.input_folder) / parameters.file_ingestion
 
         # Read Parquet file into a Pandas DataFrame
         df = cls_FileHandling.read_parquet_to_dataframe(str(input_path))
@@ -215,21 +254,44 @@ class DataTransform():
         company_code = 'MYRIA-USD'
         df = df[df['Symbol'] != company_code]
         # Add indicators to the DataFrame
-        indicators_dataframe = add_indicators(df)
+        crypto_indicators_dataframe = add_indicators(df)
 
-        if indicators_dataframe is not None:
-            # Specify the output Parquet file path
-            output_folder = 'files'
-            output_file = 'crypto_data_with_indicators.parquet'
-            output_path = Path(output_folder) / output_file
+        print(crypto_indicators_dataframe)
 
-            # Save the DataFrame with indicators as a Parquet file
-            # print(indicators_dataframe)
-            cls_FileHandling.save_parquet_file(indicators_dataframe, output_path)        
-            
-            print(f"Parquet file with indicators saved to {output_path} with {len(indicators_dataframe)} rows")
+        if crypto_indicators_dataframe is not None:
+            # Specify the folder and file name for saving the Parquet file
+            # output_folder = 'files'
+            # output_file = 'crypto_historical_data.parquet'
+            # output_path = Path(output_folder) / output_file
+
+            output_path = Path(parameters.input_folder, parameters.file_w_indicators)
+
+            # Create the output folder if it doesn't exist
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+
+            # Save the DataFrame as a Parquet file
+            cls_FileHandling.save_parquet_file(crypto_indicators_dataframe, output_path)
+
+            print(f"Parquet file saved to {output_path} with {len(crypto_indicators_dataframe)} rows")
         else:
-            print("No data available.")
+            print("No data fetched.")
+
+
+
+
+        # if indicators_dataframe is not None:
+        #     # Specify the output Parquet file path
+        #     output_folder = 'files'
+        #     output_file = 'crypto_data_with_indicators.parquet'
+        #     output_path = Path(output_folder) / output_file
+
+        #     # Save the DataFrame with indicators as a Parquet file
+        #     # print(indicators_dataframe)
+        #     cls_FileHandling.save_parquet_file(indicators_dataframe, output_path)        
+            
+        #     print(f"Parquet file with indicators saved to {output_path} with {len(indicators_dataframe)} rows")
+        # else:
+        #     print("No data available.")
 
 
 class DataPrep():
@@ -244,18 +306,6 @@ class DataPrep():
         dados_date['Date'] = dados_date['Date'].dt.strftime('%Y-%m-%d')
 
         return dados_date
-    
-
-    def save_dataframe_to_parquet(self, dataframe, file_path):
-        """
-        Save a Pandas DataFrame as a Parquet file.
-
-        Parameters:
-        - dataframe (pd.DataFrame): DataFrame to be saved as a Parquet file.
-        - file_path (str): Path where the Parquet file will be saved.
-        """
-        table = pa.Table.from_pandas(dataframe)
-        pq.write_table(table=table, where=file_path, compression='snappy')
 
 
     def get_active_symbols(self, historical_data):
@@ -270,7 +320,7 @@ class DataPrep():
     
 
 
-    def build_data_prep_models_file(self, parameters):
+    def build_data_prep_models_file(self, cls_FileHandling, parameters):
         
         cleaned_date = self.clean_date(parameters.dados_indicators)
 
@@ -284,7 +334,7 @@ class DataPrep():
         if parameters.clean_targets_prep_models == True:
             dados_prep = dados_prep[(dados_prep['target_7d'] < 3) & (dados_prep['target_7d'] > - 0.9) & (dados_prep['target_15d'] < 3) & (dados_prep['target_15d'] > - 0.9) & (dados_prep['target_30d'] < 3) & (dados_prep['target_30d'] > - 0.9)]
         
-        self.save_dataframe_to_parquet(dados_prep, parameters.input_path_prep_models)    
+        cls_FileHandling.save_parquet_file(dados_prep, parameters.input_path_prep_models)    
 
         print(f"Parquet file with indicators prep models saved to {parameters.input_path_prep_models} com {len(dados_prep)} linhas")
 
