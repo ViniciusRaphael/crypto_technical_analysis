@@ -22,14 +22,59 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
+class DataPrep():
 
+    def __init__(self) -> None:
+        pass
+
+    
+    def clean_date(self, dados_date):
+
+        dados_date['Date'] = pd.to_datetime(dados_date['Date'])
+        dados_date['Date'] = dados_date['Date'].dt.strftime('%Y-%m-%d')
+
+        return dados_date
+    
 
 class Models():
 
     def __init__(self) -> None:
         pass
-
         
+
+    # def data_clean(self, dados:pd.DataFrame, target_list:list, data_return:str, removing_cols:list = ['Date', 'Symbol', 'Dividends', 'Stock Splits']):
+        
+    #     # Suponha que você queira ignorar os NA em 'coluna1' e 'coluna2'
+    #     colunas_ignorar = target_list + removing_cols
+
+    #     # Identifique as colunas que serão consideradas para o dropna
+    #     colunas_considerar = dados.columns.difference(colunas_ignorar)
+
+    #     # Remova as linhas com NA nas colunas especificadas
+    #     dados.dropna(subset=colunas_considerar, inplace=True)
+
+    #     dados_x = dados.drop(dados[target_list], axis=1)
+    #     dados_x = dados_x.drop(dados_x[removing_cols], axis=1)
+        
+    #     # Substituindo valores infinitos por NaN
+    #     dados_x.replace([np.inf, -np.inf], np.nan, inplace=True)
+
+    #     # Removendo linhas com valores NaN
+    #     dados_x.dropna(inplace=True)
+
+    #     # Define the target in a list of target (for futher iteration)
+    #     dados_y = dados[target_list]
+
+    #     # Removing target from base to avoid data leakage
+  
+    #     print(len(dados_x))
+
+    #     if data_return == 'Y':
+    #         return dados_y
+    #     else:
+    #         return dados_x
+
+
     def data_clean(self, dados:pd.DataFrame, target_list:list, data_return:str, removing_cols:list = ['Date', 'Symbol', 'Dividends', 'Stock Splits']):
         # Removing NA
         dados_treat = dados.dropna()
@@ -215,8 +260,8 @@ class Models():
 
     def train_models(self, parameters):
 
-        dados_x = self.data_clean(parameters.dados, parameters.remove_target_list, 'X', parameters.removing_cols)
-        dados_y_all = self.data_clean(parameters.dados, parameters.remove_target_list, 'Y', parameters.removing_cols)
+        dados_x = self.data_clean(parameters.dados_prep_models, parameters.remove_target_list, 'X', parameters.removing_cols)
+        dados_y_all = self.data_clean(parameters.dados_prep_models, parameters.remove_target_list, 'Y', parameters.removing_cols)
 
         for target_eval in parameters.target_list_bol:
 
@@ -298,7 +343,8 @@ class Deploy():
         proba_dataset = dummies_before_norm[[]] # pegando apenas os índices do dataset de input (que já contém os dados de retorno)
 
         proba_dataset[col_name_output] = proba_target
-
+        
+        print(proba_dataset)
         build_dataset_proba = pd.merge(dataset_ref, proba_dataset, left_index=True, right_index=True)
 
         return build_dataset_proba
@@ -324,9 +370,11 @@ class Deploy():
 
                     # Probabilidade ponderada entre targets
                     pondered_proba = dados[col] * pondered_score
+                    # print(dados[col])
                     dados[score_var] = dados[score_var] + pondered_proba
             except:
                 pass
+
         return dados.sort_values(by=score_var, ascending=False)
 
 
@@ -365,6 +413,7 @@ class Deploy():
 
         dummies_input = self.build_dummies(dataset_ref, parameters.remove_target_list, parameters.removing_cols)
 
+        #aq
         dados_x_all = cls_Models.data_clean(dados_input_select, parameters.remove_target_list, 'X', parameters.removing_cols)
         dados_x_all_dummies = pd.get_dummies(dados_x_all)
         
@@ -372,6 +421,8 @@ class Deploy():
         padronized_dummies_norm = cls_Models.norm_scale(padronized_dummies)
 
         compiled_dataset = dataset_ref[['Symbol', 'Date', 'Close']]
+        print((padronized_dummies.shape))
+        print((padronized_dummies_norm.shape))
 
         # Iteração para cada modelo na pasta de modelos
         for model in models:
@@ -422,7 +473,6 @@ class Deploy():
             print(f'Backtesting dia {data}')
 
             backtest_dataset_date = self.build_crypto_scores(cls_Models, parameters, str(data), True)
-
             backtest_dataset = pd.concat([backtest_dataset, backtest_dataset_date])
             
         # Salvar o DataFrame em um arquivo CSV

@@ -1,13 +1,22 @@
 from pathlib import Path
 import pandas as pd
+from f_models import DataPrep
 
 # input_folder = '../scripts/utils/files/'
 input_folder = 'files/'
-input_file = 'crypto_data_prep_models.parquet'
+input_file = 'crypto_data_with_indicators.parquet'
 input_path = Path(input_folder) / input_file
 dados0 = pd.read_parquet(input_path)
 
-dados_indicators = dados0[dados0['Symbol'] == 'SOL-USD']
+# Suponha que 'dados_prep_models' seja o seu DataFrame
+filtros = ['SOL-USD', 'BTC-USD', 'ETH-USD']  # Adicione os símbolos que deseja filtrar
+
+
+dados_indicators =  DataPrep().clean_date(dados0[dados0['Symbol'].isin(filtros)])
+
+
+
+
 
 # input_folder = '../scripts/utils/files/'
 save_in_folder = 'models/trained/'
@@ -33,11 +42,12 @@ target_list_val =   [
 
 removing_cols = ['Date', 'Symbol', 'Dividends', 'Stock Splits']
 
+remove_target_list = target_list_bol + target_list_val
 
 ## vai gerar a pasta em models/trained/versao se a versa já estiver criada, sobrescreve, se não, cria a pasta
 version_model = 'v1.5'
 
-remove_target_list = target_list_bol + target_list_val
+
 
 
 # input_folder = '../scripts/utils/files/'
@@ -45,9 +55,14 @@ remove_target_list = target_list_bol + target_list_val
 
 input_file_prep_models = 'crypto_data_prep_models.parquet'
 input_path_prep_models = Path(input_folder) / input_file_prep_models
-dados_prep_models = pd.read_parquet(input_path_prep_models)
+dados_prep_models0 = pd.read_parquet(input_path_prep_models)
 
-dados_prep_models = dados_prep_models[dados_prep_models['Symbol'] == 'SOL-USD']
+# Suponha que 'dados_prep_models' seja o seu DataFrame
+filtros = ['SOL-USD', 'BTC-USD', 'ETH-USD']  # Adicione os símbolos que deseja filtrar
+
+
+dados_prep_models = dados_prep_models0[dados_prep_models0['Symbol'].isin(filtros)]
+
 
 
 
