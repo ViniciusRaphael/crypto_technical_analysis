@@ -1,26 +1,20 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import vectorbt as vbt
-import duckdb
 from pathlib import Path
 import pandas as pd
 
 
 def query_data(dataframe, symbol=None):
-    # dataframe = dataframe
-    if symbol == None:
-        table = duckdb.sql(f"""
-                SELECT *
-                FROM '{dataframe}'
-                    """)
+    dataframe = pd.read_parquet(dataframe)
+    # If no symbol is provided, return the entire dataframe
+    if symbol is None:
+        table = dataframe
     else: 
-        table = duckdb.sql(f"""
-                        SELECT *
-                        FROM '{dataframe}'
-                        WHERE Symbol = '{symbol}'
-                            """)
-       
-    return table.df()
+        # Filter the dataframe based on the provided symbol
+        table = dataframe[dataframe['Symbol'] == symbol]
+    
+    return table
 
 def specific_crypto_return(input_path, crypto = 'BTC'):
     global df

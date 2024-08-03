@@ -1,4 +1,3 @@
-import duckdb
 from pathlib import Path
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -18,8 +17,8 @@ def read_parquet_to_dataframe(parquet_path):
     Returns:
     - pd.DataFrame: DataFrame containing the data from the Parquet file.
     """
-    table = duckdb.read_parquet(parquet_path)
-    return table.df()
+    table = pd.read_parquet(parquet_path)
+    return table
 
 def save_dataframe_to_parquet(dataframe, file_path):
     """
