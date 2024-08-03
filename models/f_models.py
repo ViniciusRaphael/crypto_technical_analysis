@@ -309,7 +309,7 @@ class Deploy():
 
         proba_dataset[col_name_output] = proba_target
         
-        print(proba_dataset)
+        # print(proba_dataset)
         build_dataset_proba = pd.merge(dataset_ref, proba_dataset, left_index=True, right_index=True)
 
         return build_dataset_proba

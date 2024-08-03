@@ -6,13 +6,15 @@ import parameters
 tes = Models()
 
 # treina e gera todos os modelos
-# tes.train_models(parameters)
+if parameters.execute_train_models:
+    tes.train_models(parameters)
 
 # instancia o deploy
 back = Deploy()
 
 # gera o arquivo de backtest
-back.historical_outcome(tes, parameters)
+if parameters.execute_backtest: 
+    back.historical_outcome(tes, parameters)
 # print((parameters.dados_indicators).tail())
 
 
