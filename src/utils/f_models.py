@@ -29,7 +29,7 @@ import requests as re
 import yfinance as yf
 
 import duckdb
-from indicators_util import add_indicators
+from src.utils.indicators_util import add_indicators
 
 
 
