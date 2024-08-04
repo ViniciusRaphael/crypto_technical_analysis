@@ -26,7 +26,7 @@ df_merged.dropna(inplace=True)
 
 ## Entradas
 
-df_merged_score_clean_cumulative = df_merged[(df_merged['score_P_15d'] >= 0.4) & (df_merged['Symbol'] == 'SOL-USD')  & (df_merged['Date'] >= '2024-01-01')]
+df_merged_score_clean_cumulative = df_merged[(df_merged['score_P_15d'] >= 0.7) & (df_merged['Symbol'] == 'SOL-USD')  & (df_merged['Date'] >= '2024-01-01')]
 
 df_merged_score_clean_cumulative = df_merged_score_clean_cumulative.sort_values(by='Date')
 
