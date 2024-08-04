@@ -527,7 +527,7 @@ class Models():
             os.makedirs(root_path_version)
 
         # Save the model that has been trained
-        joblib.dump(classifier, root_path_version/f'{name_model}.joblib')
+        joblib.dump(classifier, root_path_version/f'{name_model}.joblib', compress = 5)
 
         print(f'Modelo salvo em {root_path_version} com o nome de {name_model}.joblib')
 
@@ -576,13 +576,14 @@ class Models():
 
             # Utilizam dados normalizados
             self.create_model(parameters, LogisticRegression(class_weight='balanced',random_state=0,max_iter=1000), 'logistic_regression', target_eval, X_train_norm, y_train, X_test_norm, y_test)
+            
             # self.create_model(parameters, SVC(probability=True, kernel='linear', C=0.7, max_iter=1000), 'SVC', target_eval, X_train_norm, y_train, X_test_norm, y_test)
 
             # Não necessitam de dados normalizados
-            self.create_model(parameters, RandomForestClassifier(), 'random_forest', target_eval, X_train, y_train, X_test, y_test)
-            self.create_model(parameters, XGBClassifier(), 'XGB', target_eval, X_train, y_train, X_test, y_test)
+            # Se retirar os parametros, aumenta a precisão, mas aumenta o tamanho do modelo em 10x
+            self.create_model(parameters, RandomForestClassifier(n_estimators=100, max_depth=30,min_samples_split=5, min_samples_leaf=5), 'random_forest', target_eval, X_train, y_train, X_test, y_test)
 
-        
+            self.create_model(parameters, XGBClassifier(), 'XGB', target_eval, X_train, y_train, X_test, y_test)
 
 
 class Deploy():
