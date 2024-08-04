@@ -8,8 +8,6 @@ cls_Models = Models()
 cls_Deploy = Deploy()
 cls_DataPrep = DataPrep()
 
-# print(parameters.dados0)
-
 if parameters.execute_data_ingestion:
     DataIngestion().build_historical_data(cls_File, parameters)
 

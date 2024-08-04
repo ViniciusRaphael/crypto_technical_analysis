@@ -457,7 +457,7 @@ class Models():
         return build_name
 
 
-    def build_log_model(self, name_file, name_model, target_col, eval_model_tuple, version, dest_path = 'models/accuracy/log_models.csv'): 
+    def build_log_model(self, name_file, name_model, target_col, eval_model_tuple, version, dest_path): 
 
         matrix, auc, score_cal = eval_model_tuple
         
@@ -479,19 +479,49 @@ class Models():
         }
         df = pd.DataFrame(data)
 
-
         df['f1_score'] = 2 * ((df['precision'] * df['recall']) / (df['precision'] + df['recall'])) # F1 Score: Média harmônica da precisão e da revocação, usada para balancear os trade-offs entre essas duas métricas.
-
+        
         # Apendar o DataFrame em um arquivo CSV de resultado
         df.to_csv(dest_path, mode='a', index=False, header=False)
 
         return df
+    
+
+    # def build_log_model(self, name_file, name_model, target_col, eval_model_tuple, version, dest_path = 'models/accuracy/log_models.csv'): 
+
+    #     matrix, auc, score_cal = eval_model_tuple
+        
+    #     # Dados
+    #     data = {
+    #         'name_file': [name_file],
+    #         'name_model': [name_model],
+    #         'target': [target_col],
+    #         'version': [version],
+    #         'date_add': datetime.today().strftime('%Y-%m-%d'),
+    #         'true_negative': [matrix[0,0]],
+    #         'false_positive': [matrix[0,1]],
+    #         'false_negative': [matrix[1,0]],
+    #         'true_positive':[ matrix[1,1]],
+    #         'accuracy': [score_cal],
+    #         'precision': [matrix[1,1] / (matrix[1,1] + matrix[0,1])],   # Proporção de previsões positivas corretas em relação ao total de previsões positivas.
+    #         'recall': [matrix[1,1] / (matrix[1,1] + matrix[1,0])], #Revocação (Recall) ou Sensibilidade (Sensitivity): Proporção de casos positivos corretamente identificados.
+    #         'auc_roc': [auc]
+    #     }
+    #     df = pd.DataFrame(data)
+
+
+    #     df['f1_score'] = 2 * ((df['precision'] * df['recall']) / (df['precision'] + df['recall'])) # F1 Score: Média harmônica da precisão e da revocação, usada para balancear os trade-offs entre essas duas métricas.
+
+    #     # Apendar o DataFrame em um arquivo CSV de resultado
+    #     df.to_csv(dest_path, mode='a', index=False, header=False)
+
+    #     return df
 
 
     def save_model(self, parameters, classifier, name_model:str):
         # Lib to save the model in a compressed way
 
-        root_path_version = parameters.path_trained_models
+        root_path_version = parameters.path_models
 
         if not os.path.exists(root_path_version):
             # Cria a pasta
@@ -513,7 +543,7 @@ class Models():
 
         var_proba_name = self.build_var_name(name_model, '_pb_')
 
-        self.build_log_model(name_model, var_proba_name, target_eval, eval_model_tuple, parameters.version_model)
+        self.build_log_model(name_model, var_proba_name, target_eval, eval_model_tuple, parameters.version_model, parameters.file_log_models)
         self.save_model(parameters, clf, name_model)
 
 
@@ -523,8 +553,12 @@ class Models():
 
         dados_prep_models = parameters.cls_FileHandling.get_selected_symbols(dados_prep_models, parameters)
 
-        dados_x = self.data_clean(dados_prep_models, parameters.remove_target_list, 'X', parameters.removing_cols)
-        dados_y_all = self.data_clean(dados_prep_models, parameters.remove_target_list, 'Y', parameters.removing_cols)
+        dados_x = self.data_clean(dados_prep_models, parameters.remove_target_list, 'X', parameters.removing_cols_for_train)
+        dados_y_all = self.data_clean(dados_prep_models, parameters.remove_target_list, 'Y', parameters.removing_cols_for_train)
+
+        # limpar arquivo de log e inserindo o cabeçalho
+        with open(parameters.file_log_models, 'w') as arquivo:
+            arquivo.write('name_file,name_model,target,version,date_add,true_negative,false_positive,false_negative,true_positive,accuracy,precision,recall,auc_roc,f1_score' + '\n')
 
         for target_eval in parameters.target_list_bol:
 
@@ -548,6 +582,8 @@ class Models():
             # Não necessitam de dados normalizados
             self.create_model(parameters, RandomForestClassifier(), 'random_forest', target_eval, X_train, y_train, X_test, y_test)
             self.create_model(parameters, XGBClassifier(), 'XGB', target_eval, X_train, y_train, X_test, y_test)
+
+        
 
 
 class Deploy():
@@ -640,22 +676,35 @@ class Deploy():
         return dados.sort_values(by=score_var, ascending=False)
 
 
-    def accuracy_models(self, log_models, version):
+    def accuracy_models(self, log_models, metric):
 
         accuracy_dict = {}
 
-        log_models_select = log_models[log_models['version'] == version]
-        
-        # só vai ter o problema se o modelo estiver rodando as meia noite, porque ai vai ter dois dias
-        log_models_select = log_models_select[log_models_select['date_add'] == log_models_select['date_add'].max()]
-
-        for idx, row in log_models_select.iterrows():
+        for idx, row in log_models.iterrows():
             name_model_select = row['name_model']
-            accuracy_model_select = row['accuracy']
+            accuracy_model_select = row[metric] #antes era accuracy
 
             accuracy_dict[name_model_select] = accuracy_model_select
         
         return accuracy_dict
+    
+
+    # def accuracy_models(self, log_models, version):
+
+    #     accuracy_dict = {}
+
+    #     log_models_select = log_models[log_models['version'] == version]
+        
+    #     # só vai ter o problema se o modelo estiver rodando as meia noite, porque ai vai ter dois dias
+    #     log_models_select = log_models_select[log_models_select['date_add'] == log_models_select['date_add'].max()]
+
+    #     for idx, row in log_models_select.iterrows():
+    #         name_model_select = row['name_model']
+    #         accuracy_model_select = row['accuracy']
+
+    #         accuracy_dict[name_model_select] = accuracy_model_select
+        
+    #     return accuracy_dict
 
     
     def build_crypto_scores(self, cls_Models, parameters, choosen_data_input = '', backtest = False):
@@ -667,20 +716,20 @@ class Deploy():
         dados_input_select = dados_prep_models if backtest else dados_w_indicators
 
         # Listar todos os itens no diretório e filtrar apenas os arquivos
-        models = [f for f in os.listdir(parameters.directory_models) if os.path.isfile(os.path.join(parameters.directory_models, f))]
+        models = [f for f in os.listdir(parameters.path_models) if os.path.isfile(os.path.join(parameters.path_models, f))]
 
         # Acuária dos modelos
-        # log_models = pd.read_csv(parameters.log_models_path)
+        log_models = pd.read_csv(parameters.file_log_models)
 
-        accuracy_models_select = self.accuracy_models(parameters.log_models, parameters.version_model)
+        accuracy_models_select = self.accuracy_models(log_models, parameters.score_metric)
 
         # Vai escolher uma data em específico, '' para a mais recente
         dataset_ref = self.eval_data(dados_input_select, choosen_data_input)
 
-        dummies_input = self.build_dummies(dataset_ref, parameters.remove_target_list, parameters.removing_cols)
+        dummies_input = self.build_dummies(dataset_ref, parameters.remove_target_list, parameters.removing_cols_for_train)
 
         # padronize input parameters from test models x predict model 
-        dados_x_all = cls_Models.data_clean(dados_input_select, parameters.remove_target_list, 'X', parameters.removing_cols)
+        dados_x_all = cls_Models.data_clean(dados_input_select, parameters.remove_target_list, 'X', parameters.removing_cols_for_train)
         dados_x_all_dummies = pd.get_dummies(dados_x_all)
         
         padronized_dummies = self.padronize_dummies(dummies_input, dados_x_all_dummies)
@@ -690,7 +739,7 @@ class Deploy():
 
         # Iteração para cada modelo na pasta de modelos
         for model in models:
-            clf = joblib.load(parameters.directory_models + model)
+            clf = joblib.load(parameters.path_models / model)
 
             var_proba_name = cls_Models.build_var_name(model, '_pb_')
             compiled_dataset = self.add_proba_target(clf, padronized_dummies_norm, padronized_dummies, compiled_dataset, var_proba_name)
@@ -731,9 +780,9 @@ class Deploy():
             backtest_dataset = pd.concat([backtest_dataset, backtest_dataset_date])
             
         # Salvar o DataFrame em um arquivo CSV
-        backtest_dataset.to_csv(parameters.backtest_path, index=True)
+        backtest_dataset.to_csv(parameters.file_backtest, index=True)
 
-        print(f'Arquivo salvo em {parameters.backtest_path}')
+        print(f'Arquivo salvo em {parameters.file_backtest}')
     
         return backtest_dataset
         
@@ -744,7 +793,7 @@ class Deploy():
         print(daily_outcome)
 
         # Salvar o DataFrame em um arquivo CSV
-        file_name_outcome = f"{parameters.daily_outcome_path}_{str(daily_outcome['Date'].max())}.csv"
+        file_name_outcome = f"{parameters.path_daily_outcome}_{str(daily_outcome['Date'].max())}.csv"
         daily_outcome.to_csv(file_name_outcome, index=True)
 
         print(f'Arquivo salvo em {file_name_outcome}')
