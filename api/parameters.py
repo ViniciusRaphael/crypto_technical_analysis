@@ -3,11 +3,11 @@ from src.utils.f_models import FileHandling
 
 
 # Process selections
-execute_data_ingestion = True               # If True, it will play the ingestion pipeline
-execute_data_indicators = True              # If True, it will play the indicators pipeline
-execute_data_prep_models = True             # If True, it will play the data prep models pipeline (used to train the model)
+execute_data_ingestion = False               # If True, it will play the ingestion pipeline
+execute_data_indicators = False              # If True, it will play the indicators pipeline
+execute_data_prep_models = False             # If True, it will play the data prep models pipeline (used to train the model)
 execute_train_models = False                 # If True, it will play the train models pipeline 
-execute_backtest = True                     # If True, it will play the backtest pipeline, for futher scenarios validation
+execute_backtest = False                     # If True, it will play the backtest pipeline, for futher scenarios validation
 execute_daily_outcome = True                # If True, it will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
 execute_filtered = True                     # If True, it will filter symbols by the filter_symbols
 
@@ -15,6 +15,8 @@ execute_filtered = True                     # If True, it will filter symbols by
 # Configs scores and model version
 score_metric = 'precision'                   # Metric to compose the score. Options: accuracy, precision, recall, auc_roc, f1_score
 version_model = 'v1.0'                       # Define the version. If it doesnt exist, it will be created (when trained the model) otherwise, it will used the previously one
+num_select_models = 10       # select the max number of models to return (0 for fall)
+min_threshold_models = 0.30  # select the minimum threshold for select the model (considering the score_metric)
 
 
 # Configs data filters
@@ -29,6 +31,8 @@ clean_targets_prep_models = True    # If True, remove outliers when training (be
 removing_cols_for_train = ['Date', 'Symbol', 'Dividends', 'Stock Splits']      # Removing cols when training and predict (the model that you use my have the same config)
 
 
+num_select_models = 10
+min_threshold_models = 0.30
 
 ####################################################################
 # Auxiliary definitions 

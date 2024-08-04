@@ -706,6 +706,22 @@ class Deploy():
         
     #     return accuracy_dict
 
+    def choose_best_models(self, parameters):
+        log_models = pd.read_csv(parameters.file_log_models)
+        print(log_models)
+        if parameters.min_threshold_models > 0:
+            log_models = log_models[log_models[parameters.score_metric] >= parameters.min_threshold_models]
+
+            print(log_models)
+        
+        if parameters.num_select_models > 0:
+            log_models = log_models.sort_values(by=parameters.score_metric, ascending=False).head(parameters.num_select_models)
+
+            print(log_models)
+
+        return log_models
+
+       
     
     def build_crypto_scores(self, cls_Models, parameters, choosen_data_input = '', backtest = False):
         
@@ -719,7 +735,8 @@ class Deploy():
         models = [f for f in os.listdir(parameters.path_models) if os.path.isfile(os.path.join(parameters.path_models, f))]
 
         # Acuária dos modelos
-        log_models = pd.read_csv(parameters.file_log_models)
+        # log_models = pd.read_csv(parameters.file_log_models)
+        log_models = self.choose_best_models(parameters)
 
         accuracy_models_select = self.accuracy_models(log_models, parameters.score_metric)
 
