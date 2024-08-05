@@ -559,7 +559,12 @@ class Models():
         with open(parameters.file_log_models, 'w') as arquivo:
             arquivo.write('name_file,name_model,target,version,date_add,true_negative,false_positive,false_negative,true_positive,accuracy,precision,recall,auc_roc,f1_score' + '\n')
 
+        # Counter models     
+        c_trained_target = 1
+
         for target_eval in parameters.target_list_bol:
+            
+            print(f'Train model target: {c_trained_target}/{len(parameters.target_list_bol)}')
 
             # escolhendo o target
             dados_y = self.get_target(dados_y_all, target_eval)
@@ -581,9 +586,11 @@ class Models():
 
             # Não necessitam de dados normalizados
             # Se retirar os parametros, aumenta a precisão, mas aumenta o tamanho do modelo em 10x
-            self.create_model(parameters, RandomForestClassifier(n_estimators=100, max_depth=30,min_samples_split=5, min_samples_leaf=5), 'random_forest', target_eval, X_train, y_train, X_test, y_test)
+            self.create_model(parameters, RandomForestClassifier(n_estimators=100, max_depth=30, min_samples_split=5, min_samples_leaf=5), 'random_forest', target_eval, X_train, y_train, X_test, y_test)
 
             self.create_model(parameters, XGBClassifier(), 'XGB', target_eval, X_train, y_train, X_test, y_test)
+
+            c_trained_target += 1
 
 
 class Deploy():
@@ -707,17 +714,14 @@ class Deploy():
     #     return accuracy_dict
 
     def choose_best_models(self, parameters):
+
         log_models = pd.read_csv(parameters.file_log_models)
-        print(log_models)
+
         if parameters.min_threshold_models > 0:
             log_models = log_models[log_models[parameters.score_metric] >= parameters.min_threshold_models]
-
-            print(log_models)
         
         if parameters.num_select_models > 0:
             log_models = log_models.sort_values(by=parameters.score_metric, ascending=False).head(parameters.num_select_models)
-
-            print(log_models)
 
         return log_models
 
