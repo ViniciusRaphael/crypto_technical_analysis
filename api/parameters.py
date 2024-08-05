@@ -3,23 +3,25 @@ from src.utils.f_models import FileHandling
 
 
 # Process selections
-execute_data_ingestion = True               # If True, it will play the ingestion pipeline
-execute_data_indicators = True              # If True, it will play the indicators pipeline
-execute_data_prep_models = True             # If True, it will play the data prep models pipeline (used to train the model)
+execute_data_ingestion = False               # If True, it will play the ingestion pipeline
+execute_data_indicators = False              # If True, it will play the indicators pipeline
+execute_data_prep_models = False             # If True, it will play the data prep models pipeline (used to train the model)
 execute_train_models = False                 # If True, it will play the train models pipeline 
 execute_backtest = True                     # If True, it will play the backtest pipeline, for futher scenarios validation
 execute_daily_outcome = True                # If True, it will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
-execute_filtered = True                     # If True, it will filter symbols by the filter_symbols
+execute_filtered = False                     # If True, it will filter symbols by the filter_symbols
 
 
 # Configs scores and model version
 score_metric = 'precision'                   # Metric to compose the score. Options: accuracy, precision, recall, auc_roc, f1_score
 version_model = 'v1.0'                       # Define the version. If it doesnt exist, it will be created (when trained the model) otherwise, it will used the previously one
+num_select_models = 10       # select the max number of models to return (0 for fall)
+min_threshold_models = 0.50  # select the minimum threshold for select the model (considering the score_metric)
 
 
 # Configs data filters
 filter_symbols = ['SOL-USD', 'BTC-USD', 'ETH-USD']  # Filter symbols only when the execute_filtered is True
-start_date_backtest = '2024-06-01'                  # Define the start date for backtesting
+start_date_backtest = '2023-06-01'                  # Define the start date for backtesting
 start_date_ingestion = '2018-01-01' if execute_train_models else '2023-07-01'  # We only need data for the last 200 days for daily_outcome, but we need the historical for training
 
 
