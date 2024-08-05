@@ -736,11 +736,13 @@ class Deploy():
         dados_input_select = dados_prep_models if backtest else dados_w_indicators
 
         # Listar todos os itens no diretório e filtrar apenas os arquivos
-        models = [f for f in os.listdir(parameters.path_models) if os.path.isfile(os.path.join(parameters.path_models, f))]
+        # models = [f for f in os.listdir(parameters.path_models) if os.path.isfile(os.path.join(parameters.path_models, f))]
 
         # Acuária dos modelos
         # log_models = pd.read_csv(parameters.file_log_models)
         log_models = self.choose_best_models(parameters)
+
+        models = list(set(log_models['name_file']))
 
         accuracy_models_select = self.accuracy_models(log_models, parameters.score_metric)
 
@@ -752,7 +754,7 @@ class Deploy():
         # padronize input parameters from test models x predict model 
         dados_x_all = cls_Models.data_clean(dados_input_select, parameters.remove_target_list, 'X', parameters.removing_cols_for_train)
         dados_x_all_dummies = pd.get_dummies(dados_x_all)
-        
+
         padronized_dummies = self.padronize_dummies(dummies_input, dados_x_all_dummies)
         padronized_dummies_norm = cls_Models.norm_scale(padronized_dummies)
 
@@ -760,7 +762,8 @@ class Deploy():
 
         # Iteração para cada modelo na pasta de modelos
         for model in models:
-            clf = joblib.load(parameters.path_models / model)
+            
+            clf = joblib.load(str(parameters.path_models / model) + '.joblib')
 
             var_proba_name = cls_Models.build_var_name(model, '_pb_')
             compiled_dataset = self.add_proba_target(clf, padronized_dummies_norm, padronized_dummies, compiled_dataset, var_proba_name)
@@ -772,7 +775,7 @@ class Deploy():
         compound_proba = self.build_compound_proba(compound_proba, accuracy_models_select, 'N_30d')
         compound_proba = self.build_compound_proba(compound_proba, accuracy_models_select, 'N_15d')
         compound_proba = self.build_compound_proba(compound_proba, accuracy_models_select, 'N_7d')
-
+        
         return compound_proba
         
 
@@ -810,6 +813,8 @@ class Deploy():
     
     def daily_outcome(self, cls_Models, parameters, choosen_date):
         
+        print(f'Predict selected date')
+   
         daily_outcome = self.build_crypto_scores(cls_Models, parameters, choosen_date, False)
         print(daily_outcome)
 
