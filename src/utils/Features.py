@@ -9,7 +9,7 @@ class Features():
         pass
 
 
-    def classify_adx_value(value):
+    def classify_adx_value(self, value):
         """
         Checks the ADX value against predefined ranges and returns the corresponding trend category.
 
@@ -32,7 +32,7 @@ class Features():
                 return name
         return None
 
-    def classify_rsi_value(value):
+    def classify_rsi_value(self, value):
         """
         Checks the RSI value against predefined ranges and returns the corresponding category.
 
@@ -61,7 +61,7 @@ class Features():
                 return name
         return None
 
-    def count_positive_reset(df_column):
+    def count_positive_reset(self, df_column):
         """
         Counts consecutive positive values in a DataFrame column and resets count on encountering negative values.
 
@@ -83,7 +83,7 @@ class Features():
 
         return counts
 
-    def add_indicators(dataframe):
+    def add_indicators(self, dataframe):
         """
         Add technical indicators to the DataFrame.
 
@@ -120,16 +120,16 @@ class Features():
 
         # Calculate Average Directional Index (ADX)
         dataframe[['vl_adx', 'vl_dmp', 'vl_dmn']] = dataframe.groupby('Symbol').apply(lambda x: ta.adx(x['High'], x['Low'], x['Close'], length=14)).reset_index(drop=True)
-        dataframe['nm_adx_trend'] = dataframe['vl_adx'].transform(classify_adx_value)
+        dataframe['nm_adx_trend'] = dataframe['vl_adx'].transform(self.classify_adx_value)
 
         # Calculate Relative Strength Index (RSI)
         dataframe['rsi'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.rsi(x))
-        dataframe['nm_rsi_trend'] = dataframe['rsi'].transform(classify_rsi_value)
+        dataframe['nm_rsi_trend'] = dataframe['rsi'].transform(self.classify_rsi_value)
 
         # Calculate the MACD and Signal Line
         dataframe['vl_macd'] = dataframe['ema_12'] - dataframe['ema_26']
         dataframe['vl_macd_signal'] = dataframe.groupby('Symbol')['vl_macd'].transform(lambda x: x.ewm(span=9).mean())
         dataframe['vl_macd_delta'] = dataframe['vl_macd'] - dataframe['vl_macd_signal']
-        dataframe['qt_days_macd_delta_positive'] = count_positive_reset(dataframe['vl_macd_delta'])
+        dataframe['qt_days_macd_delta_positive'] = self.count_positive_reset(dataframe['vl_macd_delta'])
 
         return dataframe

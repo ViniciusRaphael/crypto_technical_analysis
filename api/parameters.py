@@ -6,18 +6,24 @@ from src.utils.Train import Models
 from src.utils.PrepModels import DataPrep
 from src.utils.Predict import Deploy
 from src.utils.Ingestion import DataIngestion
+from src.utils.Signals import Backtesting
+from src.utils.Features import Features
+
+
+
 
 
 
 
 # Process selections
-execute_data_ingestion = True               # It will play the ingestion pipeline
-execute_data_indicators = True              # It will play the indicators pipeline
-execute_data_prep_models = True             # It will play the data prep models pipeline (used to train the model)
-execute_train_models = True                 # It will play the train models pipeline 
-execute_backtest = True                     # It will play the backtest pipeline, for futher scenarios validation
-execute_daily_outcome = True                # It will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
-execute_filtered = True                     # It will filter symbols by the filter_symbols
+execute_data_ingestion = False               # It will play the ingestion pipeline
+execute_data_indicators = False              # It will play the indicators pipeline
+execute_data_prep_models = False             # It will play the data prep models pipeline (used to train the model)
+execute_train_models = False                 # It will play the train models pipeline 
+execute_backtest = False                     # It will play the backtest pipeline, for futher scenarios validation
+execute_daily_outcome = False                # It will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
+execute_filtered = False                     # It will filter symbols by the filter_symbols
+execute_signals = True                     
 
 
 # Configs scores and model version
@@ -50,6 +56,8 @@ cls_Predict = Deploy()
 cls_DataPrep = DataPrep()
 cls_Ingestion = DataIngestion()
 cls_Transform = DataTransform()
+cls_Signals = Backtesting()
+cls_Features = Features()
 
 
 #  Constants (Recomend: Do not change it. Except if your change will add or remove any of them)
@@ -66,6 +74,10 @@ file_log_models = Path('output/accuracy') / f'log_model_{version_model}.csv'
 path_models = Path(f'output/models/{version_model}')
 file_backtest = Path(f'output/predict/compound_backtest.csv')
 path_daily_outcome = Path('output/predict/proba_scores')
+
+
+path_model_signals = Path(f'output/signals/')
+min_threshold_signals = 0.7
 
 ####################################################################
 

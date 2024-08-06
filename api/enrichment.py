@@ -26,6 +26,9 @@ if parameters.execute_backtest:
 if parameters.execute_daily_outcome: 
     parameters.cls_Predict.daily_outcome(cls_Models, parameters, '')
 
+if parameters.execute_signals: 
+    parameters.cls_Signals.build_signals(parameters)
+
 
 
 

@@ -5,7 +5,7 @@ import pandas as pd
 # pd.set_option("display.max_columns", None) 
 # pd.set_option("display.max_rows", None) 
 
-from indicators_util import add_indicators
+from src.utils.Features import add_indicators
 
 def read_parquet_to_dataframe(parquet_path):
     """

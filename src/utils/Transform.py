@@ -3,7 +3,7 @@ import pandas as pd
 
 import warnings
 
-from src.utils.Features import add_indicators
+# from src.utils.Features import add_indicators
 
 
 
@@ -36,7 +36,8 @@ class DataTransform():
         company_code = 'MYRIA-USD'
         df = df[df['Symbol'] != company_code]
         # Add indicators to the DataFrame
-        crypto_indicators_dataframe = add_indicators(df)
+        
+        crypto_indicators_dataframe = parameters.cls_Features.add_indicators(df)
 
         crypto_indicators_dataframe = self.clean_date(crypto_indicators_dataframe)
 
