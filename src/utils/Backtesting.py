@@ -26,6 +26,8 @@ class RealBacktest():
         # symbol = crypto + '-USD'
 
         df = self.query_data(dataframe, crypto)
+        # print(dataframe)
+        # df = dataframe[dataframe['Symbol'] == crypto]
         # df['Date'] = pd.to_datetime(df['Date'])
         df.set_index(['Date'], inplace=True)
 
@@ -36,12 +38,11 @@ class RealBacktest():
         pf = vbt.Portfolio.from_signals(close=prices, entries=entrada , exits=saida)    
         total_return = pf.total_return()
         
-        return print(total_return)
+        return total_return
 
     def all_crypto_return(self, dataset):
         # global df
         df = self.query_data(dataset)
-        print(df)
         symbol = df['Symbol'].unique()
         result = []
         for count, crypto in enumerate(symbol, start=1):
@@ -90,6 +91,7 @@ class RealBacktest():
             total_return = self.all_crypto_return(signals_model)
             # return total_return
 
-            total_return.to_csv(str(parameters.path_model_backtest) + f'/_{signal}', index=True)
+            total_return.to_csv(str(parameters.path_model_backtest) + f'/{signal}', index=True)
 
-            return self.specific_crypto_return(signals, 'SOL-USD')
+            print(self.specific_crypto_return(signals_model, 'SOL-USD'))
+            # return self.specific_crypto_return(signals, 'SOL-USD')
