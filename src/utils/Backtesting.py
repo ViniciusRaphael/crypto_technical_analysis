@@ -12,21 +12,20 @@ class RealBacktest():
 
     def query_data(self, dataframe, symbol=None):
         # dataframe = pd.read_parquet(dataframe)
-        dataframe = pd.read_csv(dataframe)
+        # dataframe = pd.read_csv(dataframe)
         # If no symbol is provided, return the entire dataframe
         if symbol is None:
             table = dataframe
         else: 
             # Filter the dataframe based on the provided symbol
             table = dataframe[dataframe['Symbol'] == symbol]
-        
         return table
 
-    def specific_crypto_return(self, input_path, crypto = 'BTC-USD'):
+    def specific_crypto_return(self, dataframe, crypto = 'BTC-USD'):
         # global df
         # symbol = crypto + '-USD'
 
-        df = self.query_data(input_path, crypto)
+        df = self.query_data(dataframe, crypto)
         # df['Date'] = pd.to_datetime(df['Date'])
         df.set_index(['Date'], inplace=True)
 
@@ -39,9 +38,10 @@ class RealBacktest():
         
         return print(total_return)
 
-    def all_crypto_return(self, input_path):
+    def all_crypto_return(self, dataset):
         # global df
-        df = self.query_data(input_path)
+        df = self.query_data(dataset)
+        print(df)
         symbol = df['Symbol'].unique()
         result = []
         for count, crypto in enumerate(symbol, start=1):
@@ -85,10 +85,11 @@ class RealBacktest():
 
         for signal in signals:
 
-            signals_model = parameters.cls_FileHandling.read_file(parameters.path_model_signals, signal + '.csv')
+            signals_model = parameters.cls_FileHandling.read_file(parameters.path_model_signals, signal)
 
             total_return = self.all_crypto_return(signals_model)
             # return total_return
 
             total_return.to_csv(str(parameters.path_model_backtest) + f'/_{signal}', index=True)
-        # return specific_crypto_return(input_path, 'DREAMS')
+
+            return self.specific_crypto_return(signals, 'SOL-USD')

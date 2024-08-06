@@ -1,0 +1,4 @@
+,crypto,total_return,Start,End,Period,Start Value,End Value,Total Return [%],Benchmark Return [%],Max Gross Exposure [%],Total Fees Paid,Max Drawdown [%],Max Drawdown Duration,Total Trades,Total Closed Trades,Total Open Trades,Open Trade PnL,Win Rate [%],Best Trade [%],Worst Trade [%],Avg Winning Trade [%],Avg Losing Trade [%],Avg Winning Trade Duration,Avg Losing Trade Duration,Profit Factor,Expectancy,Sharpe Ratio,Calmar Ratio,Omega Ratio,Sortino Ratio
+0,BTC-USD,0.0,2017-12-31,2024-08-04,2409 days,100.0,100.0,0.0,302.2137189682062,0.0,0.0,,,0,0,0,0.0,,,,,,,,,,inf,,inf,inf
+1,ETH-USD,0.0,2017-12-31,2024-08-04,2409 days,100.0,100.0,0.0,218.25419959791043,0.0,0.0,,,0,0,0,0.0,,,,,,,,,,inf,,inf,inf
+2,SOL-USD,0.0,2020-04-09,2024-08-04,1579 days,100.0,100.0,0.0,13954.692223721126,0.0,0.0,,,0,0,0,0.0,,,,,,,,,,inf,,inf,inf

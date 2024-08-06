@@ -69,7 +69,7 @@ class Backtesting():
 
         crypto_indicators_and_signals = self.table_query(parameters, select_model, model_percentage_cut, target_timeframe)
 
-        crypto_indicators_and_signals.to_csv(str(parameters.path_model_signals) + f'/_{select_model}_{model_percentage_cut}', index=True)
+        crypto_indicators_and_signals.to_csv(str(parameters.path_model_signals) + f'/_{select_model}_{model_percentage_cut}_.csv', index=True)
 
 
         # parameters.cls_FileHandling.save_parquet_file(crypto_indicators_and_signals, str(Path(parameters.path_model_signals)) + f'_{select_model}_{model_percentage_cut}_.csv')
