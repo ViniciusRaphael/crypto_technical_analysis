@@ -8,6 +8,9 @@ from src.utils.Predict import Deploy
 from src.utils.Ingestion import DataIngestion
 from src.utils.Signals import Backtesting
 from src.utils.Features import Features
+from src.utils.Backtesting import RealBacktest
+
+
 
 
 
@@ -23,7 +26,8 @@ execute_train_models = False                 # It will play the train models pip
 execute_backtest = False                     # It will play the backtest pipeline, for futher scenarios validation
 execute_daily_outcome = False                # It will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
 execute_filtered = False                     # It will filter symbols by the filter_symbols
-execute_signals = True                     
+execute_signals = False        
+execute_real_backtesting = True             
 
 
 # Configs scores and model version
@@ -58,6 +62,8 @@ cls_Ingestion = DataIngestion()
 cls_Transform = DataTransform()
 cls_Signals = Backtesting()
 cls_Features = Features()
+cls_RealBacktest = RealBacktest()
+
 
 
 #  Constants (Recomend: Do not change it. Except if your change will add or remove any of them)
@@ -78,6 +84,10 @@ path_daily_outcome = Path('output/predict/proba_scores')
 
 path_model_signals = Path(f'output/signals/')
 min_threshold_signals = 0.7
+
+
+path_model_backtest = Path(f'output/backtest/')
+
 
 ####################################################################
 

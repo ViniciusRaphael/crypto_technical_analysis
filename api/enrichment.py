@@ -29,6 +29,9 @@ if parameters.execute_daily_outcome:
 if parameters.execute_signals: 
     parameters.cls_Signals.build_signals(parameters)
 
+if parameters.execute_real_backtesting: 
+    parameters.cls_RealBacktest.backtest_models(parameters)
+
 
 
 
