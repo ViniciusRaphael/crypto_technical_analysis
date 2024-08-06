@@ -29,7 +29,6 @@ class Backtesting():
         # Step 3: Calculate initial buy signal
         joined_tables['all_buy_signal'] = np.where(joined_tables[select_model] > model_percentage_cut, 1, 0)
 
-        print(joined_tables)
         # Step 4: Apply the rule that no two buy signals are within 25 days of each other
         joined_tables['final_buy_signal'] = 0
         last_buy_date = {}
@@ -41,21 +40,17 @@ class Backtesting():
             symbol = row['Symbol']
             if row['all_buy_signal'] == 1:
                 if symbol in last_buy_date:
-                    print('passou aqqq77')
-                    print(last_buy_date)
-                    print(pd.to_datetime(row['Date']) - pd.to_datetime(last_buy_date[symbol]))
+                  
+                    # print(pd.to_datetime(row['Date']) - pd.to_datetime(last_buy_date[symbol]))
                     
                     if (datetime.strptime(row['Date'], formato_data) - datetime.strptime(last_buy_date[symbol], formato_data)).days > int(target_timeframe):
-                        print('passou aqqq')
+
                         joined_tables.at[idx, 'final_buy_signal'] = 1
                         last_buy_date[symbol] = row['Date']
-                        print('finalizou')
                 else:
                     joined_tables.at[idx, 'final_buy_signal'] = 1
                     last_buy_date[symbol] = row['Date']
-                    print('excecao')
 
-        print(joined_tables)
 
         # Step 5: Create sell signal 25 days after final_buy_signal
         joined_tables['sell_signal'] = 0
@@ -73,8 +68,6 @@ class Backtesting():
     def build_signal_model(self, parameters, select_model, model_percentage_cut=0.7, target_timeframe=30):
 
         crypto_indicators_and_signals = self.table_query(parameters, select_model, model_percentage_cut, target_timeframe)
-
-        print(crypto_indicators_and_signals)
 
         crypto_indicators_and_signals.to_csv(str(parameters.path_model_signals) + f'/{parameters.version_model}_{select_model}_{model_percentage_cut}', index=True)
 
