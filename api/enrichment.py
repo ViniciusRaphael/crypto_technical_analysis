@@ -20,16 +20,16 @@ if parameters.execute_data_prep_models:
 if parameters.execute_train_models:
     parameters.cls_Models.train_models(parameters)
 
-if parameters.execute_backtest: 
+if parameters.execute_historical_predict: 
     parameters.cls_Predict.historical_outcome(cls_Models, parameters)
 
-if parameters.execute_daily_outcome: 
+if parameters.execute_daily_predict: 
     parameters.cls_Predict.daily_outcome(cls_Models, parameters, '')
 
 if parameters.execute_signals: 
     parameters.cls_Signals.build_signals(parameters)
 
-if parameters.execute_real_backtesting: 
+if parameters.execute_backtest: 
     parameters.cls_RealBacktest.backtest_models(parameters)
 
 

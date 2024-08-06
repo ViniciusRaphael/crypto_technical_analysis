@@ -19,15 +19,15 @@ from src.utils.Backtesting import RealBacktest
 
 
 # Process selections
-execute_data_ingestion = False               # It will play the ingestion pipeline
-execute_data_indicators = False              # It will play the indicators pipeline
-execute_data_prep_models = False             # It will play the data prep models pipeline (used to train the model)
+execute_data_ingestion = True               # It will play the ingestion pipeline
+execute_data_indicators = True              # It will play the indicators pipeline
+execute_data_prep_models = True             # It will play the data prep models pipeline (used to train the model)
 execute_train_models = False                 # It will play the train models pipeline 
-execute_backtest = False                     # It will play the backtest pipeline, for futher scenarios validation
-execute_daily_outcome = False                # It will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
+execute_historical_predict = False                     # It will play the backtest pipeline, for futher scenarios validation
+execute_daily_predict = True                # It will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
 execute_filtered = False                     # It will filter symbols by the filter_symbols
-execute_signals = False        
-execute_real_backtesting = True             
+execute_signals = True        
+execute_backtest = True             
 
 
 # Configs scores and model version

@@ -11,8 +11,7 @@ class RealBacktest():
 
 
     def query_data(self, dataframe, symbol=None):
-        # dataframe = pd.read_parquet(dataframe)
-        # dataframe = pd.read_csv(dataframe)
+
         # If no symbol is provided, return the entire dataframe
         if symbol is None:
             table = dataframe
@@ -21,14 +20,11 @@ class RealBacktest():
             table = dataframe[dataframe['Symbol'] == symbol]
         return table
 
-    def specific_crypto_return(self, dataframe, crypto = 'BTC-USD'):
-        # global df
-        # symbol = crypto + '-USD'
+##### Currently not used
+    def specific_crypto_return(self, dataframe, crypto = 'BTC-USD', tabular = True):
 
         df = self.query_data(dataframe, crypto)
-        # print(dataframe)
-        # df = dataframe[dataframe['Symbol'] == crypto]
-        # df['Date'] = pd.to_datetime(df['Date'])
+
         df.set_index(['Date'], inplace=True)
 
         prices = df['Close_x']
@@ -36,15 +32,21 @@ class RealBacktest():
         saida = df['sell_signal'] == 1
         
         pf = vbt.Portfolio.from_signals(close=prices, entries=entrada , exits=saida)    
-        total_return = pf.total_return()
         
+        if tabular == True: #csv
+            total_return = pf.total_return()
+        else: #imagens
+            total_return = pf.plot().show()
+
+
         return total_return
 
     def all_crypto_return(self, dataset):
-        # global df
+
         df = self.query_data(dataset)
         symbol = df['Symbol'].unique()
         result = []
+
         for count, crypto in enumerate(symbol, start=1):
             print(f'Processing {crypto} ({count} of {len(symbol)})')
             df1 = df.copy()
@@ -76,22 +78,17 @@ class RealBacktest():
         return final_result
 
     def backtest_models(self, parameters):
-        # global total_return
-        # # Specify the input Parquet file path
-        # input_folder = 'files'
-        # input_file = 'crypto_indicators_and_signals.parquet'
-        # input_path = Path(input_folder) / input_file
 
         signals = [f for f in os.listdir(parameters.path_model_signals) if os.path.isfile(os.path.join(parameters.path_model_signals, f))]
 
         for signal in signals:
 
+            print(f'Running {signal}')
+
             signals_model = parameters.cls_FileHandling.read_file(parameters.path_model_signals, signal)
 
             total_return = self.all_crypto_return(signals_model)
-            # return total_return
 
             total_return.to_csv(str(parameters.path_model_backtest) + f'/{signal}', index=True)
 
-            print(self.specific_crypto_return(signals_model, 'SOL-USD'))
-            # return self.specific_crypto_return(signals, 'SOL-USD')
+            # print(self.specific_crypto_return(signals_model, 'SOL-USD', False))
