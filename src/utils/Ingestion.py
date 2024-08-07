@@ -136,6 +136,9 @@ class DataIngestion():
             # Create the output folder if it doesn't exist
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
+            # Removing the data from Index
+            crypto_dataframe_treated = crypto_dataframe_treated.reset_index()
+
             # Save the DataFrame as a Parquet file
             cls_FileHandling.save_parquet_file(crypto_dataframe_treated, output_path)
 
