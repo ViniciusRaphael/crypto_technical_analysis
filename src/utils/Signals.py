@@ -19,9 +19,11 @@ class Backtesting():
         # crypto_signals = parameters.cls_FileHandling.read_file(parameters.file_backtest, '')
         crypto_signals = pd.read_csv(parameters.file_backtest)
 
+        crypto_indicators_prep = crypto_indicators[['Symbol', 'Date', 'Close']]
+        crypto_signals_prep = crypto_signals[['Symbol', 'Date', select_model]]
 
         # Step 1: Join the tables
-        joined_tables = pd.merge(crypto_indicators, crypto_signals, how='left', on=['Symbol', 'Date'])
+        joined_tables = pd.merge(crypto_indicators_prep, crypto_signals_prep, how='left', on=['Symbol', 'Date'])
 
         # Step 2: Handle missing values
         joined_tables[select_model] = joined_tables[select_model].fillna(0)
@@ -40,7 +42,6 @@ class Backtesting():
             symbol = row['Symbol']
             if row['all_buy_signal'] == 1:
                 if symbol in last_buy_date:
-                  
                     # print(pd.to_datetime(row['Date']) - pd.to_datetime(last_buy_date[symbol]))
                     
                     if (datetime.strptime(row['Date'], formato_data) - datetime.strptime(last_buy_date[symbol], formato_data)).days > int(target_timeframe):

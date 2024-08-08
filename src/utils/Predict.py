@@ -27,10 +27,10 @@ class Deploy():
 
 
     def build_dummies(self, filtered_data, target_list, remove_cols):
-    
+        
         dados_x = filtered_data.drop(filtered_data[target_list], axis=1)
         dados_x = dados_x.drop(dados_x[remove_cols], axis=1)
-        
+
         dummies_build = pd.get_dummies(dados_x)
 
         dummies_prep = dummies_build.dropna()
