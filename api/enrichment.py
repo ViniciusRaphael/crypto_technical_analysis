@@ -31,6 +31,9 @@ if parameters.execute_signals:
 if parameters.execute_backtest: 
     parameters.cls_RealBacktest.backtest_models(parameters)
 
+if parameters.execute_backtest_simple: 
+    parameters.cls_RealBacktest.all_entries_backtest(parameters)
+
 
 
 
