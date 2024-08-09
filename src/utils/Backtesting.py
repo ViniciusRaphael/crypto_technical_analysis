@@ -94,57 +94,70 @@ class RealBacktest():
 
             # print(self.specific_crypto_return(signals_model, 'SOL-USD', False))
 
-    def all_entries_backtest(self, parameters):
-    
-        predicted_backtest = pd.read_csv(parameters.file_backtest)
-    
-        dados_prep_models = parameters.cls_FileHandling.read_file(parameters.files_folder, parameters.file_prep_models)
+        def all_entries_backtest(self, parameters):
+            # Read in the necessary files
+            predicted_backtest = pd.read_csv(parameters.file_backtest)
+            dados_prep_models = parameters.cls_FileHandling.read_file(parameters.files_folder, parameters.file_prep_models)
 
+            # Filter and merge data
+            dados_filter = dados_prep_models[['Symbol', 'Date', 'Volume', 'target_7d', 'target_15d', 'target_30d']]
+            df_merged = pd.merge(dados_filter, predicted_backtest, on=['Date', 'Symbol'], how='inner')
 
-        dados_filter = dados_prep_models[['Symbol', 'Date', 'Volume', 'target_7d', 'target_15d', 'target_30d']]
+            # Clean data by replacing inf and dropping NaNs
+            df_merged.replace([np.inf, -np.inf], np.nan, inplace=True)
+            df_merged.dropna(inplace=True)
 
+            # Filter for dates and threshold only once
+            df_merged = df_merged[df_merged['Date'] >= parameters.start_date_backtest]
 
-        df_merged = pd.merge(dados_filter, predicted_backtest, on=['Date', 'Symbol'], how='inner')
-        # Substituindo valores infinitos por NaN
-        df_merged.replace([np.inf, -np.inf], np.nan, inplace=True)
-        # Removendo linhas com valores NaN
-        df_merged.dropna(inplace=True)
+            # Prepare columns for results
+            result_columns = ['Date', 'Symbol', 'model', 'Cumulative_Return_7d', 'Cumulative_Return_15d', 'Cumulative_Return_30d', 'number_entries', 'first_entry', 'last_entry']
+            backtest_dataset_return = []
 
-        ## Entradas
-        backtest_dataset_return = pd.DataFrame()
-        count = 1
-        for crypto in df_merged['Symbol'].unique():
-            print(f'Processing {crypto} ({count} of {len(df_merged['Symbol'].unique())})')
+            unique_cryptos = df_merged['Symbol'].unique()
+            count = 1
 
-            for col in df_merged.columns:
-                if (col[-1] == 'd' and col.split('_')[0] != 'target'): 
+            for crypto in unique_cryptos:
+                print(f'Processing {crypto} ({count} of {len(unique_cryptos)})')
 
-                    df_selected_cols = df_merged[['Date', 'Symbol', 'target_7d', 'target_15d', 'target_30d', col]]
-
-                    df_merged_score_clean_cumulative = df_selected_cols[(df_selected_cols[col] >= parameters.min_threshold_signals) & (df_selected_cols['Symbol'] == crypto)  & (df_selected_cols['Date'] >= parameters.start_date_backtest)]
-
-                    df_merged_score_clean_cumulative = df_merged_score_clean_cumulative.sort_values(by='Date')
-
-                    df_merged_score_clean_cumulative['Cumulative_Return_7d'] = (1 + ( df_merged_score_clean_cumulative['target_7d'])).cumprod() - 1
-                    df_merged_score_clean_cumulative['Cumulative_Return_15d'] = (1 + ( df_merged_score_clean_cumulative['target_15d'])).cumprod() - 1
-                    df_merged_score_clean_cumulative['Cumulative_Return_30d'] = (1 + ( df_merged_score_clean_cumulative['target_30d'])).cumprod() - 1
-
-
-                    df_merged_score_clean_cumulative.drop(['target_7d', 'target_15d', 'target_30d'], axis=1, inplace=True)
-
-                    cumulative_return = df_merged_score_clean_cumulative.tail(1)#.sort_values(by='Date')
-
-                    cumulative_return['model'] = col
-                    cumulative_return['number_entries'] = len(df_merged_score_clean_cumulative)
-                    cumulative_return['first_entry'] = df_merged_score_clean_cumulative['Date'].min()
-                    cumulative_return['last_entry'] = df_merged_score_clean_cumulative['Date'].max()
-
-                    backtest_dataset_return = pd.concat([backtest_dataset_return, cumulative_return])
+                # Filter once per crypto
+                crypto_df = df_merged[df_merged['Symbol'] == crypto]
                 
-            count += 1
-        
-        backtest_dataset_return.to_csv(str(parameters.path_model_backtest) + f'/_simple_backtest_{parameters.min_threshold_signals}_.csv', index=True)
+                for col in [c for c in df_merged.columns if (c[-1] == 'd' and c.split('_')[0] != 'target')]:
+                    signal_df = crypto_df[crypto_df[col] >= parameters.min_threshold_signals]
 
-        print(f'File saved in {str(parameters.path_model_backtest)}/_simple_backtest_{parameters.min_threshold_signals}_.csv')
+                    if signal_df.empty:
+                        continue
 
-        return backtest_dataset_return
+                    # Sort values by Date
+                    signal_df = signal_df.sort_values(by='Date')
+
+                    # Calculate cumulative returns
+                    signal_df['Cumulative_Return_7d'] = (1 + signal_df['target_7d']).cumprod() - 1
+                    signal_df['Cumulative_Return_15d'] = (1 + signal_df['target_15d']).cumprod() - 1
+                    signal_df['Cumulative_Return_30d'] = (1 + signal_df['target_30d']).cumprod() - 1
+
+                    # Get the last row of cumulative return and prepare results
+                    last_row = signal_df.iloc[-1]
+                    cumulative_return = {
+                        'Date': last_row['Date'],
+                        'Symbol': crypto,
+                        'model': col,
+                        'Cumulative_Return_7d': last_row['Cumulative_Return_7d'],
+                        'Cumulative_Return_15d': last_row['Cumulative_Return_15d'],
+                        'Cumulative_Return_30d': last_row['Cumulative_Return_30d'],
+                        'number_entries': len(signal_df),
+                        'first_entry': signal_df['Date'].min(),
+                        'last_entry': signal_df['Date'].max()
+                    }
+                    backtest_dataset_return.append(cumulative_return)
+
+                count += 1
+
+            # Convert list of results to DataFrame and save
+            backtest_dataset_return_df = pd.DataFrame(backtest_dataset_return, columns=result_columns)
+            backtest_dataset_return_df.to_csv(f"{parameters.path_model_backtest}/_simple_backtest_{parameters.min_threshold_signals}_.csv", index=True)
+
+            print(f'File saved in {parameters.path_model_backtest}/_simple_backtest_{parameters.min_threshold_signals}_.csv')
+
+            return backtest_dataset_return_df
