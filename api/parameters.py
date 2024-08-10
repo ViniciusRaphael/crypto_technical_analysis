@@ -66,7 +66,7 @@ cls_RealBacktest = RealBacktest()
 ####################################################################
 
 # Fix relative directories in Windows and other systems
-suffix_platform = '../' if not 'Windows' else ''
+suffix_platform = '../' if platform.system() != 'Windows' else ''
 
 # Path Folders and Files (Do not change)
 files_folder = 'data'
