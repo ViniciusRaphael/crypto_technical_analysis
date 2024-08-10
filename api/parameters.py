@@ -9,18 +9,19 @@ from src.utils.Ingestion import DataIngestion
 from src.utils.Signals import Backtesting
 from src.utils.Features import Features
 from src.utils.Backtesting import RealBacktest
+import platform
 
 
 
 # Process selections
 execute_filtered = False                    # It will filter symbols by the filter_symbols parameter
 execute_data_ingestion = False               # It will play the ingestion pipeline
-execute_data_indicators = True              # It will play the indicators pipeline
+execute_data_indicators = False              # It will play the indicators pipeline
 execute_data_prep_models = False             # It will play the data prep models pipeline (used to train the model)
 execute_train_models = False                # It will play the train models pipeline (it will sobescribe the version_model, or set a new value in version_model)
 execute_historical_predict = False          # It will play the backtest pipeline, for futher scenarios validation
-execute_daily_predict = False                # It will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
-execute_signals = True                     # It will play the signals pipeline (considering the historical predict saved)
+execute_daily_predict = True                # It will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
+execute_signals = False                     # It will play the signals pipeline (considering the historical predict saved)
 execute_backtest = False                    # It will play the backtest pipeline (considering the signals datasets saved)
 execute_backtest_simple = False                    # It will play the backtest pipeline (considering the backtest predicted proba and entry every available entry, even if they are in a sequence of dates)
 
@@ -64,6 +65,9 @@ cls_RealBacktest = RealBacktest()
 #  Constants (Recomend: Do not change it. Except if your change will add or remove any of them)
 ####################################################################
 
+# Fix relative directories in Windows and other systems
+suffix_platform = '../' if not 'Windows' else ''
+
 # Path Folders and Files (Do not change)
 files_folder = 'data'
 file_ingestion = 'crypto_data_historical.parquet'
@@ -71,12 +75,12 @@ file_w_indicators = 'crypto_data_with_indicators.parquet'
 file_prep_models = 'crypto_data_prep_models.parquet'
 
 
-file_log_models = Path('../output/accuracy') / f'log_model_{version_model}.csv'
-path_models = Path(f'../output/models/{version_model}')
-file_backtest = Path(f'../output/predict/compound_backtest.csv')
-path_daily_outcome = Path('../output/predict/proba_scores')
-path_model_signals = Path('../output/signals/')
-path_model_backtest = Path('../output/backtest/')
+file_log_models = Path(f'{suffix_platform}output/accuracy') / f'log_model_{version_model}.csv'
+path_models = Path(f'{suffix_platform}output/models/{version_model}')
+file_backtest = Path(f'{suffix_platform}output/predict/compound_backtest.csv')
+path_daily_outcome = Path(f'{suffix_platform}output/predict/proba_scores')
+path_model_signals = Path(f'{suffix_platform}output/signals/')
+path_model_backtest = Path(f'{suffix_platform}output/backtest/')
 
 
 ####################################################################
