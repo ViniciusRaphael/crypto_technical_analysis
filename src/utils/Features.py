@@ -83,6 +83,21 @@ class Features():
 
         return counts
 
+    def calculate_adx(self, grupo):
+        adx_values = ta.adx(grupo['High'], grupo['Low'], grupo['Close'], length=14)
+        if adx_values is not None and not adx_values.empty:
+            # Adiciona as colunas calculadas ao grupo original
+            grupo['vl_adx'] = adx_values['ADX_14'].values
+            grupo['vl_dmp'] = adx_values['DMP_14'].values
+            grupo['vl_dmn'] = adx_values['DMN_14'].values
+        else:
+            # Se o cálculo falhar, preenche com NaN
+            grupo['vl_adx'] = pd.NA
+            grupo['vl_dmp'] = pd.NA
+            grupo['vl_dmn'] = pd.NA
+        return grupo
+
+
     def add_indicators(self, dataframe):
         """
         Add technical indicators to the DataFrame.
@@ -119,7 +134,7 @@ class Features():
                 dataframe[f'bl_target_{target}N_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) <= -target / 100).astype(int)
 
         # Calculate Average Directional Index (ADX)
-        dataframe[['vl_adx', 'vl_dmp', 'vl_dmn']] = dataframe.groupby('Symbol').apply(lambda x: ta.adx(x['High'], x['Low'], x['Close'], length=14)).reset_index(drop=True)
+        dataframe = dataframe.groupby('Symbol', group_keys=False).apply(self.calculate_adx).reset_index(drop=True)
         dataframe['nm_adx_trend'] = dataframe['vl_adx'].transform(self.classify_adx_value)
 
         # Calculate Relative Strength Index (RSI)
