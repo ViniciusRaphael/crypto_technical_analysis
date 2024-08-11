@@ -111,9 +111,10 @@ class RealBacktest():
     
     def simulate_return_value(self, dataset, target_suffix):
         target_col = 'target_' + target_suffix + 'd'
+        entry_value_invest = 100
 
-        dataset['simulate_entry'] = 100
-        dataset['simulate_return'] = 100 * (1 + dataset[target_col])
+        dataset['simulate_entry'] = entry_value_invest 
+        dataset['simulate_return'] = entry_value_invest * (1 + dataset[target_col]) # Set the return of a given entry value
 
         return dataset
 
@@ -134,7 +135,7 @@ class RealBacktest():
         df_merged = df_merged[df_merged['Date'] >= parameters.start_date_backtest]
 
         # Prepare columns for results
-        result_columns = ['Date', 'Symbol', 'model', 'Cumulative_Return_7d', 'Cumulative_Return_15d', 'Cumulative_Return_30d', 'number_correct_entries', 'number_entries', 'percent_correct_entries', 'simulate_entry', 'simulate_return', 'first_entry', 'last_entry']
+        result_columns = ['Symbol', 'model', 'number_correct_entries', 'number_entries', 'percent_correct_entries', 'simulate_entry', 'simulate_return', 'simulate_variation', 'first_entry', 'last_entry']
         backtest_dataset_return = []
 
         unique_cryptos = df_merged['Symbol'].unique()
@@ -155,10 +156,10 @@ class RealBacktest():
                 # Sort values by Date
                 signal_df = signal_df.sort_values(by='Date')
 
-                # Calculate cumulative returns
-                signal_df['Cumulative_Return_7d'] = (1 + signal_df['target_7d']).cumprod() - 1
-                signal_df['Cumulative_Return_15d'] = (1 + signal_df['target_15d']).cumprod() - 1
-                signal_df['Cumulative_Return_30d'] = (1 + signal_df['target_30d']).cumprod() - 1
+                # Calculate cumulative returns (legacy)
+                # signal_df['Cumulative_Return_7d'] = (1 + signal_df['target_7d']).cumprod() - 1
+                # signal_df['Cumulative_Return_15d'] = (1 + signal_df['target_15d']).cumprod() - 1
+                # signal_df['Cumulative_Return_30d'] = (1 + signal_df['target_30d']).cumprod() - 1
 
                 # Verify if the target was reached
                 signal_suffix = col.split('_')[-2][-1]
@@ -169,19 +170,21 @@ class RealBacktest():
                 signal_df = self.simulate_return_value(signal_df, target_suffix)
                 
                 # Get the last row of cumulative return and prepare results
-                last_row = signal_df.iloc[-1]
+                # last_row = signal_df.iloc[-1]
+                
                 cumulative_return = {
-                    'Date': last_row['Date'],
+                    # 'Date': last_row['Date'],
                     'Symbol': crypto,
                     'model': col,
-                    'Cumulative_Return_7d': last_row['Cumulative_Return_7d'],
-                    'Cumulative_Return_15d': last_row['Cumulative_Return_15d'],
-                    'Cumulative_Return_30d': last_row['Cumulative_Return_30d'],
+                    # 'Cumulative_Return_7d': last_row['Cumulative_Return_7d'],
+                    # 'Cumulative_Return_15d': last_row['Cumulative_Return_15d'],
+                    # 'Cumulative_Return_30d': last_row['Cumulative_Return_30d'],
                     'number_correct_entries': sum(signal_df['reached_target']),
                     'number_entries': len(signal_df),
                     'percent_correct_entries': sum(signal_df['reached_target'])/len(signal_df), 
                     'simulate_entry': sum(signal_df['simulate_entry']),
                     'simulate_return': sum(signal_df['simulate_return']),
+                    'simulate_variatin': (sum(signal_df['simulate_return']) - sum(signal_df['simulate_entry'])) / sum(signal_df['simulate_entry']),
                     'first_entry': signal_df['Date'].min(),
                     'last_entry': signal_df['Date'].max()
                 }
