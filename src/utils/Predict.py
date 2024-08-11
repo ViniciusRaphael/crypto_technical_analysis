@@ -233,12 +233,12 @@ class Deploy():
         daily_outcome = self.build_crypto_scores(cls_Models, parameters, choosen_date, False)
         print(daily_outcome)
 
-        file_name_outcome = f"{parameters.path_daily_outcome}_{str(daily_outcome['Date'].max())}.csv"
-
         # Salvar o DataFrame em um arquivo CSV
-        if not os.path.exists(file_name_outcome):
+        if not os.path.exists(parameters.path_daily_outcome):
             # Cria a pasta
-            os.makedirs(file_name_outcome)
+            os.makedirs(parameters.path_daily_outcome)
+
+        file_name_outcome = f"{parameters.path_daily_outcome}/proba_scores_{str(daily_outcome['Date'].max())}.csv"
 
         # Transform the wide dataset into long
         if parameters.melt_daily_predict == True:
