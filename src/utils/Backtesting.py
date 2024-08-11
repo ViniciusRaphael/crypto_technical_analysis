@@ -94,6 +94,29 @@ class RealBacktest():
 
             # print(self.specific_crypto_return(signals_model, 'SOL-USD', False))
 
+    def reached_target(self, col_name, ref_dataset, signal_suffix, target_suffix):
+        
+        target_col = 'target_' + target_suffix + 'd'
+        if signal_suffix == 'P': 
+            ref_dataset['reached_target'] = ref_dataset[target_col] >= int(target_suffix)/100
+
+        elif signal_suffix == 'N':
+            ref_dataset['reached_target'] = ref_dataset[target_col] <= int(target_suffix)/100
+        
+        else:
+            raise Exception('Invalid signal_suffix [P or N]')
+
+
+        return ref_dataset
+    
+    def simulate_return_value(self, dataset, target_suffix):
+        target_col = 'target_' + target_suffix + 'd'
+
+        dataset['simulate_entry'] = 100
+        dataset['simulate_return'] = 100 * (1 + dataset[target_col])
+
+        return dataset
+
     def all_entries_backtest(self, parameters):
         # Read in the necessary files
         predicted_backtest = pd.read_csv(parameters.file_backtest)
@@ -111,7 +134,7 @@ class RealBacktest():
         df_merged = df_merged[df_merged['Date'] >= parameters.start_date_backtest]
 
         # Prepare columns for results
-        result_columns = ['Date', 'Symbol', 'model', 'Cumulative_Return_7d', 'Cumulative_Return_15d', 'Cumulative_Return_30d', 'number_entries', 'first_entry', 'last_entry']
+        result_columns = ['Date', 'Symbol', 'model', 'Cumulative_Return_7d', 'Cumulative_Return_15d', 'Cumulative_Return_30d', 'number_correct_entries', 'number_entries', 'percent_correct_entries', 'simulate_entry', 'simulate_return', 'first_entry', 'last_entry']
         backtest_dataset_return = []
 
         unique_cryptos = df_merged['Symbol'].unique()
@@ -137,6 +160,14 @@ class RealBacktest():
                 signal_df['Cumulative_Return_15d'] = (1 + signal_df['target_15d']).cumprod() - 1
                 signal_df['Cumulative_Return_30d'] = (1 + signal_df['target_30d']).cumprod() - 1
 
+                # Verify if the target was reached
+                signal_suffix = col.split('_')[-2][-1]
+                target_suffix = col.split('_')[-1][:-1]
+                signal_df = self.reached_target(col, signal_df, signal_suffix, target_suffix)
+
+                # Simulate a value return with an arbitrary value
+                signal_df = self.simulate_return_value(signal_df, target_suffix)
+                
                 # Get the last row of cumulative return and prepare results
                 last_row = signal_df.iloc[-1]
                 cumulative_return = {
@@ -146,7 +177,11 @@ class RealBacktest():
                     'Cumulative_Return_7d': last_row['Cumulative_Return_7d'],
                     'Cumulative_Return_15d': last_row['Cumulative_Return_15d'],
                     'Cumulative_Return_30d': last_row['Cumulative_Return_30d'],
+                    'number_correct_entries': sum(signal_df['reached_target']),
                     'number_entries': len(signal_df),
+                    'percent_correct_entries': sum(signal_df['reached_target'])/len(signal_df), 
+                    'simulate_entry': sum(signal_df['simulate_entry']),
+                    'simulate_return': sum(signal_df['simulate_return']),
                     'first_entry': signal_df['Date'].min(),
                     'last_entry': signal_df['Date'].max()
                 }
@@ -156,8 +191,8 @@ class RealBacktest():
 
         # Convert list of results to DataFrame and save
         backtest_dataset_return_df = pd.DataFrame(backtest_dataset_return, columns=result_columns)
-        backtest_dataset_return_df.to_csv(f"{parameters.path_model_backtest}/_simple_backtest_{parameters.min_threshold_signals}_.csv", index=True)
-
+        backtest_dataset_return_df.to_csv(f"{parameters.path_model_backtest}/_simple_backtest_{parameters.min_threshold_signals}_.csv", index=True, sep=';', decimal=',')
+        
         print(f'File saved in {parameters.path_model_backtest}/_simple_backtest_{parameters.min_threshold_signals}_.csv')
 
         return backtest_dataset_return_df
