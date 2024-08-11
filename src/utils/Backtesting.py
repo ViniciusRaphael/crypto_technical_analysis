@@ -156,11 +156,6 @@ class RealBacktest():
                 # Sort values by Date
                 signal_df = signal_df.sort_values(by='Date')
 
-                # Calculate cumulative returns (legacy)
-                # signal_df['Cumulative_Return_7d'] = (1 + signal_df['target_7d']).cumprod() - 1
-                # signal_df['Cumulative_Return_15d'] = (1 + signal_df['target_15d']).cumprod() - 1
-                # signal_df['Cumulative_Return_30d'] = (1 + signal_df['target_30d']).cumprod() - 1
-
                 # Verify if the target was reached
                 signal_suffix = col.split('_')[-2][-1]
                 target_suffix = col.split('_')[-1][:-1]
@@ -173,12 +168,8 @@ class RealBacktest():
                 # last_row = signal_df.iloc[-1]
 
                 cumulative_return = {
-                    # 'Date': last_row['Date'],
                     'Symbol': crypto,
                     'model': col,
-                    # 'Cumulative_Return_7d': last_row['Cumulative_Return_7d'],
-                    # 'Cumulative_Return_15d': last_row['Cumulative_Return_15d'],
-                    # 'Cumulative_Return_30d': last_row['Cumulative_Return_30d'],
                     'number_correct_entries': sum(signal_df['reached_target']),
                     'number_entries': len(signal_df),
                     'percent_correct_entries': sum(signal_df['reached_target'])/len(signal_df), 
@@ -194,8 +185,11 @@ class RealBacktest():
 
         # Convert list of results to DataFrame and save
         backtest_dataset_return_df = pd.DataFrame(backtest_dataset_return, columns=result_columns)
-        backtest_dataset_return_df.to_csv(f"{parameters.path_model_backtest}/_simple_backtest_{parameters.min_threshold_signals}_.csv", index=True, sep=';', decimal=',')
         
-        print(f'File saved in {parameters.path_model_backtest}/_simple_backtest_{parameters.min_threshold_signals}_.csv')
+        daily_output_filename = f'{parameters.path_model_backtest}/_simple_backtest_{parameters.version_model}_{parameters.min_threshold_signals}_.csv'
+
+        backtest_dataset_return_df.to_csv(daily_output_filename, index=True, sep=';', decimal=',')
+        
+        print(f'Daily predict saved in {daily_output_filename}')
 
         return backtest_dataset_return_df

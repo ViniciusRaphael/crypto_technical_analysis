@@ -77,7 +77,7 @@ file_prep_models = 'crypto_data_prep_models.parquet'
 
 file_log_models = Path(f'{suffix_platform}output/accuracy') / f'log_model_{version_model}.csv'
 path_models = Path(f'{suffix_platform}output/models/{version_model}')
-file_backtest = Path(f'{suffix_platform}output/predict/compound_backtest.csv')
+file_backtest = Path(f'{suffix_platform}output/predict/compound_backtest_{version_model}.csv')
 path_daily_outcome = Path(f'{suffix_platform}output/predict/{version_model}')
 path_model_signals = Path(f'{suffix_platform}output/signals/')
 path_model_backtest = Path(f'{suffix_platform}output/backtest/')
