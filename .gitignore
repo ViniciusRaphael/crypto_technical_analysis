@@ -1,6 +1,7 @@
 # Projects base output files
 /output/predict
 /output/signals
+/output/models/customized
 
 
 # Byte-compiled / optimized / DLL files

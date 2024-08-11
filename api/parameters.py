@@ -15,9 +15,9 @@ import platform
 
 # Process selections
 execute_filtered = False                    # It will filter symbols by the filter_symbols parameter
-execute_data_ingestion = False               # It will play the ingestion pipeline
-execute_data_indicators = False              # It will play the indicators pipeline
-execute_data_prep_models = False             # It will play the data prep models pipeline (used to train the model)
+execute_data_ingestion = True               # It will play the ingestion pipeline
+execute_data_indicators = True              # It will play the indicators pipeline
+execute_data_prep_models = True             # It will play the data prep models pipeline (used to train the model)
 execute_train_models = False                # It will play the train models pipeline (it will sobescribe the version_model, or set a new value in version_model)
 execute_historical_predict = False          # It will play the backtest pipeline, for futher scenarios validation
 execute_daily_predict = True                # It will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
@@ -29,11 +29,11 @@ execute_backtest_simple = False                    # It will play the backtest p
 # Configs scores and model version
 score_metric = 'precision'                   # Metric to compose the score. Options: accuracy, precision, recall, auc_roc, f1_score
 version_model = 'v1.0'                       # Define the version. If it doesnt exist, it will be created (when trained the model) otherwise, it will used the previously one
-num_select_models = 20           # select the max number of models to return (0 for fall)
-min_threshold_models = 0.4       # select the minimum threshold for select the model (considering the score_metric)
-min_threshold_signals = 0.7      # select the minimum threshold for considering a signal as a entrance (it consider's the selected models (that passed in threshold))
-filter_symbols = ['SOL-USD', 'BTC-USD', 'ETH-USD']  # Filter symbols only when the execute_filtered is True
-
+num_select_models = 30           # select the max number of models to return (0 for all)
+min_threshold_models = 0       # select the minimum threshold for select the model (considering the score_metric)
+min_threshold_signals = 0.7     # select the minimum threshold for considering a signal as a entrance (it consider's the selected models (that passed in threshold))
+filter_symbols = ['SOL-USD']  # Filter symbols only when the execute_filtered is True
+melt_daily_predict = True        # Transform columns into rows (empilhado)
 
 ########################################## Less frequently changed
 
@@ -78,7 +78,7 @@ file_prep_models = 'crypto_data_prep_models.parquet'
 file_log_models = Path(f'{suffix_platform}output/accuracy') / f'log_model_{version_model}.csv'
 path_models = Path(f'{suffix_platform}output/models/{version_model}')
 file_backtest = Path(f'{suffix_platform}output/predict/compound_backtest.csv')
-path_daily_outcome = Path(f'{suffix_platform}output/predict/proba_scores')
+path_daily_outcome = Path(f'{suffix_platform}output/predict/{version_model}/proba_scores')
 path_model_signals = Path(f'{suffix_platform}output/signals/')
 path_model_backtest = Path(f'{suffix_platform}output/backtest/')
 
