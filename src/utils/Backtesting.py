@@ -90,7 +90,7 @@ class RealBacktest():
 
             total_return = self.all_crypto_return(signals_model)
 
-            total_return.to_csv(str(parameters.path_model_backtest) + f'/{signal}', index=True)
+            total_return.to_csv(str(parameters.path_model_backtest) + f'/{signal}', index=True, sep=';', decimal=',')
 
             # print(self.specific_crypto_return(signals_model, 'SOL-USD', False))
 
@@ -171,7 +171,7 @@ class RealBacktest():
                 
                 # Get the last row of cumulative return and prepare results
                 # last_row = signal_df.iloc[-1]
-                
+
                 cumulative_return = {
                     # 'Date': last_row['Date'],
                     'Symbol': crypto,

@@ -218,7 +218,7 @@ class Deploy():
             backtest_dataset = pd.concat([backtest_dataset, backtest_dataset_date])
             
         # Salvar o DataFrame em um arquivo CSV
-        backtest_dataset.to_csv(parameters.file_backtest, index=True)
+        backtest_dataset.to_csv(parameters.file_backtest, index=True, sep=';', decimal=',')
 
         print(f'Arquivo salvo em {parameters.file_backtest}')
     
@@ -234,7 +234,7 @@ class Deploy():
 
         # Salvar o DataFrame em um arquivo CSV
         file_name_outcome = f"{parameters.path_daily_outcome}_{str(daily_outcome['Date'].max())}.csv"
-        daily_outcome.to_csv(file_name_outcome, index=True)
+        daily_outcome.to_csv(file_name_outcome, index=True, sep=';', decimal=',')
 
         print(f'Arquivo salvo em {file_name_outcome}')
 

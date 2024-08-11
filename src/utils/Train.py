@@ -183,7 +183,7 @@ class Models():
         df['f1_score'] = 2 * ((df['precision'] * df['recall']) / (df['precision'] + df['recall'])) # F1 Score: Média harmônica da precisão e da revocação, usada para balancear os trade-offs entre essas duas métricas.
         
         # Apendar o DataFrame em um arquivo CSV de resultado
-        df.to_csv(dest_path, mode='a', index=False, header=False)
+        df.to_csv(dest_path, mode='a', index=False, header=False, sep=';', decimal=',')
 
         return df
     
