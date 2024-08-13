@@ -6,6 +6,7 @@ import pandas as pd
 import os
 import numpy as np
 
+
 class RealBacktest():
     def __init__(self) -> None:
         pass
@@ -90,9 +91,38 @@ class RealBacktest():
 
             total_return = self.all_crypto_return(signals_model)
 
-            total_return.to_csv(str(parameters.path_model_backtest) + f'/{signal}', index=True)
+            total_return.to_csv(str(parameters.path_model_backtest) + f'/{signal}', index=True, sep=';', decimal=',')
 
             # print(self.specific_crypto_return(signals_model, 'SOL-USD', False))
+
+
+    def reached_target(self, dataset, signal_suffix, target_suffix, percent_suffix):
+        
+        target_col = 'target_' + target_suffix + 'd'
+        
+
+        if signal_suffix == 'P': 
+            dataset['reached_target'] = dataset[target_col] >= int(percent_suffix)/100
+
+        elif signal_suffix == 'N':
+            dataset['reached_target'] = dataset[target_col] <= - int(percent_suffix)/100
+        
+        else:
+            raise Exception('Invalid signal_suffix [P or N]')
+
+
+        return dataset
+    
+    
+    def simulate_return_value(self, dataset, target_suffix):
+        target_col = 'target_' + target_suffix + 'd'
+        entry_value_invest = 100
+
+        dataset['simulate_entry'] = entry_value_invest 
+        dataset['simulate_return'] = entry_value_invest * (1 + dataset[target_col]) # Set the return of a given entry value
+
+        return dataset
+
 
     def all_entries_backtest(self, parameters):
         # Read in the necessary files
@@ -104,14 +134,17 @@ class RealBacktest():
         df_merged = pd.merge(dados_filter, predicted_backtest, on=['Date', 'Symbol'], how='inner')
 
         # Clean data by replacing inf and dropping NaNs
-        df_merged.replace([np.inf, -np.inf], np.nan, inplace=True)
-        df_merged.dropna(inplace=True)
+        # df_merged.replace([np.inf, -np.inf], np.nan, inplace=True)
+        # df_merged.dropna(inplace=True)
 
         # Filter for dates and threshold only once
         df_merged = df_merged[df_merged['Date'] >= parameters.start_date_backtest]
+        log_models = parameters.cls_Predict.choose_best_models(parameters)
+
+        models = list(set(log_models['name_model']))
 
         # Prepare columns for results
-        result_columns = ['Date', 'Symbol', 'model', 'Cumulative_Return_7d', 'Cumulative_Return_15d', 'Cumulative_Return_30d', 'number_entries', 'first_entry', 'last_entry']
+        result_columns = ['Symbol', 'model', 'number_correct_entries', 'number_entries', 'percent_correct_entries', 'simulate_entry', 'simulate_return', 'simulate_variation', 'first_entry', 'last_entry']
         backtest_dataset_return = []
 
         unique_cryptos = df_merged['Symbol'].unique()
@@ -122,9 +155,10 @@ class RealBacktest():
 
             # Filter once per crypto
             crypto_df = df_merged[df_merged['Symbol'] == crypto]
-            
-            for col in [c for c in df_merged.columns if (c[-1] == 'd' and c.split('_')[0] != 'target')]:
-                signal_df = crypto_df[crypto_df[col] >= parameters.min_threshold_signals]
+            for col in models:
+                signal_df = crypto_df[['Symbol', 'Date', 'Volume', 'target_7d', 'target_15d', 'target_30d','Close', col]]
+
+                signal_df = signal_df[crypto_df[col] >= parameters.min_threshold_signals]
 
                 if signal_df.empty:
                     continue
@@ -132,32 +166,40 @@ class RealBacktest():
                 # Sort values by Date
                 signal_df = signal_df.sort_values(by='Date')
 
-                # Calculate cumulative returns
-                signal_df['Cumulative_Return_7d'] = (1 + signal_df['target_7d']).cumprod() - 1
-                signal_df['Cumulative_Return_15d'] = (1 + signal_df['target_15d']).cumprod() - 1
-                signal_df['Cumulative_Return_30d'] = (1 + signal_df['target_30d']).cumprod() - 1
+                # Verify if the target was reached
+                signal_suffix = col.split('_')[-2][-1]
+                target_suffix = col.split('_')[-1][:-1]
+                percent_suffix = col.split('_')[-2][:-1]
 
-                # Get the last row of cumulative return and prepare results
-                last_row = signal_df.iloc[-1]
+                signal_df = self.reached_target(signal_df, signal_suffix, target_suffix, percent_suffix)
+
+
+                # Simulate a value return with an arbitrary value
+                signal_df = self.simulate_return_value(signal_df, target_suffix)
                 cumulative_return = {
-                    'Date': last_row['Date'],
                     'Symbol': crypto,
                     'model': col,
-                    'Cumulative_Return_7d': last_row['Cumulative_Return_7d'],
-                    'Cumulative_Return_15d': last_row['Cumulative_Return_15d'],
-                    'Cumulative_Return_30d': last_row['Cumulative_Return_30d'],
+                    'number_correct_entries': sum(signal_df['reached_target']),
                     'number_entries': len(signal_df),
+                    'percent_correct_entries': sum(signal_df['reached_target'])/len(signal_df), 
+                    'simulate_entry': sum(signal_df['simulate_entry']),
+                    'simulate_return': sum(signal_df['simulate_return']),
+                    'simulate_variation': (sum(signal_df['simulate_return']) - sum(signal_df['simulate_entry'])) / sum(signal_df['simulate_entry']),
                     'first_entry': signal_df['Date'].min(),
                     'last_entry': signal_df['Date'].max()
                 }
+
                 backtest_dataset_return.append(cumulative_return)
 
             count += 1
 
         # Convert list of results to DataFrame and save
         backtest_dataset_return_df = pd.DataFrame(backtest_dataset_return, columns=result_columns)
-        backtest_dataset_return_df.to_csv(f"{parameters.path_model_backtest}/_simple_backtest_{parameters.min_threshold_signals}_.csv", index=True)
+        
+        daily_output_filename = f'{parameters.path_model_backtest}/_simple_backtest_{parameters.version_model}_{parameters.min_threshold_signals}_.csv'
 
-        print(f'File saved in {parameters.path_model_backtest}/_simple_backtest_{parameters.min_threshold_signals}_.csv')
+        backtest_dataset_return_df.to_csv(daily_output_filename, index=True, sep=';', decimal=',')
+        
+        print(f'Daily predict saved in {daily_output_filename}')
 
         return backtest_dataset_return_df
