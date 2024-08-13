@@ -6,6 +6,7 @@ import pandas as pd
 import os
 import numpy as np
 
+
 class RealBacktest():
     def __init__(self) -> None:
         pass
@@ -94,20 +95,24 @@ class RealBacktest():
 
             # print(self.specific_crypto_return(signals_model, 'SOL-USD', False))
 
-    def reached_target(self, col_name, ref_dataset, signal_suffix, target_suffix):
+
+    def reached_target(self, dataset, signal_suffix, target_suffix, percent_suffix):
         
         target_col = 'target_' + target_suffix + 'd'
+        
+
         if signal_suffix == 'P': 
-            ref_dataset['reached_target'] = ref_dataset[target_col] >= int(target_suffix)/100
+            dataset['reached_target'] = dataset[target_col] >= int(percent_suffix)/100
 
         elif signal_suffix == 'N':
-            ref_dataset['reached_target'] = ref_dataset[target_col] <= int(target_suffix)/100
+            dataset['reached_target'] = dataset[target_col] <= - int(percent_suffix)/100
         
         else:
             raise Exception('Invalid signal_suffix [P or N]')
 
 
-        return ref_dataset
+        return dataset
+    
     
     def simulate_return_value(self, dataset, target_suffix):
         target_col = 'target_' + target_suffix + 'd'
@@ -117,6 +122,7 @@ class RealBacktest():
         dataset['simulate_return'] = entry_value_invest * (1 + dataset[target_col]) # Set the return of a given entry value
 
         return dataset
+
 
     def all_entries_backtest(self, parameters):
         # Read in the necessary files
@@ -128,11 +134,14 @@ class RealBacktest():
         df_merged = pd.merge(dados_filter, predicted_backtest, on=['Date', 'Symbol'], how='inner')
 
         # Clean data by replacing inf and dropping NaNs
-        df_merged.replace([np.inf, -np.inf], np.nan, inplace=True)
-        df_merged.dropna(inplace=True)
+        # df_merged.replace([np.inf, -np.inf], np.nan, inplace=True)
+        # df_merged.dropna(inplace=True)
 
         # Filter for dates and threshold only once
         df_merged = df_merged[df_merged['Date'] >= parameters.start_date_backtest]
+        log_models = parameters.cls_Predict.choose_best_models(parameters)
+
+        models = list(set(log_models['name_model']))
 
         # Prepare columns for results
         result_columns = ['Symbol', 'model', 'number_correct_entries', 'number_entries', 'percent_correct_entries', 'simulate_entry', 'simulate_return', 'simulate_variation', 'first_entry', 'last_entry']
@@ -146,9 +155,10 @@ class RealBacktest():
 
             # Filter once per crypto
             crypto_df = df_merged[df_merged['Symbol'] == crypto]
-            
-            for col in [c for c in df_merged.columns if (c[-1] == 'd' and c.split('_')[0] != 'target')]:
-                signal_df = crypto_df[crypto_df[col] >= parameters.min_threshold_signals]
+            for col in models:
+                signal_df = crypto_df[['Symbol', 'Date', 'Volume', 'target_7d', 'target_15d', 'target_30d','Close', col]]
+
+                signal_df = signal_df[crypto_df[col] >= parameters.min_threshold_signals]
 
                 if signal_df.empty:
                     continue
@@ -159,14 +169,13 @@ class RealBacktest():
                 # Verify if the target was reached
                 signal_suffix = col.split('_')[-2][-1]
                 target_suffix = col.split('_')[-1][:-1]
-                signal_df = self.reached_target(col, signal_df, signal_suffix, target_suffix)
+                percent_suffix = col.split('_')[-2][:-1]
+
+                signal_df = self.reached_target(signal_df, signal_suffix, target_suffix, percent_suffix)
+
 
                 # Simulate a value return with an arbitrary value
                 signal_df = self.simulate_return_value(signal_df, target_suffix)
-                
-                # Get the last row of cumulative return and prepare results
-                # last_row = signal_df.iloc[-1]
-
                 cumulative_return = {
                     'Symbol': crypto,
                     'model': col,
@@ -175,10 +184,11 @@ class RealBacktest():
                     'percent_correct_entries': sum(signal_df['reached_target'])/len(signal_df), 
                     'simulate_entry': sum(signal_df['simulate_entry']),
                     'simulate_return': sum(signal_df['simulate_return']),
-                    'simulate_variatin': (sum(signal_df['simulate_return']) - sum(signal_df['simulate_entry'])) / sum(signal_df['simulate_entry']),
+                    'simulate_variation': (sum(signal_df['simulate_return']) - sum(signal_df['simulate_entry'])) / sum(signal_df['simulate_entry']),
                     'first_entry': signal_df['Date'].min(),
                     'last_entry': signal_df['Date'].max()
                 }
+
                 backtest_dataset_return.append(cumulative_return)
 
             count += 1
