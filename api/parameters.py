@@ -27,13 +27,13 @@ execute_backtest_simple = False                    # It will play the backtest p
 
 
 # Configs scores and model version
-score_metric = 'precision'                   # Metric to compose the score. Options: accuracy, precision, recall, auc_roc, f1_score
+score_metric = 'f1_score'                   # Metric to compose the score. Options: accuracy, precision, recall, auc_roc, f1_score
 version_model = 'v1.0'                       # Define the version. If it doesnt exist, it will be created (when trained the model) otherwise, it will used the previously one
-num_select_models = 30           # select the max number of models to return (0 for all)
-min_threshold_models = 0       # select the minimum threshold for select the model (considering the score_metric)
-min_threshold_signals = 0.7     # select the minimum threshold for considering a signal as a entrance (it consider's the selected models (that passed in threshold))
+num_select_models = 0          # select the max number of models to return (0 for all)
+min_threshold_models = 0.5       # select the minimum threshold for select the model (considering the score_metric)
+min_threshold_signals = 0.55     # select the minimum threshold for considering a signal as a entrance (it consider's the selected models (that passed in threshold))
 filter_symbols = ['SOL-USD']  # Filter symbols only when the execute_filtered is True
-melt_daily_predict = True        # Transform columns into rows (empilhado)
+melt_daily_predict = True        # Transform columns into rows (predict_proba - empilhado)
 
 ########################################## Less frequently changed
 
@@ -50,7 +50,6 @@ removing_cols_for_train = ['Date', 'Symbol', 'Dividends', 'Stock Splits']      #
 # Auxiliary definitions 
 
 cls_FileHandling = FileHandling()
-# cls_File = FileHandling()
 cls_Models = Models()
 cls_Predict = Deploy()
 cls_DataPrep = DataPrep()
