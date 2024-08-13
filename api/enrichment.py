@@ -23,7 +23,7 @@ if parameters.execute_historical_predict:
     parameters.cls_Predict.historical_outcome(cls_Models, parameters)
 
 if parameters.execute_daily_predict: 
-    parameters.cls_Predict.daily_outcome(cls_Models, parameters, '2024-07-29')
+    parameters.cls_Predict.daily_outcome(cls_Models, parameters, '')
 
 if parameters.execute_signals: 
     parameters.cls_Signals.build_signals(parameters)
