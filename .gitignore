@@ -1,3 +1,10 @@
+# Projects base output files
+/output/predict
+/output/signals
+/output/models/customized
+/output/accuracy/log_model_customized.csv
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
