@@ -1,7 +1,6 @@
 import pandas as pd
-
 import joblib
-
+import os
 import warnings
 
 
@@ -149,6 +148,8 @@ class Deploy():
 
         dados_input_select = dados_prep_models if backtest else dados_w_indicators
 
+        dados_input_select = parameters.cls_FileHandling.get_selected_symbols(dados_input_select, parameters) if parameters.execute_filtered else dados_input_select
+
         # Listar todos os itens no diretório e filtrar apenas os arquivos
         # models = [f for f in os.listdir(parameters.path_models) if os.path.isfile(os.path.join(parameters.path_models, f))]
 
@@ -227,14 +228,23 @@ class Deploy():
     
     def daily_outcome(self, cls_Models, parameters, choosen_date):
         
-        print(f'Predict selected date')
-   
+        print(f'Predicting selected date')
+
         daily_outcome = self.build_crypto_scores(cls_Models, parameters, choosen_date, False)
         print(daily_outcome)
 
         # Salvar o DataFrame em um arquivo CSV
-        file_name_outcome = f"{parameters.path_daily_outcome}_{str(daily_outcome['Date'].max())}.csv"
-        daily_outcome.to_csv(file_name_outcome, index=True)
+        if not os.path.exists(parameters.path_daily_outcome):
+            # Cria a pasta
+            os.makedirs(parameters.path_daily_outcome)
+
+        file_name_outcome = f"{parameters.path_daily_outcome}/proba_scores_{str(daily_outcome['Date'].max())}.csv"
+
+        # Transform the wide dataset into long
+        if parameters.melt_daily_predict == True:
+            daily_outcome = daily_outcome.melt(id_vars=['Symbol', 'Date', 'Close'], var_name='Models', value_name='Probability')
+
+        daily_outcome.to_csv(file_name_outcome, index=True, sep=';', decimal=',')
 
         print(f'Arquivo salvo em {file_name_outcome}')
 
