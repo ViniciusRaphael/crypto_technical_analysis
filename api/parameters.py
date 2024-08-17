@@ -30,14 +30,14 @@ execute_simulations = True
 score_metric = 'f1_score'                   # Metric to compose the score. Options: accuracy, precision, recall, auc_roc, f1_score
 version_model = 'v1.0'                       # Define the version. If it doesnt exist, it will be created (when trained the model) otherwise, it will used the previously one
 num_select_models = 0          # select the max number of models to return (0 for all)
-min_threshold_models = 0.5       # select the minimum threshold for select the model (considering the score_metric)
-min_threshold_signals = 0.55     # select the minimum threshold for considering a signal as a entrance (it consider's the selected models (that passed in threshold))
+min_threshold_models = 0.50       # select the minimum threshold for select the model (considering the score_metric)
+min_threshold_signals = 0.65     # select the minimum threshold for considering a signal as a entrance (it consider's the selected models (that passed in threshold))
 filter_symbols = ['SOL-USD']  # Filter symbols only when the execute_filtered is True
 melt_daily_predict = True        # Transform columns into rows (predict_proba - empilhado)
 
-numbers_of_simulations = 50
+numbers_of_simulations = 10_000
 numbers_of_entries_day_simulations = 5
-
+return_crypto_in_simulations = True
 
 ########################################## Less frequently changed
 

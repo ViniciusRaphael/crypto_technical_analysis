@@ -225,7 +225,7 @@ class RealBacktest():
         models = list(set(log_models['name_model']))
 
         # Prepare columns for results
-        result_columns = ['simulation', 'Date', 'model', 'number_correct_entries', 'number_entries', 'percent_correct_entries', 'simulate_entry', 'simulate_return', 'simulate_variation']
+        result_columns = ['simulation', 'model', 'number_correct_entries', 'number_entries', 'percent_correct_entries', 'simulate_entry', 'simulate_return', 'simulate_variation', 'cryptos_in_simulation']
 
         simulation_dataset_return_compiled = []
 
@@ -242,7 +242,7 @@ class RealBacktest():
             
             print(f'Processing simulations for {col} ({count} of {len(models)})')
 
-            signal_df = df_merged[['Symbol', 'Date', 'Volume', 'target_7d', 'target_15d', 'target_30d','Close', col]]
+            signal_df = df_merged[['Symbol', 'Volume', 'target_7d', 'target_15d', 'target_30d','Close', col]]
 
             signal_df = signal_df[signal_df[col] >= parameters.min_threshold_signals]
 
@@ -281,6 +281,7 @@ class RealBacktest():
                     'simulate_entry': sum(signal_simulation['simulate_entry']),
                     'simulate_return': sum(signal_simulation['simulate_return']),
                     'simulate_variation': (sum(signal_simulation['simulate_return']) - sum(signal_simulation['simulate_entry'])) / sum(signal_simulation['simulate_entry']),
+                    'cryptos_in_simulation': set(signal_simulation['Symbol'].unique()) if parameters.return_crypto_in_simulations else ''
                 }
 
                 simulation_dataset_return_compiled.append(cumulative_return)
@@ -294,8 +295,8 @@ class RealBacktest():
         
         simulation_output_filename = f'{parameters.path_model_simulations}_simulation_{parameters.min_threshold_signals}_{parameters.numbers_of_simulations}_{parameters.numbers_of_entries_day_simulations}.csv'
 
-        simulation_dataset.to_csv(simulation_output_filename, index=True, sep=';', decimal=',')
+        simulation_dataset.to_csv(simulation_output_filename, index=False, sep=';', decimal=',')
         
-        print(f'Daily predict saved in {simulation_output_filename}')
+        print(f'Simulations saved in {simulation_output_filename}')
 
         return simulation_dataset
