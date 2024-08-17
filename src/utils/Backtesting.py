@@ -229,67 +229,70 @@ class RealBacktest():
 
         simulation_dataset_return_compiled = []
 
-        unique_dates = df_merged['Date'].unique()
+        # unique_dates = df_merged['Date'].unique()
         count = 1
 
-        for date_select in unique_dates:
-            print(f'Processing {date_select} ({count} of {len(date_select)})')
+        # for date_select in unique_dates:
+        #     print(f'Processing {date_select} ({count} of {len(date_select)})')
 
             # Filter once per crypto
-            crypto_df = df_merged[df_merged['Date'] == date_select]
-            for col in models:
+            # crypto_df = df_merged[df_merged['Date'] == date_select]
+
+        for col in models:
+            
+            print(f'Processing simulations for {col} ({count} of {len(models)})')
+
+            signal_df = df_merged[['Symbol', 'Date', 'Volume', 'target_7d', 'target_15d', 'target_30d','Close', col]]
+
+            signal_df = signal_df[signal_df[col] >= parameters.min_threshold_signals]
+
+            c_simulation = 1
+            # simulation_dataset_return = []
+
+            for simulation in range(1, parameters.numbers_of_simulations + 1, 1):
                 
-                print(f'Processing {col}')
+                # print(f'Processing simulation {simulation} ({c_simulation} of {parameters.numbers_of_simulations})')
 
-                signal_df = crypto_df[['Symbol', 'Date', 'Volume', 'target_7d', 'target_15d', 'target_30d','Close', col]]
+                signal_simulation = signal_df
 
-                signal_df = signal_df[crypto_df[col] >= parameters.min_threshold_signals]
+                signal_simulation['random_number'] = np.random.randint(0, 10_000_000, size=len(signal_simulation))
 
-                c_simulation = 1
-                # simulation_dataset_return = []
+                signal_simulation = signal_simulation.sort_values(by='random_number').head(parameters.numbers_of_entries_day_simulations)
 
-                for simulation in range(1, parameters.numbers_of_simulations + 1, 1):
-                    
-                    print(f'Processing simulation {simulation} ({c_simulation} of {parameters.numbers_of_simulations})')
+                if signal_simulation.empty:
+                    continue
 
-                    signal_df['random_number'] = np.random.randint(0, 10_000_000, size=len(signal_df))
+                # Verify if the target was reached
+                signal_suffix = col.split('_')[-2][-1]
+                target_suffix = col.split('_')[-1][:-1]
+                percent_suffix = col.split('_')[-2][:-1]
 
-                    signal_df = signal_df.sort_values(by='random_number').head(parameters.numbers_of_entries_day_simulations)
+                signal_simulation = self.reached_target(signal_simulation, signal_suffix, target_suffix, percent_suffix)
 
-                    if signal_df.empty:
-                        continue
+                # Simulate a value return with an arbitrary value
+                signal_simulation = self.simulate_return_value(signal_simulation, target_suffix)
+                cumulative_return = {
+                    'simulation': c_simulation,
+                    # 'Date': date_select,
+                    'model': col,
+                    'number_correct_entries': sum(signal_simulation['reached_target']),
+                    'number_entries': len(signal_simulation),
+                    'percent_correct_entries': sum(signal_simulation['reached_target'])/len(signal_simulation), 
+                    'simulate_entry': sum(signal_simulation['simulate_entry']),
+                    'simulate_return': sum(signal_simulation['simulate_return']),
+                    'simulate_variation': (sum(signal_simulation['simulate_return']) - sum(signal_simulation['simulate_entry'])) / sum(signal_simulation['simulate_entry']),
+                }
 
-                    # Verify if the target was reached
-                    signal_suffix = col.split('_')[-2][-1]
-                    target_suffix = col.split('_')[-1][:-1]
-                    percent_suffix = col.split('_')[-2][:-1]
+                simulation_dataset_return_compiled.append(cumulative_return)
 
-                    signal_df = self.reached_target(signal_df, signal_suffix, target_suffix, percent_suffix)
-
-                    # Simulate a value return with an arbitrary value
-                    signal_df = self.simulate_return_value(signal_df, target_suffix)
-                    cumulative_return = {
-                        'simulation': c_simulation,
-                        'Symbol': date_select,
-                        'model': col,
-                        'number_correct_entries': sum(signal_df['reached_target']),
-                        'number_entries': len(signal_df),
-                        'percent_correct_entries': sum(signal_df['reached_target'])/len(signal_df), 
-                        'simulate_entry': sum(signal_df['simulate_entry']),
-                        'simulate_return': sum(signal_df['simulate_return']),
-                        'simulate_variation': (sum(signal_df['simulate_return']) - sum(signal_df['simulate_entry'])) / sum(signal_df['simulate_entry']),
-                    }
-
-                    simulation_dataset_return_compiled.append(cumulative_return)
-
-                    c_simulation += 1
+                c_simulation += 1
                 
             count += 1
 
         # Convert list of results to DataFrame and save
         simulation_dataset = pd.DataFrame(simulation_dataset_return_compiled, columns=result_columns)
         
-        simulation_output_filename = f'{parameters.path_model_simulations}/{parameters.version_model}/simulation_{parameters.min_threshold_signals}_{parameters.numbers_of_simulations}_{parameters.numbers_of_entries_day_simulations}.csv'
+        simulation_output_filename = f'{parameters.path_model_simulations}_simulation_{parameters.min_threshold_signals}_{parameters.numbers_of_simulations}_{parameters.numbers_of_entries_day_simulations}.csv'
 
         simulation_dataset.to_csv(simulation_output_filename, index=True, sep=';', decimal=',')
         

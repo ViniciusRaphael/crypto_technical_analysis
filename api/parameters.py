@@ -84,7 +84,7 @@ file_backtest = Path(f'{suffix_platform}output/predict/compound_backtest_{versio
 path_daily_outcome = Path(f'{suffix_platform}output/predict/{version_model}')
 path_model_signals = Path(f'{suffix_platform}output/signals/')
 path_model_backtest = Path(f'{suffix_platform}output/backtest/')
-path_model_simulations = Path(f'{suffix_platform}output/simulations/')
+path_model_simulations = Path(f'{suffix_platform}output/simulations/{version_model}')
 
 
 ####################################################################
