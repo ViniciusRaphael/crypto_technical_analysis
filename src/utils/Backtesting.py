@@ -1,7 +1,6 @@
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import pandas as pd
 import vectorbt as vbt
-from pathlib import Path
 import pandas as pd
 import os
 import numpy as np
@@ -79,6 +78,7 @@ class RealBacktest():
 
         return final_result
 
+
     def backtest_models(self, parameters):
 
         signals = [f for f in os.listdir(parameters.path_model_signals) if os.path.isfile(os.path.join(parameters.path_model_signals, f))]
@@ -109,7 +109,6 @@ class RealBacktest():
         
         else:
             raise Exception('Invalid signal_suffix [P or N]')
-
 
         return dataset
     
