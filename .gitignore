@@ -2,6 +2,7 @@
 /output/predict
 /output/signals
 /output/models/customized
+/output/simulations
 /output/accuracy/log_model_customized.csv
 
 

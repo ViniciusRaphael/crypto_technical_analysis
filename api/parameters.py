@@ -15,25 +15,29 @@ import platform
 
 # Process selections
 execute_filtered = False                    # It will filter symbols by the filter_symbols parameter
-execute_data_ingestion = True               # It will play the ingestion pipeline
-execute_data_indicators = True              # It will play the indicators pipeline
-execute_data_prep_models = True             # It will play the data prep models pipeline (used to train the model)
+execute_data_ingestion = False               # It will play the ingestion pipeline
+execute_data_indicators = False              # It will play the indicators pipeline
+execute_data_prep_models = False             # It will play the data prep models pipeline (used to train the model)
 execute_train_models = False                # It will play the train models pipeline (it will sobescribe the version_model, or set a new value in version_model)
 execute_historical_predict = False          # It will play the backtest pipeline, for futher scenarios validation
-execute_daily_predict = True                # It will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
+execute_daily_predict = False                # It will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
 execute_signals = False                     # It will play the signals pipeline (considering the historical predict saved)
 execute_backtest = False                    # It will play the backtest pipeline (considering the signals datasets saved)
 execute_backtest_simple = False                    # It will play the backtest pipeline (considering the backtest predicted proba and entry every available entry, even if they are in a sequence of dates)
-
+execute_simulations = True
 
 # Configs scores and model version
 score_metric = 'f1_score'                   # Metric to compose the score. Options: accuracy, precision, recall, auc_roc, f1_score
 version_model = 'v1.0'                       # Define the version. If it doesnt exist, it will be created (when trained the model) otherwise, it will used the previously one
 num_select_models = 0          # select the max number of models to return (0 for all)
-min_threshold_models = 0.5       # select the minimum threshold for select the model (considering the score_metric)
-min_threshold_signals = 0.55     # select the minimum threshold for considering a signal as a entrance (it consider's the selected models (that passed in threshold))
+min_threshold_models = 0.50       # select the minimum threshold for select the model (considering the score_metric)
+min_threshold_signals = 0.65     # select the minimum threshold for considering a signal as a entrance (it consider's the selected models (that passed in threshold))
 filter_symbols = ['SOL-USD']  # Filter symbols only when the execute_filtered is True
 melt_daily_predict = True        # Transform columns into rows (predict_proba - empilhado)
+
+numbers_of_simulations = 10_000
+numbers_of_entries_day_simulations = 5
+return_crypto_in_simulations = True
 
 ########################################## Less frequently changed
 
@@ -80,6 +84,7 @@ file_backtest = Path(f'{suffix_platform}output/predict/compound_backtest_{versio
 path_daily_outcome = Path(f'{suffix_platform}output/predict/{version_model}')
 path_model_signals = Path(f'{suffix_platform}output/signals/')
 path_model_backtest = Path(f'{suffix_platform}output/backtest/')
+path_model_simulations = Path(f'{suffix_platform}output/simulations/{version_model}')
 
 
 ####################################################################

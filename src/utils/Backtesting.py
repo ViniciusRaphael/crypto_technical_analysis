@@ -1,7 +1,6 @@
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import pandas as pd
 import vectorbt as vbt
-from pathlib import Path
 import pandas as pd
 import os
 import numpy as np
@@ -79,6 +78,7 @@ class RealBacktest():
 
         return final_result
 
+
     def backtest_models(self, parameters):
 
         signals = [f for f in os.listdir(parameters.path_model_signals) if os.path.isfile(os.path.join(parameters.path_model_signals, f))]
@@ -109,7 +109,6 @@ class RealBacktest():
         
         else:
             raise Exception('Invalid signal_suffix [P or N]')
-
 
         return dataset
     
@@ -203,3 +202,100 @@ class RealBacktest():
         print(f'Daily predict saved in {daily_output_filename}')
 
         return backtest_dataset_return_df
+    
+
+    def simulator(self, parameters):
+        # Read in the necessary files
+        predicted_backtest = pd.read_csv(parameters.file_backtest)
+        dados_prep_models = parameters.cls_FileHandling.read_file(parameters.files_folder, parameters.file_prep_models)
+
+        # Filter and merge data
+        dados_filter = dados_prep_models[['Symbol', 'Date', 'Volume', 'target_7d', 'target_15d', 'target_30d']]
+        df_merged = pd.merge(dados_filter, predicted_backtest, on=['Date', 'Symbol'], how='inner')
+
+        # Clean data by replacing inf and dropping NaNs
+        # df_merged.replace([np.inf, -np.inf], np.nan, inplace=True)
+        # df_merged.dropna(inplace=True)
+
+        # Filter for dates and threshold only once
+        df_merged = df_merged[df_merged['Date'] >= parameters.start_date_backtest]
+        log_models = parameters.cls_Predict.choose_best_models(parameters)
+
+        models = list(set(log_models['name_model']))
+
+        # Prepare columns for results
+        result_columns = ['simulation', 'model', 'number_correct_entries', 'number_entries', 'percent_correct_entries', 'simulate_entry', 'simulate_return', 'simulate_variation', 'cryptos_in_simulation']
+
+        simulation_dataset_return_compiled = []
+
+        # unique_dates = df_merged['Date'].unique()
+        count = 1
+
+        # for date_select in unique_dates:
+        #     print(f'Processing {date_select} ({count} of {len(date_select)})')
+
+            # Filter once per crypto
+            # crypto_df = df_merged[df_merged['Date'] == date_select]
+
+        for col in models:
+            
+            print(f'Processing simulations for {col} ({count} of {len(models)})')
+
+            signal_df = df_merged[['Symbol', 'Volume', 'target_7d', 'target_15d', 'target_30d','Close', col]]
+
+            signal_df = signal_df[signal_df[col] >= parameters.min_threshold_signals]
+
+            c_simulation = 1
+            # simulation_dataset_return = []
+
+            for simulation in range(1, parameters.numbers_of_simulations + 1, 1):
+                
+                # print(f'Processing simulation {simulation} ({c_simulation} of {parameters.numbers_of_simulations})')
+
+                signal_simulation = signal_df
+
+                signal_simulation['random_number'] = np.random.randint(0, 10_000_000, size=len(signal_simulation))
+
+                signal_simulation = signal_simulation.sort_values(by='random_number').head(parameters.numbers_of_entries_day_simulations)
+
+                if signal_simulation.empty:
+                    continue
+
+                # Verify if the target was reached
+                signal_suffix = col.split('_')[-2][-1]
+                target_suffix = col.split('_')[-1][:-1]
+                percent_suffix = col.split('_')[-2][:-1]
+
+                signal_simulation = self.reached_target(signal_simulation, signal_suffix, target_suffix, percent_suffix)
+
+                # Simulate a value return with an arbitrary value
+                signal_simulation = self.simulate_return_value(signal_simulation, target_suffix)
+                cumulative_return = {
+                    'simulation': c_simulation,
+                    # 'Date': date_select,
+                    'model': col,
+                    'number_correct_entries': sum(signal_simulation['reached_target']),
+                    'number_entries': len(signal_simulation),
+                    'percent_correct_entries': sum(signal_simulation['reached_target'])/len(signal_simulation), 
+                    'simulate_entry': sum(signal_simulation['simulate_entry']),
+                    'simulate_return': sum(signal_simulation['simulate_return']),
+                    'simulate_variation': (sum(signal_simulation['simulate_return']) - sum(signal_simulation['simulate_entry'])) / sum(signal_simulation['simulate_entry']),
+                    'cryptos_in_simulation': set(signal_simulation['Symbol'].unique()) if parameters.return_crypto_in_simulations else ''
+                }
+
+                simulation_dataset_return_compiled.append(cumulative_return)
+
+                c_simulation += 1
+                
+            count += 1
+
+        # Convert list of results to DataFrame and save
+        simulation_dataset = pd.DataFrame(simulation_dataset_return_compiled, columns=result_columns)
+        
+        simulation_output_filename = f'{parameters.path_model_simulations}_simulation_{parameters.min_threshold_signals}_{parameters.numbers_of_simulations}_{parameters.numbers_of_entries_day_simulations}.csv'
+
+        simulation_dataset.to_csv(simulation_output_filename, index=False, sep=';', decimal=',')
+        
+        print(f'Simulations saved in {simulation_output_filename}')
+
+        return simulation_dataset
