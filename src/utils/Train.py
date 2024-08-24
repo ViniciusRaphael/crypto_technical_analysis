@@ -1,11 +1,7 @@
 import pandas as pd
 import numpy as np
-from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
-from xgboost import XGBClassifier
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from imblearn.under_sampling import RandomUnderSampler # pip install imblearn
 from imblearn.over_sampling import SMOTE
@@ -15,16 +11,10 @@ from sklearn.metrics import roc_auc_score
 from datetime import datetime
 import joblib
 import os
-
 import warnings
 
 
-
-
-
 warnings.filterwarnings("ignore")
-
-
 
 class Models():
 
@@ -188,37 +178,6 @@ class Models():
         return df
     
 
-    # def build_log_model(self, name_file, name_model, target_col, eval_model_tuple, version, dest_path = 'models/accuracy/log_models.csv'): 
-
-    #     matrix, auc, score_cal = eval_model_tuple
-        
-    #     # Dados
-    #     data = {
-    #         'name_file': [name_file],
-    #         'name_model': [name_model],
-    #         'target': [target_col],
-    #         'version': [version],
-    #         'date_add': datetime.today().strftime('%Y-%m-%d'),
-    #         'true_negative': [matrix[0,0]],
-    #         'false_positive': [matrix[0,1]],
-    #         'false_negative': [matrix[1,0]],
-    #         'true_positive':[ matrix[1,1]],
-    #         'accuracy': [score_cal],
-    #         'precision': [matrix[1,1] / (matrix[1,1] + matrix[0,1])],   # Proporção de previsões positivas corretas em relação ao total de previsões positivas.
-    #         'recall': [matrix[1,1] / (matrix[1,1] + matrix[1,0])], #Revocação (Recall) ou Sensibilidade (Sensitivity): Proporção de casos positivos corretamente identificados.
-    #         'auc_roc': [auc]
-    #     }
-    #     df = pd.DataFrame(data)
-
-
-    #     df['f1_score'] = 2 * ((df['precision'] * df['recall']) / (df['precision'] + df['recall'])) # F1 Score: Média harmônica da precisão e da revocação, usada para balancear os trade-offs entre essas duas métricas.
-
-    #     # Apendar o DataFrame em um arquivo CSV de resultado
-    #     df.to_csv(dest_path, mode='a', index=False, header=False)
-
-    #     return df
-
-
     def save_model(self, parameters, classifier, name_model:str):
         # Lib to save the model in a compressed way
 
@@ -246,6 +205,13 @@ class Models():
 
         self.build_log_model(name_model, var_proba_name, target_eval, eval_model_tuple, parameters.version_model, parameters.file_log_models)
         self.save_model(parameters, clf, name_model)
+
+
+    def get_classifier(self, parameters):
+        constants = parameters.constants
+        ## return the classifier in the constants, if there isn't a explicit classifier, it will return the same as the v2.0
+        return constants.dict_classifiers().get(parameters.version_model, 
+                                                constants.dict_classifiers().get('v2.0'))
 
 
     def train_models(self, parameters):
@@ -282,17 +248,12 @@ class Models():
             X_test_norm = self.norm_scale(X_test)
 
             # Utilizam dados normalizados
-            self.create_model(parameters, LogisticRegression(class_weight='balanced',random_state=0,max_iter=1000), 'logistic_regression', target_eval, X_train_norm, y_train, X_test_norm, y_test)
-            
-            # self.create_model(parameters, SVC(probability=True, kernel='linear', C=0.7, max_iter=1000), 'SVC', target_eval, X_train_norm, y_train, X_test_norm, y_test)
+            self.create_model(parameters, (self.get_classifier(parameters))['lr'], 'logistic_regression', target_eval, X_train_norm, y_train, X_test_norm, y_test)
+            # self.create_model(parameters, self.get_classifier(parameters)['Sc'], 'SVC', target_eval, X_train_norm, y_train, X_test_norm, y_test)
 
             # Não necessitam de dados normalizados
-            # Se retirar os parametros, aumenta a precisão, mas aumenta o tamanho do modelo em 10x
-            # self.create_model(parameters, RandomForestClassifier(n_estimators=100, max_depth=30, min_samples_split=5, min_samples_leaf=5), 'random_forest', target_eval, X_train, y_train, X_test, y_test)
-            self.create_model(parameters, RandomForestClassifier(), 'random_forest', target_eval, X_train, y_train, X_test, y_test)
-
-
-            self.create_model(parameters, XGBClassifier(), 'XGB', target_eval, X_train, y_train, X_test, y_test)
+            self.create_model(parameters, (self.get_classifier(parameters))['rf'], 'random_forest', target_eval, X_train, y_train, X_test, y_test)
+            self.create_model(parameters, (self.get_classifier(parameters))['Xv'], 'XGB', target_eval, X_train, y_train, X_test, y_test)
 
             c_trained_target += 1
 
