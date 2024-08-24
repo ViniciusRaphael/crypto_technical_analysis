@@ -288,7 +288,9 @@ class Models():
 
             # Não necessitam de dados normalizados
             # Se retirar os parametros, aumenta a precisão, mas aumenta o tamanho do modelo em 10x
-            self.create_model(parameters, RandomForestClassifier(n_estimators=100, max_depth=30, min_samples_split=5, min_samples_leaf=5), 'random_forest', target_eval, X_train, y_train, X_test, y_test)
+            # self.create_model(parameters, RandomForestClassifier(n_estimators=100, max_depth=30, min_samples_split=5, min_samples_leaf=5), 'random_forest', target_eval, X_train, y_train, X_test, y_test)
+            self.create_model(parameters, RandomForestClassifier(), 'random_forest', target_eval, X_train, y_train, X_test, y_test)
+
 
             self.create_model(parameters, XGBClassifier(), 'XGB', target_eval, X_train, y_train, X_test, y_test)
 
