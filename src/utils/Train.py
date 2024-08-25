@@ -207,13 +207,6 @@ class Models():
         self.save_model(parameters, clf, name_model)
 
 
-    def get_classifier(self, parameters):
-        constants = parameters.constants
-        ## return the classifier in the constants, if there isn't a explicit classifier, it will return the same as the v2.0
-        return constants.dict_classifiers().get(parameters.version_model, 
-                                                constants.dict_classifiers().get('v2.0'))
-
-
     def train_models(self, parameters):
 
         dados_prep_models = parameters.cls_FileHandling.read_file(parameters.files_folder, parameters.file_prep_models)
@@ -247,13 +240,16 @@ class Models():
             X_train_norm = self.norm_scale(X_train)
             X_test_norm = self.norm_scale(X_test)
 
+            # Access the dict in constants
+            _dict_classifiers = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.constants._get_classifiers())
+
             # Utilizam dados normalizados
-            self.create_model(parameters, (self.get_classifier(parameters))['lr'], 'logistic_regression', target_eval, X_train_norm, y_train, X_test_norm, y_test)
-            # self.create_model(parameters, self.get_classifier(parameters)['Sc'], 'SVC', target_eval, X_train_norm, y_train, X_test_norm, y_test)
+            self.create_model(parameters, _dict_classifiers['lr'], 'logistic_regression', target_eval, X_train_norm, y_train, X_test_norm, y_test)
+            # self.create_model(parameters, _dict_classifiers['Sc'], 'SVC', target_eval, X_train_norm, y_train, X_test_norm, y_test)
 
             # Não necessitam de dados normalizados
-            self.create_model(parameters, (self.get_classifier(parameters))['rf'], 'random_forest', target_eval, X_train, y_train, X_test, y_test)
-            self.create_model(parameters, (self.get_classifier(parameters))['Xv'], 'XGB', target_eval, X_train, y_train, X_test, y_test)
+            self.create_model(parameters, _dict_classifiers['rf'], 'random_forest', target_eval, X_train, y_train, X_test, y_test)
+            self.create_model(parameters, _dict_classifiers['Xv'], 'XGB', target_eval, X_train, y_train, X_test, y_test)
 
             c_trained_target += 1
 

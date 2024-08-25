@@ -8,7 +8,8 @@ class Constants():
     def __init__(self) -> None:
         pass
 
-    def dict_classifiers(self): 
+
+    def _get_classifiers(self): 
         return {
             'v1.0': {
                 'lr': LogisticRegression(class_weight='balanced',random_state=0,max_iter=1000),
@@ -24,3 +25,17 @@ class Constants():
             }
         }
     
+
+    def _get_configs_train(self):
+        return {
+            'v1.0': {
+                'removing_cols_training': ['Date', 'Symbol', 'Dividends', 'Stock Splits'],  # Removing cols when training and predict
+                'min_volume_prep_models': 250_000, # Define the minimum daily volume that must be considered when training
+                'clean_targets_prep_models': True  # If True, remove outliers when training (beta)
+            },
+            'v2.0': {
+                'removing_cols_training': ['Date', 'Dividends', 'Stock Splits'], # Removing cols when training and predict
+                'min_volume_prep_models': 250_000, # Define the minimum daily volume that must be considered when training
+                'clean_targets_prep_models': True  # If True, remove outliers when training (beta)
+            }
+        }

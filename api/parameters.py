@@ -29,19 +29,19 @@ execute_simulations = False
 
 # Configs scores and model version
 score_metric = 'f1_score'                   # Metric to compose the score. Options: accuracy, precision, recall, auc_roc, f1_score
-version_model = 'v2.0.20'                       # Define the version. If it doesnt exist, it will be created (when trained the model) otherwise, it will used the previously one
+version_model = 'v2.0.11'                       # Define the version. If it doesnt exist, it will be created (when trained the model) otherwise, it will used the previously one
 num_select_models = 0          # select the max number of models to return (0 for all)
 min_threshold_models = 0.65       # select the minimum threshold for select the model (considering the score_metric)
 min_threshold_signals = 0.65     # select the minimum threshold for considering a signal as a entrance (it consider's the selected models (that passed in threshold))
 # filter_symbols = ['SOL-USD']  # Filter symbols only when the execute_filtered is True
 
 filter_symbols = [
- 'BTC-USD', 'ETH-USD', 'BNB-USD', 'SOL-USD', 'XRP-USD', 'DOGE-USD', 'TRX-USD', 'ADA-USD', 'AVAX-USD', 'SHIB-USD',
- 'DOT-USD', 'BCH-USD', 'LINK-USD', 'LTC-USD', 'MATIC-USD', 'XMR-USD', 'XLM-USD', 'ETC-USD','CRO-USD', 'FIL-USD' 
-#  ,'AAVE-USD', 'VET-USD', 'ATOM-USD', 'UNI-USD', 'THETA-USD', 'FTM-USD', 'ALGO-USD', 'ZEC-USD', 'DASH-USD', 'EOS-USD',
-#  'XTZ-USD', 'OMG-USD', 'KSM-USD', 'ZIL-USD', 'ICX-USD', 'QTUM-USD','NANO-USD', 'ONT-USD', 'WAVES-USD', 'BAT-USD', 
-#  'LRC-USD', 'ENJ-USD', 'BNT-USD', 'REN-USD', 'CVC-USD', 'ANT-USD', 'REP-USD', 'STORJ-USD', 'KNC-USD', 'MANA-USD', 'SNT-USD', 'PPT-USD'
- ]
+    'BTC-USD', 'ETH-USD', 'BNB-USD', 'SOL-USD', 'XRP-USD', 'DOGE-USD', 'TRX-USD', 'ADA-USD', 'AVAX-USD', 'SHIB-USD',
+    'DOT-USD', 'BCH-USD', 'LINK-USD', 'LTC-USD', 'MATIC-USD', 'XMR-USD', 'XLM-USD', 'ETC-USD','CRO-USD', 'FIL-USD' 
+    #  ,'AAVE-USD', 'VET-USD', 'ATOM-USD', 'UNI-USD', 'THETA-USD', 'FTM-USD', 'ALGO-USD', 'ZEC-USD', 'DASH-USD', 'EOS-USD',
+    #  'XTZ-USD', 'OMG-USD', 'KSM-USD', 'ZIL-USD', 'ICX-USD', 'QTUM-USD','NANO-USD', 'ONT-USD', 'WAVES-USD', 'BAT-USD', 
+    #  'LRC-USD', 'ENJ-USD', 'BNT-USD', 'REN-USD', 'CVC-USD', 'ANT-USD', 'REP-USD', 'STORJ-USD', 'KNC-USD', 'MANA-USD', 'SNT-USD', 'PPT-USD'
+    ]
 
 melt_daily_predict = True        # Transform columns into rows (predict_proba - empilhado)
 
@@ -59,7 +59,7 @@ start_date_ingestion = '2018-01-01' if execute_train_models else '2022-01-01'  #
 min_volume_prep_models = 250_000    # Define the minimum daily volume that must be considered when training
 clean_targets_prep_models = True    # If True, remove outliers when training (beta)
 # removing_cols_for_train = ['Date', 'Symbol', 'Dividends', 'Stock Splits']      # Removing cols when training and predict (the model that you use my have the same config)
-removing_cols_for_train = ['Date', 'Dividends', 'Stock Splits']      # Removing cols when training and predict (the model that you use my have the same config)
+removing_cols_for_train = ['Date', 'Dividends', 'Stock Splits']     # Removing cols when training and predict (the model that you use my have the same config)
 
 ####################################################################
 # Auxiliary definitions 

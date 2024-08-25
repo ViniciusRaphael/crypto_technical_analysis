@@ -93,8 +93,6 @@ class RealBacktest():
 
             total_return.to_csv(str(parameters.path_model_backtest) + f'/{signal}', index=True, sep=';', decimal=',')
 
-            # print(self.specific_crypto_return(signals_model, 'SOL-USD', False))
-
 
     def reached_target(self, dataset, signal_suffix, target_suffix, percent_suffix):
         
@@ -131,10 +129,6 @@ class RealBacktest():
         # Filter and merge data
         dados_filter = dados_prep_models[['Symbol', 'Date', 'Volume', 'target_7d', 'target_15d', 'target_30d']]
         df_merged = pd.merge(dados_filter, predicted_backtest, on=['Date', 'Symbol'], how='inner')
-
-        # Clean data by replacing inf and dropping NaNs
-        # df_merged.replace([np.inf, -np.inf], np.nan, inplace=True)
-        # df_merged.dropna(inplace=True)
 
         # Filter for dates and threshold only once
         df_merged = df_merged[df_merged['Date'] >= parameters.start_date_backtest]
@@ -213,10 +207,6 @@ class RealBacktest():
         dados_filter = dados_prep_models[['Symbol', 'Date', 'Volume', 'target_7d', 'target_15d', 'target_30d']]
         df_merged = pd.merge(dados_filter, predicted_backtest, on=['Date', 'Symbol'], how='inner')
 
-        # Clean data by replacing inf and dropping NaNs
-        # df_merged.replace([np.inf, -np.inf], np.nan, inplace=True)
-        # df_merged.dropna(inplace=True)
-
         # Filter for dates and threshold only once
         df_merged = df_merged[df_merged['Date'] >= parameters.start_date_backtest]
         log_models = parameters.cls_Predict.choose_best_models(parameters)
@@ -228,14 +218,7 @@ class RealBacktest():
 
         simulation_dataset_return_compiled = []
 
-        # unique_dates = df_merged['Date'].unique()
         count = 1
-
-        # for date_select in unique_dates:
-        #     print(f'Processing {date_select} ({count} of {len(date_select)})')
-
-            # Filter once per crypto
-            # crypto_df = df_merged[df_merged['Date'] == date_select]
 
         for col in models:
             
