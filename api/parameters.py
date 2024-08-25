@@ -16,29 +16,29 @@ execute_filtered = True                    # It will filter symbols by the filte
 execute_data_ingestion = False               # It will play the ingestion pipeline
 execute_data_indicators = False              # It will play the indicators pipeline
 execute_data_prep_models = False             # It will play the data prep models pipeline (used to train the model)
-execute_train_models = True                # It will play the train models pipeline (it will sobescribe the version_model, or set a new value in version_model)
+execute_train_models = False                # It will play the train models pipeline (it will sobescribe the version_model, or set a new value in version_model)
+execute_filtered_models = True              # Filter models directly in training
 execute_historical_predict = False          # It will play the backtest pipeline, for futher scenarios validation
-execute_daily_predict = True                # It will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
+execute_daily_predict = False                # It will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
 execute_signals = False                     # It will play the signals pipeline (considering the historical predict saved)
-execute_backtest = False                    # It will play the backtest pipeline (considering the signals datasets saved)
+execute_backtest = True                    # It will play the backtest pipeline (considering the signals datasets saved)
 execute_backtest_simple = False             # It will play the backtest pipeline (considering the backtest predicted proba and entry every available entry, even if they are in a sequence of dates)
 execute_simulations = False                 # Create simulations with random selected entries
-execute_filtered_models = True              # Filter models directly in training
 
 
 # Configs scores and model version
 score_metric = 'f1_score'                   # Metric to compose the score. Options: accuracy, precision, recall, auc_roc, f1_score
-version_model = 'v2.0.11'                       # Define the version. If it doesnt exist, it will be created (when trained the model) otherwise, it will used the previously one
+version_model = 'v2.0.20'                       # Define the version. If it doesnt exist, it will be created (when trained the model) otherwise, it will used the previously one
 num_select_models = 0          # select the max number of models to return (0 for all)
 min_threshold_models = 0.65       # select the minimum threshold for select the model (considering the score_metric)
-min_threshold_signals = 0.65     # select the minimum threshold for considering a signal as a entrance (it consider's the selected models (that passed in threshold))
+min_threshold_signals = 0.55     # select the minimum threshold for considering a signal as a entrance (it consider's the selected models (that passed in threshold))
 melt_daily_predict = True        # Transform columns into rows (predict_proba - empilhado)
 
 
 # Simulation configs
-numbers_of_simulations = 10_000
+numbers_of_simulations = 1_000
 numbers_of_entries_day_simulations = 5
-return_crypto_in_simulations = True
+return_crypto_in_simulations = False # It will return a col with all crypto symbols in the entries
 
 ########################################## Less frequently changed
 
@@ -49,8 +49,8 @@ start_date_ingestion = '2018-01-01' if execute_train_models else '2022-01-01'  #
 
 filter_symbols = [ # Filter symbols only when the execute_filtered is True
     'BTC-USD', 'ETH-USD', 'BNB-USD', 'SOL-USD', 'XRP-USD', 'DOGE-USD', 'TRX-USD', 'ADA-USD', 'AVAX-USD', 'SHIB-USD',
-    'DOT-USD', 'BCH-USD', 'LINK-USD', 'LTC-USD', 'MATIC-USD', 'XMR-USD', 'XLM-USD', 'ETC-USD','CRO-USD', 'FIL-USD' 
-    #  ,'AAVE-USD', 'VET-USD', 'ATOM-USD', 'UNI-USD', 'THETA-USD', 'FTM-USD', 'ALGO-USD', 'ZEC-USD', 'DASH-USD', 'EOS-USD',
+    'DOT-USD', 'BCH-USD', 'LINK-USD', 'LTC-USD', 'MATIC-USD', 'XMR-USD', 'XLM-USD', 'ETC-USD','UNI-USD', 'AAVE-USD',  
+    #  ,'FIL-USD', 'VET-USD', 'ATOM-USD', 'CRO-USD', 'THETA-USD', 'FTM-USD', 'ALGO-USD', 'ZEC-USD', 'DASH-USD', 'EOS-USD',
     #  'XTZ-USD', 'OMG-USD', 'KSM-USD', 'ZIL-USD', 'ICX-USD', 'QTUM-USD','NANO-USD', 'ONT-USD', 'WAVES-USD', 'BAT-USD', 
     #  'LRC-USD', 'ENJ-USD', 'BNT-USD', 'REN-USD', 'CVC-USD', 'ANT-USD', 'REP-USD', 'STORJ-USD', 'KNC-USD', 'MANA-USD', 'SNT-USD', 'PPT-USD'
     ]

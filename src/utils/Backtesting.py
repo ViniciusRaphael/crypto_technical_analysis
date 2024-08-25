@@ -83,6 +83,12 @@ class RealBacktest():
 
         signals = [f for f in os.listdir(parameters.path_model_signals) if os.path.isfile(os.path.join(parameters.path_model_signals, f))]
 
+
+        root_path_version = str(parameters.path_model_backtest) + '//' + str(parameters.version_model)
+        if not os.path.exists(root_path_version):
+            # Cria a pasta
+            os.makedirs(root_path_version)
+
         for signal in signals:
 
             print(f'Running {signal}')
@@ -91,7 +97,9 @@ class RealBacktest():
 
             total_return = self.all_crypto_return(signals_model)
 
-            total_return.to_csv(str(parameters.path_model_backtest) + f'/{signal}', index=True, sep=';', decimal=',')
+            total_return.to_csv(root_path_version + f'/{signal}', index=True, sep=';', decimal=',')
+
+            print(f'Backtest saved in {root_path_version}/{signal}')
 
 
     def reached_target(self, dataset, signal_suffix, target_suffix, percent_suffix):
