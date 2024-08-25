@@ -213,8 +213,11 @@ class Models():
 
         dados_prep_models = parameters.cls_FileHandling.get_selected_symbols(dados_prep_models, parameters)
 
-        dados_x = self.data_clean(dados_prep_models, parameters.remove_target_list, 'X', parameters.removing_cols_for_train)
-        dados_y_all = self.data_clean(dados_prep_models, parameters.remove_target_list, 'Y', parameters.removing_cols_for_train)
+        # Access dict with models configs
+        _dict_config_train = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.constants._get_configs_train())
+
+        dados_x = self.data_clean(dados_prep_models, parameters.remove_target_list, 'X', _dict_config_train['removing_cols_for_train'])
+        dados_y_all = self.data_clean(dados_prep_models, parameters.remove_target_list, 'Y', _dict_config_train['removing_cols_for_train'])
 
         # limpar arquivo de log e inserindo o cabeçalho
         with open(parameters.file_log_models, 'w') as arquivo:

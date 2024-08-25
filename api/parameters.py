@@ -19,9 +19,9 @@ execute_filtered = True                    # It will filter symbols by the filte
 execute_data_ingestion = False               # It will play the ingestion pipeline
 execute_data_indicators = False              # It will play the indicators pipeline
 execute_data_prep_models = False             # It will play the data prep models pipeline (used to train the model)
-execute_train_models = True                # It will play the train models pipeline (it will sobescribe the version_model, or set a new value in version_model)
+execute_train_models = False                # It will play the train models pipeline (it will sobescribe the version_model, or set a new value in version_model)
 execute_historical_predict = False          # It will play the backtest pipeline, for futher scenarios validation
-execute_daily_predict = False                # It will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
+execute_daily_predict = True                # It will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
 execute_signals = False                     # It will play the signals pipeline (considering the historical predict saved)
 execute_backtest = False                    # It will play the backtest pipeline (considering the signals datasets saved)
 execute_backtest_simple = False                    # It will play the backtest pipeline (considering the backtest predicted proba and entry every available entry, even if they are in a sequence of dates)
@@ -55,11 +55,6 @@ return_crypto_in_simulations = True
 start_date_backtest = '2024-01-01'                  # Define the start date for backtesting
 start_date_ingestion = '2018-01-01' if execute_train_models else '2022-01-01'  # We only need data for the last 200 days for daily_outcome, but we need the historical for training
 
-# Configs training variables
-min_volume_prep_models = 250_000    # Define the minimum daily volume that must be considered when training
-clean_targets_prep_models = True    # If True, remove outliers when training (beta)
-# removing_cols_for_train = ['Date', 'Symbol', 'Dividends', 'Stock Splits']      # Removing cols when training and predict (the model that you use my have the same config)
-removing_cols_for_train = ['Date', 'Dividends', 'Stock Splits']     # Removing cols when training and predict (the model that you use my have the same config)
 
 ####################################################################
 # Auxiliary definitions 
