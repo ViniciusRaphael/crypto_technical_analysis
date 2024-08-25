@@ -552,8 +552,8 @@ class Models():
 
         dados_prep_models = parameters.cls_FileHandling.get_selected_symbols(dados_prep_models, parameters)
 
-        dados_x = self.data_clean(dados_prep_models, parameters.remove_target_list, 'X', parameters.removing_cols_for_train)
-        dados_y_all = self.data_clean(dados_prep_models, parameters.remove_target_list, 'Y', parameters.removing_cols_for_train)
+        dados_x = self.data_clean(dados_prep_models, parameters._remove_target_list, 'X', parameters.removing_cols_for_train)
+        dados_y_all = self.data_clean(dados_prep_models, parameters._remove_target_list, 'Y', parameters.removing_cols_for_train)
 
         # limpar arquivo de log e inserindo o cabeçalho
         with open(parameters.file_log_models, 'w') as arquivo:
@@ -749,10 +749,10 @@ class Deploy():
         # Vai escolher uma data em específico, '' para a mais recente
         dataset_ref = self.eval_data(dados_input_select, choosen_data_input)
 
-        dummies_input = self.build_dummies(dataset_ref, parameters.remove_target_list, parameters.removing_cols_for_train)
+        dummies_input = self.build_dummies(dataset_ref, parameters._remove_target_list, parameters.removing_cols_for_train)
 
         # padronize input parameters from test models x predict model 
-        dados_x_all = cls_Models.data_clean(dados_input_select, parameters.remove_target_list, 'X', parameters.removing_cols_for_train)
+        dados_x_all = cls_Models.data_clean(dados_input_select, parameters._remove_target_list, 'X', parameters.removing_cols_for_train)
         dados_x_all_dummies = pd.get_dummies(dados_x_all)
 
         padronized_dummies = self.padronize_dummies(dummies_input, dados_x_all_dummies)

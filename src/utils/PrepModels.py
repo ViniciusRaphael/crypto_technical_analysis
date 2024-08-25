@@ -29,7 +29,7 @@ class DataPrep():
         filtered_data = dados_indicators[dados_indicators['Symbol'].isin(active_symbols)]
 
         # Access dict with models configs
-        _dict_config_train = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.constants._get_configs_train())
+        _dict_config_train = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.cls_Constants._get_configs_train())
 
         dados_prep = filtered_data[(filtered_data['Close'] != 0) & (filtered_data['Volume'] > _dict_config_train['min_volume_prep_models'])]
 

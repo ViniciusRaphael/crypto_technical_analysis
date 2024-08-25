@@ -165,12 +165,12 @@ class Deploy():
         dataset_ref = self.eval_data(dados_input_select, choosen_data_input)
 
         # Access dict with models configs
-        _dict_config_train = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.constants._get_configs_train())
+        _dict_config_train = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.cls_Constants._get_configs_train())
 
-        dummies_input = self.build_dummies(dataset_ref, parameters.remove_target_list, _dict_config_train['removing_cols_for_train'])
+        dummies_input = self.build_dummies(dataset_ref, parameters._remove_target_list, _dict_config_train['removing_cols_for_train'])
 
         # padronize input parameters from test models x predict model 
-        dados_x_all = cls_Models.data_clean(dados_input_select, parameters.remove_target_list, 'X', _dict_config_train['removing_cols_for_train'])
+        dados_x_all = cls_Models.data_clean(dados_input_select, parameters._remove_target_list, 'X', _dict_config_train['removing_cols_for_train'])
         dados_x_all_dummies = pd.get_dummies(dados_x_all)
 
         padronized_dummies = self.padronize_dummies(dummies_input, dados_x_all_dummies)

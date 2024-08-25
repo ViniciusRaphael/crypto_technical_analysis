@@ -214,10 +214,10 @@ class Models():
         dados_prep_models = parameters.cls_FileHandling.get_selected_symbols(dados_prep_models, parameters)
 
         # Access dict with models configs
-        _dict_config_train = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.constants._get_configs_train())
+        _dict_config_train = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.cls_Constants._get_configs_train())
 
-        dados_x = self.data_clean(dados_prep_models, parameters.remove_target_list, 'X', _dict_config_train['removing_cols_for_train'])
-        dados_y_all = self.data_clean(dados_prep_models, parameters.remove_target_list, 'Y', _dict_config_train['removing_cols_for_train'])
+        dados_x = self.data_clean(dados_prep_models, parameters._remove_target_list, 'X', _dict_config_train['removing_cols_for_train'])
+        dados_y_all = self.data_clean(dados_prep_models, parameters._remove_target_list, 'Y', _dict_config_train['removing_cols_for_train'])
 
         # limpar arquivo de log e inserindo o cabeçalho
         with open(parameters.file_log_models, 'w') as arquivo:
@@ -226,9 +226,9 @@ class Models():
         # Counter models     
         c_trained_target = 1
 
-        for target_eval in parameters.target_list_bol:
+        for target_eval in parameters.target_list_bol_select:
             
-            print(f'Train model target: {c_trained_target}/{len(parameters.target_list_bol)}')
+            print(f'Train model target: {c_trained_target}/{len(parameters.target_list_bol_select)}')
 
             # escolhendo o target
             dados_y = self.get_target(dados_y_all, target_eval)
@@ -244,7 +244,7 @@ class Models():
             X_test_norm = self.norm_scale(X_test)
 
             # Access the dict in constants
-            _dict_classifiers = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.constants._get_classifiers())
+            _dict_classifiers = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.cls_Constants._get_classifiers())
 
             # Utilizam dados normalizados
             self.create_model(parameters, _dict_classifiers['lr'], 'logistic_regression', target_eval, X_train_norm, y_train, X_test_norm, y_test)
