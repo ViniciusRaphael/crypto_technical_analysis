@@ -35,9 +35,3 @@ if parameters.execute_backtest_simple:
 
 if parameters.execute_simulations: 
     parameters.cls_RealBacktest.simulator(parameters)
-
-
-
-
-
-
