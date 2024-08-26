@@ -8,7 +8,7 @@ import time
 
 
 class FileHandling():
-      
+    
     def __init__(self) -> None:
         pass
 
@@ -65,3 +65,10 @@ class FileHandling():
     def get_selected_symbols(self, dados, parameters):
 
         return dados[dados['Symbol'].isin(parameters.filter_symbols)] if parameters.execute_filtered else dados
+    
+    
+    def get_constants_dict(self, parameters, _dict_config, default_config = 'v2.0'):
+
+        ## return the selected config in the constants, if there isn't a explicit config for the selected version, it will return the same as the default
+        return _dict_config.get(parameters.version_model, 
+                                _dict_config.get(default_config))

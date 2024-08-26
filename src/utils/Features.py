@@ -32,6 +32,7 @@ class Features():
                 return name
         return None
 
+
     def classify_rsi_value(self, value):
         """
         Checks the RSI value against predefined ranges and returns the corresponding category.
@@ -61,6 +62,7 @@ class Features():
                 return name
         return None
 
+
     def count_positive_reset(self, df_column):
         """
         Counts consecutive positive values in a DataFrame column and resets count on encountering negative values.
@@ -82,6 +84,7 @@ class Features():
             counts.append(count)
 
         return counts
+
 
     def calculate_adx(self, grupo):
         adx_values = ta.adx(grupo['High'], grupo['Low'], grupo['Close'], length=14)

@@ -1,11 +1,7 @@
 import pandas as pd
 import numpy as np
-from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
-from xgboost import XGBClassifier
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from imblearn.under_sampling import RandomUnderSampler # pip install imblearn
 from imblearn.over_sampling import SMOTE
@@ -15,16 +11,10 @@ from sklearn.metrics import roc_auc_score
 from datetime import datetime
 import joblib
 import os
-
 import warnings
 
 
-
-
-
 warnings.filterwarnings("ignore")
-
-
 
 class Models():
 
@@ -188,37 +178,6 @@ class Models():
         return df
     
 
-    # def build_log_model(self, name_file, name_model, target_col, eval_model_tuple, version, dest_path = 'models/accuracy/log_models.csv'): 
-
-    #     matrix, auc, score_cal = eval_model_tuple
-        
-    #     # Dados
-    #     data = {
-    #         'name_file': [name_file],
-    #         'name_model': [name_model],
-    #         'target': [target_col],
-    #         'version': [version],
-    #         'date_add': datetime.today().strftime('%Y-%m-%d'),
-    #         'true_negative': [matrix[0,0]],
-    #         'false_positive': [matrix[0,1]],
-    #         'false_negative': [matrix[1,0]],
-    #         'true_positive':[ matrix[1,1]],
-    #         'accuracy': [score_cal],
-    #         'precision': [matrix[1,1] / (matrix[1,1] + matrix[0,1])],   # Proporção de previsões positivas corretas em relação ao total de previsões positivas.
-    #         'recall': [matrix[1,1] / (matrix[1,1] + matrix[1,0])], #Revocação (Recall) ou Sensibilidade (Sensitivity): Proporção de casos positivos corretamente identificados.
-    #         'auc_roc': [auc]
-    #     }
-    #     df = pd.DataFrame(data)
-
-
-    #     df['f1_score'] = 2 * ((df['precision'] * df['recall']) / (df['precision'] + df['recall'])) # F1 Score: Média harmônica da precisão e da revocação, usada para balancear os trade-offs entre essas duas métricas.
-
-    #     # Apendar o DataFrame em um arquivo CSV de resultado
-    #     df.to_csv(dest_path, mode='a', index=False, header=False)
-
-    #     return df
-
-
     def save_model(self, parameters, classifier, name_model:str):
         # Lib to save the model in a compressed way
 
@@ -254,8 +213,11 @@ class Models():
 
         dados_prep_models = parameters.cls_FileHandling.get_selected_symbols(dados_prep_models, parameters)
 
-        dados_x = self.data_clean(dados_prep_models, parameters.remove_target_list, 'X', parameters.removing_cols_for_train)
-        dados_y_all = self.data_clean(dados_prep_models, parameters.remove_target_list, 'Y', parameters.removing_cols_for_train)
+        # Access dict with models configs
+        _dict_config_train = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.cls_Constants._get_configs_train())
+
+        dados_x = self.data_clean(dados_prep_models, parameters._remove_target_list, 'X', _dict_config_train['removing_cols_for_train'])
+        dados_y_all = self.data_clean(dados_prep_models, parameters._remove_target_list, 'Y', _dict_config_train['removing_cols_for_train'])
 
         # limpar arquivo de log e inserindo o cabeçalho
         with open(parameters.file_log_models, 'w') as arquivo:
@@ -264,9 +226,9 @@ class Models():
         # Counter models     
         c_trained_target = 1
 
-        for target_eval in parameters.target_list_bol:
+        for target_eval in parameters.target_list_bol_select:
             
-            print(f'Train model target: {c_trained_target}/{len(parameters.target_list_bol)}')
+            print(f'Train model target: {c_trained_target}/{len(parameters.target_list_bol_select)}')
 
             # escolhendo o target
             dados_y = self.get_target(dados_y_all, target_eval)
@@ -281,18 +243,16 @@ class Models():
             X_train_norm = self.norm_scale(X_train)
             X_test_norm = self.norm_scale(X_test)
 
+            # Access the dict in constants
+            _dict_classifiers = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.cls_Constants._get_classifiers())
+
             # Utilizam dados normalizados
-            self.create_model(parameters, LogisticRegression(class_weight='balanced',random_state=0,max_iter=1000), 'logistic_regression', target_eval, X_train_norm, y_train, X_test_norm, y_test)
-            
-            # self.create_model(parameters, SVC(probability=True, kernel='linear', C=0.7, max_iter=1000), 'SVC', target_eval, X_train_norm, y_train, X_test_norm, y_test)
+            self.create_model(parameters, _dict_classifiers['lr'], 'logistic_regression', target_eval, X_train_norm, y_train, X_test_norm, y_test)
+            # self.create_model(parameters, _dict_classifiers['Sc'], 'SVC', target_eval, X_train_norm, y_train, X_test_norm, y_test)
 
             # Não necessitam de dados normalizados
-            # Se retirar os parametros, aumenta a precisão, mas aumenta o tamanho do modelo em 10x
-            # self.create_model(parameters, RandomForestClassifier(n_estimators=100, max_depth=30, min_samples_split=5, min_samples_leaf=5), 'random_forest', target_eval, X_train, y_train, X_test, y_test)
-            self.create_model(parameters, RandomForestClassifier(), 'random_forest', target_eval, X_train, y_train, X_test, y_test)
-
-
-            self.create_model(parameters, XGBClassifier(), 'XGB', target_eval, X_train, y_train, X_test, y_test)
+            self.create_model(parameters, _dict_classifiers['rf'], 'random_forest', target_eval, X_train, y_train, X_test, y_test)
+            self.create_model(parameters, _dict_classifiers['Xv'], 'XGB', target_eval, X_train, y_train, X_test, y_test)
 
             c_trained_target += 1
 
