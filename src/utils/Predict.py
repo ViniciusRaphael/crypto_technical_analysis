@@ -252,6 +252,9 @@ class Deploy():
             daily_outcome = pd.merge(daily_outcome, backtest_file_selected[['Symbol', 'model', 'percent_correct_entries', 'simulate_variation', 'reached_target']],
                                                                         how='left', left_on=['Symbol', 'Models'], right_on=['Symbol', 'model'])
 
+            daily_outcome = daily_outcome.sort_values(by=['reached_target', 'Probability', 'simulate_variation'], ascending=[False, False, False])
+            print(daily_outcome.head(20))
+
         daily_outcome.to_csv(file_name_outcome, index=True, sep=';', decimal=',')
 
         print(f'Arquivo salvo em {file_name_outcome}')
