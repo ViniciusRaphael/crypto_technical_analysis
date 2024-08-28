@@ -11,15 +11,19 @@ from src.utils.Backtesting import RealBacktest
 from api.constants import Constants
 import platform
 
-# Process selections
-execute_filtered = False                    # It will filter symbols by the filter_symbols parameter
+
+# Process selections Generate Dados
 execute_data_ingestion = True               # It will play the ingestion pipeline
 execute_data_indicators = True              # It will play the indicators pipeline
 execute_data_prep_models = True             # It will play the data prep models pipeline (used to train the model)
+execute_daily_predict = True                # It will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
+
+
+# Process selections Train/Test Models and Performance
+execute_filtered = False                    # It will filter symbols by the filter_symbols parameter
 execute_train_models = False                # It will play the train models pipeline (it will sobescribe the version_model, or set a new value in version_model)
 execute_filtered_models = True              # Filter models directly in training
 execute_historical_predict = False          # It will play the backtest pipeline, for futher scenarios validation
-execute_daily_predict = True                # It will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
 execute_signals = False                     # It will play the signals pipeline (considering the historical predict saved)
 execute_backtest = False                    # It will play the backtest pipeline (considering the signals datasets saved)
 execute_backtest_simple = False             # It will play the backtest pipeline (considering the backtest predicted proba and entry every available entry, even if they are in a sequence of dates)

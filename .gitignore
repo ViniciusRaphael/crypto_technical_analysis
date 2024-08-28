@@ -4,12 +4,14 @@
 /output/models/customized
 /output/simulations/
 /output/accuracy/log_model_v2.0.11.csv
-/output/accuracy/log_model_v2.0.20.csv
+# /output/accuracy/log_model_v2.0.20.csv
 /output/accuracy/log_model_v2.0.50.csv
 /output/accuracy/log_model_customized.csv
 
 # /output/accuracy/
-/output/models/
+/output/models/v2.0.20
+/output/models/v2.0.50
+
 /output/backtest
 # /output/accuracy/log_model_customized.csv
 

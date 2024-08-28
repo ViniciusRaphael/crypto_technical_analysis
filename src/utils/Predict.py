@@ -249,7 +249,7 @@ class Deploy():
             # Join with simple backtest to rescue the value for backtesting with all currencies
             daily_output_filename = f'{parameters.path_model_backtest}/_simple_backtest_{parameters.version_model}_{parameters.min_threshold_signals}_.csv'
             backtest_file_selected = pd.read_csv(daily_output_filename, sep=';')
-            daily_outcome = pd.merge(daily_outcome, backtest_file_selected[['Symbol', 'model', 'percent_correct_entries', 'simulate_variation', 'reached_target']],
+            daily_outcome = pd.merge(daily_outcome, backtest_file_selected[['Symbol', 'model', 'number_entries', 'percent_correct_entries', 'simulate_variation', 'reached_target']],
                                                                         how='left', left_on=['Symbol', 'Models'], right_on=['Symbol', 'model'])
 
             daily_outcome = daily_outcome.sort_values(by=['reached_target', 'Probability', 'simulate_variation'], ascending=[False, False, False])
