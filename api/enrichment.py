@@ -3,7 +3,6 @@ import parameters
 # instancia as classes
 cls_File = parameters.cls_FileHandling
 cls_Models = parameters.cls_Models
-cls_DataPrep = parameters.cls_DataPrep
 
 
 if parameters.execute_data_ingestion:
