@@ -14,17 +14,18 @@ The project consists of the following key components:
 
 ## Folders Structure
 
-├── api/ # Main files
-├── src/ # Main project source code
-│ ├── data/ # Scripts to load, clean, and process data
-│ ├── files/ # Downloaded and treated files
-│ ├── notebooks/ # Jupyter notebooks for experimentation and data exploration
-│ └── utils/ # Utility functions and helpers
-│
-├── models/ # Trained models and checkpoints
-│ ├── results/ # Model results
-│ ├── trained/ # Model trained versions
-│
-├── .gitignore # Gitignore file to avoid versioning unnecessary files
-├── README.md # Project instructions and documentation
-└── requirements.txt # Project Python dependencies
+    ├── api/ # Main files
+    ├── src/ # Main project source code
+    │ ├── notebooks/ # Jupyter notebooks for experimentation and data exploration
+    │ └── utils/ # Utility functions and helpers
+    ├── data/ # saved datasets (.parquet)
+    ├── output/ # Output from the scr folders (trained models, backtesting, predictions, etc)
+    │ ├── accuracy/ # Model accuracy
+    │ ├── backtest/ # Backtesting models predictions
+    │ ├── models/ # Trained models
+    │ ├── predict/ # Predictions for trained model
+    │ ├── simulations/ # Backtesting models predictions
+    ├── .gitignore # Gitignore file to avoid versioning unnecessary files
+    ├── README.md # Project instructions and documentation
+    ├── setup.py # Configs for run the libs and class from the project
+    └── requirements.txt # Project Python dependencies

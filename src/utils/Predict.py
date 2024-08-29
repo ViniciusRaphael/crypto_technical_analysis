@@ -164,10 +164,13 @@ class Deploy():
         # Vai escolher uma data em específico, '' para a mais recente
         dataset_ref = self.eval_data(dados_input_select, choosen_data_input)
 
-        dummies_input = self.build_dummies(dataset_ref, parameters.remove_target_list, parameters.removing_cols_for_train)
+        # Access dict with models configs
+        _dict_config_train = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.cls_Constants._get_configs_train())
+
+        dummies_input = self.build_dummies(dataset_ref, parameters._remove_target_list, _dict_config_train['removing_cols_for_train'])
 
         # padronize input parameters from test models x predict model 
-        dados_x_all = cls_Models.data_clean(dados_input_select, parameters.remove_target_list, 'X', parameters.removing_cols_for_train)
+        dados_x_all = cls_Models.data_clean(dados_input_select, parameters._remove_target_list, 'X', _dict_config_train['removing_cols_for_train'])
         dados_x_all_dummies = pd.get_dummies(dados_x_all)
 
         padronized_dummies = self.padronize_dummies(dummies_input, dados_x_all_dummies)
@@ -243,6 +246,14 @@ class Deploy():
         # Transform the wide dataset into long
         if parameters.melt_daily_predict == True:
             daily_outcome = daily_outcome.melt(id_vars=['Symbol', 'Date', 'Close'], var_name='Models', value_name='Probability')
+            # Join with simple backtest to rescue the value for backtesting with all currencies
+            daily_output_filename = f'{parameters.path_model_backtest}/_simple_backtest_{parameters.version_model}_{parameters.min_threshold_signals}_.csv'
+            backtest_file_selected = pd.read_csv(daily_output_filename, sep=';')
+            daily_outcome = pd.merge(daily_outcome, backtest_file_selected[['Symbol', 'model', 'number_entries', 'percent_correct_entries', 'simulate_variation', 'reached_target']],
+                                                                        how='left', left_on=['Symbol', 'Models'], right_on=['Symbol', 'model'])
+
+            daily_outcome = daily_outcome.sort_values(by=['reached_target', 'Probability', 'simulate_variation'], ascending=[False, False, False])
+            print(daily_outcome.head(20))
 
         daily_outcome.to_csv(file_name_outcome, index=True, sep=';', decimal=',')
 

@@ -4,6 +4,7 @@ import vectorbt as vbt
 import pandas as pd
 import os
 import numpy as np
+import re
 
 
 class RealBacktest():
@@ -83,6 +84,12 @@ class RealBacktest():
 
         signals = [f for f in os.listdir(parameters.path_model_signals) if os.path.isfile(os.path.join(parameters.path_model_signals, f))]
 
+
+        root_path_version = str(parameters.path_model_backtest) + '//' + str(parameters.version_model)
+        if not os.path.exists(root_path_version):
+            # Cria a pasta
+            os.makedirs(root_path_version)
+
         for signal in signals:
 
             print(f'Running {signal}')
@@ -91,15 +98,14 @@ class RealBacktest():
 
             total_return = self.all_crypto_return(signals_model)
 
-            total_return.to_csv(str(parameters.path_model_backtest) + f'/{signal}', index=True, sep=';', decimal=',')
+            total_return.to_csv(root_path_version + f'/{signal}', index=True, sep=';', decimal=',')
 
-            # print(self.specific_crypto_return(signals_model, 'SOL-USD', False))
+            print(f'Backtest saved in {root_path_version}/{signal}')
 
 
     def reached_target(self, dataset, signal_suffix, target_suffix, percent_suffix):
         
         target_col = 'target_' + target_suffix + 'd'
-        
 
         if signal_suffix == 'P': 
             dataset['reached_target'] = dataset[target_col] >= int(percent_suffix)/100
@@ -121,6 +127,25 @@ class RealBacktest():
         dataset['simulate_return'] = entry_value_invest * (1 + dataset[target_col]) # Set the return of a given entry value
 
         return dataset
+    
+
+    def reached_target_row(self, row):
+        # Extrair o número embutido na variável
+        match = re.search(r'_(\d+)([PN])_', row['model'])
+
+        if match:
+            valor_embutido = int(match.group(1))  # Mantém o valor original para comparação
+            tipo = match.group(2)
+            
+            # Converte a percentagem para a escala correta
+            valor_percentagem = row['simulate_variation']
+            
+            if tipo == 'P':
+                return valor_percentagem >= int(valor_embutido)/100
+            elif tipo == 'N':
+                return valor_percentagem <= -int(valor_embutido)/100
+            
+        return None  # Caso não tenha correspondência (não deve acontecer)
 
 
     def all_entries_backtest(self, parameters):
@@ -131,10 +156,6 @@ class RealBacktest():
         # Filter and merge data
         dados_filter = dados_prep_models[['Symbol', 'Date', 'Volume', 'target_7d', 'target_15d', 'target_30d']]
         df_merged = pd.merge(dados_filter, predicted_backtest, on=['Date', 'Symbol'], how='inner')
-
-        # Clean data by replacing inf and dropping NaNs
-        # df_merged.replace([np.inf, -np.inf], np.nan, inplace=True)
-        # df_merged.dropna(inplace=True)
 
         # Filter for dates and threshold only once
         df_merged = df_merged[df_merged['Date'] >= parameters.start_date_backtest]
@@ -191,9 +212,10 @@ class RealBacktest():
                 backtest_dataset_return.append(cumulative_return)
 
             count += 1
-
+        
         # Convert list of results to DataFrame and save
         backtest_dataset_return_df = pd.DataFrame(backtest_dataset_return, columns=result_columns)
+        backtest_dataset_return_df['reached_target'] = backtest_dataset_return_df.apply(self.reached_target_row, axis=1)        
         
         daily_output_filename = f'{parameters.path_model_backtest}/_simple_backtest_{parameters.version_model}_{parameters.min_threshold_signals}_.csv'
 
@@ -213,10 +235,6 @@ class RealBacktest():
         dados_filter = dados_prep_models[['Symbol', 'Date', 'Volume', 'target_7d', 'target_15d', 'target_30d']]
         df_merged = pd.merge(dados_filter, predicted_backtest, on=['Date', 'Symbol'], how='inner')
 
-        # Clean data by replacing inf and dropping NaNs
-        # df_merged.replace([np.inf, -np.inf], np.nan, inplace=True)
-        # df_merged.dropna(inplace=True)
-
         # Filter for dates and threshold only once
         df_merged = df_merged[df_merged['Date'] >= parameters.start_date_backtest]
         log_models = parameters.cls_Predict.choose_best_models(parameters)
@@ -228,14 +246,7 @@ class RealBacktest():
 
         simulation_dataset_return_compiled = []
 
-        # unique_dates = df_merged['Date'].unique()
         count = 1
-
-        # for date_select in unique_dates:
-        #     print(f'Processing {date_select} ({count} of {len(date_select)})')
-
-            # Filter once per crypto
-            # crypto_df = df_merged[df_merged['Date'] == date_select]
 
         for col in models:
             

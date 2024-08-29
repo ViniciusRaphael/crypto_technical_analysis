@@ -1,9 +1,20 @@
 # Projects base output files
-/output/predict
-/output/signals
+/output/predict/
+/output/signals/
 /output/models/customized
-/output/simulations
+/output/simulations/
+/output/accuracy/log_model_v2.0.11.csv
+# /output/accuracy/log_model_v2.0.20.csv
+/output/accuracy/log_model_v2.0.50.csv
 /output/accuracy/log_model_customized.csv
+
+# /output/accuracy/
+/output/models/v2.0.20
+/output/models/v2.0.50
+
+/output/backtest
+# /output/accuracy/log_model_customized.csv
+
 
 
 # Byte-compiled / optimized / DLL files
