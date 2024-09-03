@@ -114,17 +114,23 @@ class Features():
         # Sort DataFrame by 'Symbol' and 'Date', convert Date column to Datetime
         dataframe = dataframe.sort_values(by=['Symbol', 'Date']).reset_index(drop=True)
 
-        windows = [12, 26, 50, 100, 200]
+        windows = [5, 12, 26, 50, 100, 200]
 
         # Calculate and add Exponential Moving Averages (EMAs)
         for window in windows:
-            dataframe[f'ema_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ema(x, window))
+            dataframe[f'ema_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ema(x, length=window)) # EMA
+            dataframe[f'sma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.sma(x, length=window)) # SMA
+            dataframe[f'wma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.wma(x, length=window)) # SMA
 
-        for base_window in windows:
-            for compare_window in windows:
-                if base_window != compare_window:
-                    col_name = f'ema_{base_window}_above_ema_{compare_window}'
-                    dataframe[col_name] = dataframe.apply(lambda row: row[f'ema_{base_window}'] > row[f'ema_{compare_window}'], axis=1)
+        for ind in ['ema', 'sma', 'wma']:
+            for base_window in windows:
+                for compare_window in windows:
+                    if base_window != compare_window:
+                        col_name = f'{ind}_{base_window}_above_{ind}_{compare_window}'
+                        dataframe[col_name] = dataframe.apply(lambda row: row[f'{ind}_{base_window}'] > row[f'{ind}_{compare_window}'], axis=1)
+
+
+
 
         # Financial Result
         targets = [10, 15, 20, 25]
