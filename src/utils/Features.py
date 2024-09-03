@@ -99,6 +99,32 @@ class Features():
             grupo['vl_dmp'] = pd.NA
             grupo['vl_dmn'] = pd.NA
         return grupo
+    
+    # def calculate_supertrend(self, grupo):
+    #     adx_values = ta.supertrend(grupo['High'], grupo['Low'], grupo['Close'], length=14)
+    #     if adx_values is not None and not adx_values.empty:
+    #         # Adiciona as colunas calculadas ao grupo original
+    #         grupo['SUPERT'] = adx_values['ADX_14'].values
+    #         grupo['SUPERTd'] = adx_values['DMP_14'].values
+    #         grupo['SUPERTl'] = adx_values['DMN_14'].values
+    #         SUPERT (trend), SUPERTd (direction), SUPERTl (long), SUPERTs (short) columns.
+    #     else:
+    #         # Se o cálculo falhar, preenche com NaN
+    #         grupo['vl_adx'] = pd.NA
+    #         grupo['vl_dmp'] = pd.NA
+    #         grupo['vl_dmn'] = pd.NA
+    #     return grupo
+
+    # def apply_supertrend(group):
+    #     return ta.supertrend(group['high'], group['low'], group['close'], length=7, multiplier=3)
+
+    # def apply_supertrend_to_groups(df):
+    #     result = df.groupby('crypto').apply(lambda x: apply_supertrend(x)).reset_index(drop=True)
+    #     # Combine the result with the original DataFrame if needed
+    #     return df.join(result)
+
+    # df_with_supertrend = apply_supertrend_to_groups(df)
+
 
 
     def add_indicators(self, dataframe):
@@ -118,16 +144,32 @@ class Features():
 
         # Calculate and add Exponential Moving Averages (EMAs)
         for window in windows:
-            dataframe[f'ema_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ema(x, length=window)) # EMA
-            dataframe[f'sma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.sma(x, length=window)) # SMA
-            dataframe[f'wma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.wma(x, length=window)) # SMA
+            dataframe[f'ema_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ema(x, length=window)) # Exponential Moving Average (EMA)
+            dataframe[f'sma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.sma(x, length=window)) # Weighted Moving Average (WMA)
+            dataframe[f'wma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.wma(x, length=window)) # Simple Moving Average (SMA)
+            dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
+            dataframe[f'dema_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.dema(x, length=window)) # Double Exponential Moving Average (DEMA)
+            dataframe[f'fwma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.fwma(x, length=window)) # Fibonacci's Weighted Moving Average (FWMA)
+            dataframe[f'jma{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.jma(x, length=window)) # Jurik Moving Average (JMA)
+            dataframe[f'kama_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.kama(x, length=window)) # Kaufman's Adaptive Moving Average (KAMA)
+            dataframe[f'linreg_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.linreg(x, length=window)) # Linear Regression Moving Average (LINREG)
+            # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
+            # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
+            # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
+            # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
+            # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
+            # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
 
-        for ind in ['ema', 'sma', 'wma']:
+
+
+        for ind in ['ema', 'sma', 'wma', 'alma', 'dema', 'fwma', 'jma', 'kama']:
             for base_window in windows:
                 for compare_window in windows:
-                    if base_window != compare_window:
+                    if base_window < compare_window:
                         col_name = f'{ind}_{base_window}_above_{ind}_{compare_window}'
-                        dataframe[col_name] = dataframe.apply(lambda row: row[f'{ind}_{base_window}'] > row[f'{ind}_{compare_window}'], axis=1)
+                        dataframe[col_name] = dataframe[f'{ind}_{base_window}'] > dataframe[f'{ind}_{compare_window}']
+
+                        # dataframe[col_name] = dataframe.apply(lambda row: row[f'{ind}_{base_window}'] > row[f'{ind}_{compare_window}'], axis=1)
 
 
 
