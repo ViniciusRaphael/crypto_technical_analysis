@@ -13,14 +13,14 @@ import platform
 
 
 # Process selections Generate Dados
-execute_data_ingestion = True               # It will play the ingestion pipeline
+execute_data_ingestion = False               # It will play the ingestion pipeline
 execute_data_indicators = True              # It will play the indicators pipeline
-execute_data_prep_models = True             # It will play the data prep models pipeline (used to train the model)
+execute_data_prep_models = False             # It will play the data prep models pipeline (used to train the model)
 execute_daily_predict = True                # It will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
 
 
 # Process selections Train/Test Models and Performance
-execute_filtered = False                    # It will filter symbols by the filter_symbols parameter
+execute_filtered = True                    # It will filter symbols by the filter_symbols parameter
 execute_train_models = False                # It will play the train models pipeline (it will sobescribe the version_model, or set a new value in version_model)
 execute_filtered_models = True              # Filter models directly in training
 execute_historical_predict = False          # It will play the backtest pipeline, for futher scenarios validation
@@ -32,7 +32,7 @@ execute_simulations = False                 # Create simulations with random sel
 
 # Configs scores and model version
 score_metric = 'f1_score'                   # Metric to compose the score. Options: accuracy, precision, recall, auc_roc, f1_score
-version_model = 'v2.1.20'                       # Define the version. If it doesnt exist, it will be created (when trained the model) otherwise, it will used the previously one
+version_model = 'v2.2.20'                       # Define the version. If it doesnt exist, it will be created (when trained the model) otherwise, it will used the previously one
 num_select_models = 0          # select the max number of models to return (0 for all)
 min_threshold_models = 0.65       # select the minimum threshold for select the model (considering the score_metric)
 min_threshold_signals = 0.55     # select the minimum threshold for considering a signal as a entrance (it consider's the selected models (that passed in threshold))

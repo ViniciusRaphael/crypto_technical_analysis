@@ -126,6 +126,46 @@ class Features():
     # df_with_supertrend = apply_supertrend_to_groups(df)
 
 
+    def apply_indicator(self, dataframe, indicator_function, symbol_column='Symbol', high_column='High', low_column='Low', close_column='Close', **kwargs):
+        """
+        Aplica um indicador técnico que usa High, Low e Close, adicionando as colunas geradas ao dataframe.
+        
+        Args:
+        - dataframe (pd.DataFrame): O dataframe com os dados históricos.
+        - indicator_function (function): Função do indicador a ser aplicada (por exemplo, ta.supertrend).
+        - symbol_column (str): Nome da coluna de símbolos.
+        - high_column (str): Nome da coluna de preços "High".
+        - low_column (str): Nome da coluna de preços "Low".
+        - close_column (str): Nome da coluna de preços "Close".
+        - **kwargs: Parâmetros adicionais da função do indicador (ex. `length`, `mult`).
+        
+        Returns:
+        - pd.DataFrame: DataFrame original com as colunas do indicador adicionadas.
+        """
+        # Aplica o indicador por grupo de símbolos
+        indicator_columns = dataframe.groupby(symbol_column).apply(
+            lambda df: indicator_function(df[high_column], df[low_column], df[close_column], **kwargs)
+        )
+        
+        # Concatena as novas colunas ao dataframe original
+        dataframe = pd.concat([dataframe, indicator_columns], axis=1)
+        
+        return dataframe
+    
+    # Aplicando o Supertrend
+    # dataframe = apply_indicator(
+    #     dataframe, 
+    #     ta.supertrend, 
+    #     # symbol_column='Symbol', 
+    #     # high_column='High', 
+    #     # low_column='Low', 
+    #     # close_column='Close', 
+    #     length=window
+    #     # multiplier=mult
+    # )
+
+
+
 
     def add_indicators(self, dataframe):
         """
@@ -164,7 +204,11 @@ class Features():
             dataframe[f'pwma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.pwma(x, length=window)) # Pascal's Weighted Moving Average (PWMA)
             dataframe[f'rma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.rma(x, length=window)) # wildeR's Moving Average (RMA)
 
+            # dataframe[f'mcgd_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.mcgd(x, length=window)) # McGinley Dynamic Indicator (MCGD)
+            dataframe[f'ssf_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ssf(x, length=window)) # Ehler's Super Smoother Filter (SSF)
 
+
+            dataframe = self.apply_indicator(dataframe, ta.supertrend, length=window)
 
             # dataframe[f'jma{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.jma(x, length=window)) # Jurik Moving Average (JMA)
             dataframe[f'kama_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.kama(x, length=window)) # Kaufman's Adaptive Moving Average (KAMA)
@@ -176,10 +220,14 @@ class Features():
             # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
             # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
 
+        print(dataframe.columns)
 
 
-        for ind in ['ema', 'sma', 'wma', 'alma', 'dema', 'fwma', 'hma', 'linreg', 't3', 'swma', 'sinwma', 'zlma', 'vidya', 'trima', 'tema', 'midpoint', 'pwma', 'rma', 
+        for ind in [
+            'ema', 'sma', 'wma', 'alma', 'dema', 'fwma', 'hma', 'linreg', 't3', 'swma', 'sinwma', 'zlma', 'vidya', 'trima', 'tema', 'midpoint', 'pwma', 'rma', 
+                    #'mcgd', 
                     'kama']:
+            print(ind)
             for base_window in windows:
                 for compare_window in windows:
                     if base_window < compare_window:
@@ -189,7 +237,32 @@ class Features():
                         # dataframe[col_name] = dataframe.apply(lambda row: row[f'{ind}_{base_window}'] > row[f'{ind}_{compare_window}'], axis=1)
 
 
+        print(dataframe.columns)
 
+        
+        # Calculate Average Directional Index (ADX)
+        dataframe = dataframe.groupby('Symbol', group_keys=False).apply(self.calculate_adx).reset_index(drop=True)
+        dataframe['nm_adx_trend'] = dataframe['vl_adx'].transform(self.classify_adx_value)
+        print('passou nm_adx_trend')
+
+        # Calculate Relative Strength Index (RSI)
+        dataframe['rsi'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.rsi(x))
+        dataframe['nm_rsi_trend'] = dataframe['rsi'].transform(self.classify_rsi_value)
+
+        print('passou nm_rsi_trend')
+
+
+        # Calculate the MACD and Signal Line
+        # dataframe['vl_macd'] = dataframe['ema_12'] - dataframe['ema_26']
+        # dataframe['vl_macd_signal'] = dataframe.groupby('Symbol')['vl_macd'].transform(lambda x: x.ewm(span=9).mean())
+
+        # print('passou vl_macd_signal')
+
+
+        # dataframe['vl_macd_delta'] = dataframe['vl_macd'] - dataframe['vl_macd_signal']
+        # dataframe['qt_days_macd_delta_positive'] = self.count_positive_reset(dataframe['vl_macd_delta'])
+
+        # print('passou qt_days_macd_delta_positive')
 
         # Financial Result
         targets = [10, 15, 20, 25]
@@ -198,21 +271,9 @@ class Features():
         for target in targets:
             for timeframe in timeframes:
                 dataframe[f'target_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x))
-                dataframe[f'bl_target_{target}P_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) >= target / 100).astype(int)
-                dataframe[f'bl_target_{target}N_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) <= -target / 100).astype(int)
+                dataframe[f'bl_target_{target}P_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) >= target / 100)
+                dataframe[f'bl_target_{target}N_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) <= -target / 100)
+        print('passou target')
 
-        # Calculate Average Directional Index (ADX)
-        dataframe = dataframe.groupby('Symbol', group_keys=False).apply(self.calculate_adx).reset_index(drop=True)
-        dataframe['nm_adx_trend'] = dataframe['vl_adx'].transform(self.classify_adx_value)
-
-        # Calculate Relative Strength Index (RSI)
-        dataframe['rsi'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.rsi(x))
-        dataframe['nm_rsi_trend'] = dataframe['rsi'].transform(self.classify_rsi_value)
-
-        # Calculate the MACD and Signal Line
-        dataframe['vl_macd'] = dataframe['ema_12'] - dataframe['ema_26']
-        dataframe['vl_macd_signal'] = dataframe.groupby('Symbol')['vl_macd'].transform(lambda x: x.ewm(span=9).mean())
-        dataframe['vl_macd_delta'] = dataframe['vl_macd'] - dataframe['vl_macd_signal']
-        dataframe['qt_days_macd_delta_positive'] = self.count_positive_reset(dataframe['vl_macd_delta'])
 
         return dataframe
