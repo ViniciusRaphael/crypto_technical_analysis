@@ -99,31 +99,6 @@ class Features():
             grupo['vl_dmp'] = pd.NA
             grupo['vl_dmn'] = pd.NA
         return grupo
-    
-    # def calculate_supertrend(self, grupo):
-    #     adx_values = ta.supertrend(grupo['High'], grupo['Low'], grupo['Close'], length=14)
-    #     if adx_values is not None and not adx_values.empty:
-    #         # Adiciona as colunas calculadas ao grupo original
-    #         grupo['SUPERT'] = adx_values['ADX_14'].values
-    #         grupo['SUPERTd'] = adx_values['DMP_14'].values
-    #         grupo['SUPERTl'] = adx_values['DMN_14'].values
-    #         SUPERT (trend), SUPERTd (direction), SUPERTl (long), SUPERTs (short) columns.
-    #     else:
-    #         # Se o cálculo falhar, preenche com NaN
-    #         grupo['vl_adx'] = pd.NA
-    #         grupo['vl_dmp'] = pd.NA
-    #         grupo['vl_dmn'] = pd.NA
-    #     return grupo
-
-    # def apply_supertrend(group):
-    #     return ta.supertrend(group['high'], group['low'], group['close'], length=7, multiplier=3)
-
-    # def apply_supertrend_to_groups(df):
-    #     result = df.groupby('crypto').apply(lambda x: apply_supertrend(x)).reset_index(drop=True)
-    #     # Combine the result with the original DataFrame if needed
-    #     return df.join(result)
-
-    # df_with_supertrend = apply_supertrend_to_groups(df)
 
 
     def apply_indicator(self, dataframe, indicator_function, symbol_column='Symbol', **kwargs):
@@ -145,31 +120,17 @@ class Features():
         # Aplica o indicador por grupo de símbolos
         indicator_columns = dataframe.groupby(symbol_column, group_keys=False).apply(
             lambda df: indicator_function(high=df['High'], 
-                                          low=df['Low'], 
-                                          close=df['Close'], 
-                                          volume=df['Volume'], 
-                                          open_=df['Open'],
-                                          **kwargs)
+                                            low=df['Low'], 
+                                            close=df['Close'], 
+                                            volume=df['Volume'], 
+                                            open_=df['Open'],
+                                            **kwargs)
         )
         
         # Concatena as novas colunas ao dataframe original
         dataframe_concat = pd.concat([dataframe, indicator_columns], axis=1)
         
         return dataframe_concat
-    
-    # Aplicando o Supertrend
-    # dataframe = apply_indicator(
-    #     dataframe, 
-    #     ta.supertrend, 
-    #     # symbol_column='Symbol', 
-    #     # high_column='High', 
-    #     # low_column='Low', 
-    #     # close_column='Close', 
-    #     length=window
-    #     # multiplier=mult
-    # )
-
-    
 
 
     def add_indicators(self, dataframe):
@@ -185,28 +146,23 @@ class Features():
         # Sort DataFrame by 'Symbol' and 'Date', convert Date column to Datetime
         dataframe = dataframe.sort_values(by=['Symbol', 'Date']).reset_index(drop=True)
 
-        windows = [5, 12, 26, 50, 100, 200]
-        
-        # dataframe = self.apply_indicator(dataframe, ta.supertrend, length=10)
-        # print(dataframe)
-
+        # Some Overlap indicators
         dataframe = self.apply_indicator(dataframe, ta.hilo) # Gann HiLo (HiLo)
         dataframe = self.apply_indicator(dataframe, ta.hlc3) # HLC3
         dataframe = self.apply_indicator(dataframe, ta.ichimoku) # Ichimoku Kinkō Hyō (Ichimoku) ## Erro
-
-        # Desabilitado por problemas de memória ou erro na chamada
         dataframe = self.apply_indicator(dataframe, ta.ohlc4) # OHLC4
-        # dataframe = self.apply_indicator(dataframe, ta.vwap) # Volume Weighted Average Price (VWAP) ## Problema no calculo to_period não é mais usado
         dataframe = self.apply_indicator(dataframe, ta.vwma) # Volume Weighted Moving Average (VWMA)
         dataframe = self.apply_indicator(dataframe, ta.wcp) # Weighted Closing Price (WCP) # maybe cause memory problem 
+        # dataframe = self.apply_indicator(dataframe, ta.vwap) # Volume Weighted Average Price (VWAP) ## Problema no calculo to_period não é mais usado
 
+        windows = [5, 12, 26, 50, 100, 200]
 
         # Calculate and add Exponential Moving Averages (EMAs)
         for window in windows:
 
             dataframe = self.apply_indicator(dataframe, ta.supertrend, length=window) # supertrend            
 
-            # Moving Average
+            # Moving Average (Overlap indicators)
             dataframe[f'ema_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ema(x, length=window)) # Exponential Moving Average (EMA)
             dataframe[f'sma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.sma(x, length=window)) # Weighted Moving Average (WMA)
             dataframe[f'wma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.wma(x, length=window)) # Simple Moving Average (SMA)
@@ -225,35 +181,20 @@ class Features():
             dataframe[f'midpoint_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.midpoint(x, length=window)) # Midpoint
             dataframe[f'pwma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.pwma(x, length=window)) # Pascal's Weighted Moving Average (PWMA)
             dataframe[f'rma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.rma(x, length=window)) # wildeR's Moving Average (RMA)
-
-            # dataframe[f'mcgd_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.mcgd(x, length=window)) # McGinley Dynamic Indicator (MCGD)
-
-            # dataframe[f'ssf_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ssf(x, length=window)) # Ehler's Super Smoother Filter (SSF)
-
-            # dataframe[f'jma{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.jma(x, length=window)) # Jurik Moving Average (JMA)
+            dataframe[f'ssf_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ssf(x, length=window)) # Ehler's Super Smoother Filter (SSF)
             dataframe[f'kama_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.kama(x, length=window)) # Kaufman's Adaptive Moving Average (KAMA)
 
-            # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
-            # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
-            # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
-            # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
-            # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
-            # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA
+            # dataframe[f'mcgd_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.mcgd(x, length=window)) # McGinley Dynamic Indicator (MCGD) ## Erro na função
+            # dataframe[f'jma{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.jma(x, length=window)) # Jurik Moving Average (JMA) # Erro na função
 
-        for ind in [
-            'ema', 'sma', 'wma', 'alma', 
-            'dema', 'fwma', 'hma', 'linreg', 't3', 'swma', 'sinwma', 'zlma', 'vidya', 'trima', 'tema', 'midpoint', 'pwma', 'rma', 
-                    #'mcgd', 
-                    'kama']:
-            print(ind)
+        for ind in ['ema', 'sma', 'wma', 'alma','dema', 'fwma', #'mcgd', 'jma', 
+                    'hma', 'linreg', 't3', 'swma', 'sinwma', 'zlma', 'vidya', 'trima',
+                    'tema', 'midpoint', 'pwma', 'rma', 'kama', 'ssf']:
             for base_window in windows:
                 for compare_window in windows:
                     if base_window < compare_window:
                         col_name = f'{ind}_{base_window}_above_{ind}_{compare_window}'
                         dataframe[col_name] = dataframe[f'{ind}_{base_window}'] > dataframe[f'{ind}_{compare_window}']
-
-                        # dataframe[col_name] = dataframe.apply(lambda row: row[f'{ind}_{base_window}'] > row[f'{ind}_{compare_window}'], axis=1)
-
         
         # Calculate Average Directional Index (ADX)
         dataframe = dataframe.groupby('Symbol', group_keys=False).apply(self.calculate_adx).reset_index(drop=True)
