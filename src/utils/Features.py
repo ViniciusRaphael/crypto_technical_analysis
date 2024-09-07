@@ -164,9 +164,9 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.eom) # Ease of Movement (EOM)
         dataframe = self.apply_indicator(dataframe, ta.kvo) # Klinger Volume Oscillator (KVO)
         dataframe = self.apply_indicator(dataframe, ta.pvol) # Price-Volume (PVOL)
-        dataframe = self.apply_indicator(dataframe, ta.pvr) # Price Volume Rank
+        dataframe = self.apply_indicator(dataframe, ta.pvr) # Price Volume Rank  ### Se der erro, tem que mudar a função e adicionar um **kwargs na função dentro do pandas-ta
         dataframe = self.apply_indicator(dataframe, ta.pvt) # Price-Volume Trend (PVT)
-        dataframe = self.apply_indicator(dataframe, ta.vp) #Volume Profile (VP)
+        # dataframe = self.apply_indicator(dataframe, ta.vp) #Volume Profile (VP) ### Problema na função
 
         windows = [5, 12, 26, 50, 100, 200]
 
