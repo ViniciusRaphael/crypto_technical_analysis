@@ -24,7 +24,8 @@ class Models():
 
     def data_clean(self, dados:pd.DataFrame, target_list:list, data_return:str, removing_cols:list = ['Date', 'Symbol', 'Dividends', 'Stock Splits']):
         # Removing NA
-        dados_treat = dados.dropna()
+        dados_treat = dados.dropna(axis=1, how='all') # removing cols with all values = NaN
+        dados_treat = dados_treat.dropna() # Removing rows with NaN
         
         # Substituindo valores infinitos por NaN
         dados_treat.replace([np.inf, -np.inf], np.nan, inplace=True)

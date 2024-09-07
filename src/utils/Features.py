@@ -143,14 +143,14 @@ class Features():
         - pd.DataFrame: DataFrame original com as colunas do indicador adicionadas.
         """
         # Aplica o indicador por grupo de símbolos
-        indicator_columns = dataframe.groupby(symbol_column).apply(
+        indicator_columns = dataframe.groupby(symbol_column, group_keys=False).apply(
             lambda df: indicator_function(df[high_column], df[low_column], df[close_column], **kwargs)
         )
         
         # Concatena as novas colunas ao dataframe original
-        dataframe = pd.concat([dataframe, indicator_columns], axis=1)
+        dataframe_concat = pd.concat([dataframe, indicator_columns], axis=1)
         
-        return dataframe
+        return dataframe_concat
     
     # Aplicando o Supertrend
     # dataframe = apply_indicator(
@@ -164,7 +164,7 @@ class Features():
     #     # multiplier=mult
     # )
 
-
+    
 
 
     def add_indicators(self, dataframe):
@@ -181,9 +181,18 @@ class Features():
         dataframe = dataframe.sort_values(by=['Symbol', 'Date']).reset_index(drop=True)
 
         windows = [5, 12, 26, 50, 100, 200]
+        
+        # dataframe = self.apply_indicator(dataframe, ta.supertrend, length=10)
+        # print(dataframe)
 
         # Calculate and add Exponential Moving Averages (EMAs)
         for window in windows:
+
+            dataframe = self.apply_indicator(dataframe, ta.supertrend, length=window)
+
+            print(dataframe)
+            
+
             # Moving Average
             dataframe[f'ema_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ema(x, length=window)) # Exponential Moving Average (EMA)
             dataframe[f'sma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.sma(x, length=window)) # Weighted Moving Average (WMA)
@@ -205,10 +214,8 @@ class Features():
             dataframe[f'rma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.rma(x, length=window)) # wildeR's Moving Average (RMA)
 
             # dataframe[f'mcgd_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.mcgd(x, length=window)) # McGinley Dynamic Indicator (MCGD)
-            dataframe[f'ssf_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ssf(x, length=window)) # Ehler's Super Smoother Filter (SSF)
 
-
-            dataframe = self.apply_indicator(dataframe, ta.supertrend, length=window)
+            # dataframe[f'ssf_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ssf(x, length=window)) # Ehler's Super Smoother Filter (SSF)
 
             # dataframe[f'jma{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.jma(x, length=window)) # Jurik Moving Average (JMA)
             dataframe[f'kama_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.kama(x, length=window)) # Kaufman's Adaptive Moving Average (KAMA)
@@ -220,11 +227,13 @@ class Features():
             # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
             # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
 
-        print(dataframe.columns)
+            print(dataframe.columns)
+
 
 
         for ind in [
-            'ema', 'sma', 'wma', 'alma', 'dema', 'fwma', 'hma', 'linreg', 't3', 'swma', 'sinwma', 'zlma', 'vidya', 'trima', 'tema', 'midpoint', 'pwma', 'rma', 
+            'ema', 'sma', 'wma', 'alma', 
+            'dema', 'fwma', 'hma', 'linreg', 't3', 'swma', 'sinwma', 'zlma', 'vidya', 'trima', 'tema', 'midpoint', 'pwma', 'rma', 
                     #'mcgd', 
                     'kama']:
             print(ind)
@@ -263,6 +272,8 @@ class Features():
         # dataframe['qt_days_macd_delta_positive'] = self.count_positive_reset(dataframe['vl_macd_delta'])
 
         # print('passou qt_days_macd_delta_positive')
+        
+
 
         # Financial Result
         targets = [10, 15, 20, 25]
@@ -271,9 +282,10 @@ class Features():
         for target in targets:
             for timeframe in timeframes:
                 dataframe[f'target_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x))
-                dataframe[f'bl_target_{target}P_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) >= target / 100)
-                dataframe[f'bl_target_{target}N_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) <= -target / 100)
+                dataframe[f'bl_target_{target}P_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) >= target / 100).astype(int)
+                dataframe[f'bl_target_{target}N_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) <= -target / 100).astype(int)
         print('passou target')
+        print(dataframe)
 
 
         return dataframe
