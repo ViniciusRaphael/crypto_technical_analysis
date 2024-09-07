@@ -155,6 +155,19 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.wcp) # Weighted Closing Price (WCP) # maybe cause memory problem 
         # dataframe = self.apply_indicator(dataframe, ta.vwap) # Volume Weighted Average Price (VWAP) ## Problema no calculo to_period não é mais usado
 
+        # Volume indicators
+        dataframe = self.apply_indicator(dataframe, ta.ad) # Accumulation/Distribution (AD
+        dataframe = self.apply_indicator(dataframe, ta.adosc) # Accumulation/Distribution Oscillator
+        dataframe = self.apply_indicator(dataframe, ta.aobv) #Archer On Balance Volume (AOBV)
+        dataframe = self.apply_indicator(dataframe, ta.cmf) # Chaikin Money Flow (CMF)
+        dataframe = self.apply_indicator(dataframe, ta.efi) # Elder's Force Index (EFI)
+        dataframe = self.apply_indicator(dataframe, ta.eom) # Ease of Movement (EOM)
+        dataframe = self.apply_indicator(dataframe, ta.kvo) # Klinger Volume Oscillator (KVO)
+        dataframe = self.apply_indicator(dataframe, ta.pvol) # Price-Volume (PVOL)
+        dataframe = self.apply_indicator(dataframe, ta.pvr) # Price Volume Rank
+        dataframe = self.apply_indicator(dataframe, ta.pvt) # Price-Volume Trend (PVT)
+        dataframe = self.apply_indicator(dataframe, ta.vp) #Volume Profile (VP)
+
         windows = [5, 12, 26, 50, 100, 200]
 
         # Calculate and add Exponential Moving Averages (EMAs)
@@ -187,6 +200,12 @@ class Features():
             # dataframe[f'mcgd_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.mcgd(x, length=window)) # McGinley Dynamic Indicator (MCGD) ## Erro na função
             # dataframe[f'jma{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.jma(x, length=window)) # Jurik Moving Average (JMA) # Erro na função
 
+            # Indicadores de volume 
+            dataframe = self.apply_indicator(dataframe, ta.mfi, length=window) #  Money Flow Index (MFI)
+            dataframe = self.apply_indicator(dataframe, ta.nvi, length=window) #  Negative Volume Index (NVI)
+            dataframe = self.apply_indicator(dataframe, ta.obv, length=window) # On Balance Volume (OBV)
+            dataframe = self.apply_indicator(dataframe, ta.pvi, length=window) # Positive Volume Index (PVI)
+
         for ind in ['ema', 'sma', 'wma', 'alma','dema', 'fwma', #'mcgd', 'jma', 
                     'hma', 'linreg', 't3', 'swma', 'sinwma', 'zlma', 'vidya', 'trima',
                     'tema', 'midpoint', 'pwma', 'rma', 'kama', 'ssf']:
@@ -208,20 +227,17 @@ class Features():
         print('passou nm_rsi_trend')
 
 
-        # Calculate the MACD and Signal Line
-        # dataframe['vl_macd'] = dataframe['ema_12'] - dataframe['ema_26']
-        # dataframe['vl_macd_signal'] = dataframe.groupby('Symbol')['vl_macd'].transform(lambda x: x.ewm(span=9).mean())
+        #Calculate the MACD and Signal Line
+        dataframe['vl_macd'] = dataframe['ema_12'] - dataframe['ema_26']
+        dataframe['vl_macd_signal'] = dataframe.groupby('Symbol')['vl_macd'].transform(lambda x: x.ewm(span=9).mean())
 
-        # print('passou vl_macd_signal')
+        print('passou vl_macd_signal')
 
+        dataframe['vl_macd_delta'] = dataframe['vl_macd'] - dataframe['vl_macd_signal']
+        dataframe['qt_days_macd_delta_positive'] = self.count_positive_reset(dataframe['vl_macd_delta'])
 
-        # dataframe['vl_macd_delta'] = dataframe['vl_macd'] - dataframe['vl_macd_signal']
-        # dataframe['qt_days_macd_delta_positive'] = self.count_positive_reset(dataframe['vl_macd_delta'])
-
-        # print('passou qt_days_macd_delta_positive')
+        print('passou qt_days_macd_delta_positive')
         
-
-
         # Financial Result
         targets = [10, 15, 20, 25]
         timeframes = [7, 15, 30]
