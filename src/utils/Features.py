@@ -126,7 +126,7 @@ class Features():
     # df_with_supertrend = apply_supertrend_to_groups(df)
 
 
-    def apply_indicator(self, dataframe, indicator_function, symbol_column='Symbol', high_column='High', low_column='Low', close_column='Close', **kwargs):
+    def apply_indicator(self, dataframe, indicator_function, symbol_column='Symbol', **kwargs):
         """
         Aplica um indicador técnico que usa High, Low e Close, adicionando as colunas geradas ao dataframe.
         
@@ -144,7 +144,12 @@ class Features():
         """
         # Aplica o indicador por grupo de símbolos
         indicator_columns = dataframe.groupby(symbol_column, group_keys=False).apply(
-            lambda df: indicator_function(df[high_column], df[low_column], df[close_column], **kwargs)
+            lambda df: indicator_function(high=df['High'], 
+                                          low=df['Low'], 
+                                          close=df['Close'], 
+                                          volume=df['Volume'], 
+                                          open_=df['Open'],
+                                          **kwargs)
         )
         
         # Concatena as novas colunas ao dataframe original
@@ -185,13 +190,21 @@ class Features():
         # dataframe = self.apply_indicator(dataframe, ta.supertrend, length=10)
         # print(dataframe)
 
+        dataframe = self.apply_indicator(dataframe, ta.hilo) # Gann HiLo (HiLo)
+        dataframe = self.apply_indicator(dataframe, ta.hlc3) # HLC3
+        dataframe = self.apply_indicator(dataframe, ta.ichimoku) # Ichimoku Kinkō Hyō (Ichimoku) ## Erro
+
+        # Desabilitado por problemas de memória ou erro na chamada
+        dataframe = self.apply_indicator(dataframe, ta.ohlc4) # OHLC4
+        # dataframe = self.apply_indicator(dataframe, ta.vwap) # Volume Weighted Average Price (VWAP) ## Problema no calculo to_period não é mais usado
+        dataframe = self.apply_indicator(dataframe, ta.vwma) # Volume Weighted Moving Average (VWMA)
+        dataframe = self.apply_indicator(dataframe, ta.wcp) # Weighted Closing Price (WCP) # maybe cause memory problem 
+
+
         # Calculate and add Exponential Moving Averages (EMAs)
         for window in windows:
 
-            dataframe = self.apply_indicator(dataframe, ta.supertrend, length=window)
-
-            print(dataframe)
-            
+            dataframe = self.apply_indicator(dataframe, ta.supertrend, length=window) # supertrend            
 
             # Moving Average
             dataframe[f'ema_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ema(x, length=window)) # Exponential Moving Average (EMA)
@@ -225,11 +238,7 @@ class Features():
             # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
             # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
             # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
-            # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA)
-
-            print(dataframe.columns)
-
-
+            # dataframe[f'alma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.alma(x, length=window)) # Média Móvel Arnaud Legoux (ALMA
 
         for ind in [
             'ema', 'sma', 'wma', 'alma', 
@@ -244,9 +253,6 @@ class Features():
                         dataframe[col_name] = dataframe[f'{ind}_{base_window}'] > dataframe[f'{ind}_{compare_window}']
 
                         # dataframe[col_name] = dataframe.apply(lambda row: row[f'{ind}_{base_window}'] > row[f'{ind}_{compare_window}'], axis=1)
-
-
-        print(dataframe.columns)
 
         
         # Calculate Average Directional Index (ADX)
@@ -285,7 +291,5 @@ class Features():
                 dataframe[f'bl_target_{target}P_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) >= target / 100).astype(int)
                 dataframe[f'bl_target_{target}N_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) <= -target / 100).astype(int)
         print('passou target')
-        print(dataframe)
-
 
         return dataframe
