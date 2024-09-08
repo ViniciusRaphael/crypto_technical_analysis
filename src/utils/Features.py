@@ -263,9 +263,9 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.atr, length=window) #Indicator: Average True Range (ATR)"
         dataframe = self.apply_indicator(dataframe, ta.bbands, length=window) #Indicator: Indicator Bollinger Bands (BBANDS)
         dataframe = self.apply_indicator(dataframe, ta.donchian, length=window) #Indicator: Donchian Channels (DC)
-        dataframe = self.apply_indicator(dataframe, ta.hwc) #Indicator: Holt-Winter Channel
+        # dataframe = self.apply_indicator(dataframe, ta.hwc) #Indicator: Holt-Winter Channel ## Erro na função
         dataframe = self.apply_indicator(dataframe, ta.kc, length=window) #Indicator: Keltner Channels (KC)"
-        dataframe = self.apply_indicator(dataframe, ta.massi) #Indicator: Mass Index (MASSI)
+        # dataframe = self.apply_indicator(dataframe, ta.massi) #Indicator: Mass Index (MASSI) ## Multiplos Close na função
         dataframe = self.apply_indicator(dataframe, ta.natr, length=window) #Indicator:Normalized Average True Range (NATR)
         dataframe = self.apply_indicator(dataframe, ta.pdist) #Indicator:Price Distance (PDIST)
         dataframe = self.apply_indicator(dataframe, ta.thermo, length=window) #Indicator:Elders Thermometer (THERMO)
