@@ -172,6 +172,7 @@ class Features():
         # dataframe = self.apply_indicator(dataframe, ta.obv) # On Balance Volume (OBV) ## É chamado tmb no AOBV
         # dataframe = self.apply_indicator(dataframe, ta.vp) #Volume Profile (VP) ### Problema na função
         window = 14
+
         # Momentum Indicators
         dataframe = self.apply_indicator(dataframe, ta.ao) # Awesome Oscillator (AO)
         dataframe = self.apply_indicator(dataframe, ta.apo) #  Absolute Price Oscillator (APO)
@@ -206,15 +207,44 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.slope) # Slope
         dataframe = self.apply_indicator(dataframe, ta.squeeze_pro) #  Squeeze Momentum (SQZ) PRO
         dataframe = self.apply_indicator(dataframe, ta.squeeze) #  Squeeze Momentum (SQZ)
-        dataframe = self.apply_indicator(dataframe, ta.stc) # Schaff Trend Cycle (STC)
+        # dataframe = self.apply_indicator(dataframe, ta.stc) # Schaff Trend Cycle (STC) #### Erro na função
         dataframe = self.apply_indicator(dataframe, ta.stoch) # Stochastic Oscillator (STOCH)
         dataframe = self.apply_indicator(dataframe, ta.stochrsi, length=window) # Stochastic RSI Oscillator (STOCHRSI)
-        dataframe = self.apply_indicator(dataframe, ta.td_seq) # Tom Demark Sequential (TD_SEQ)
+        # dataframe = self.apply_indicator(dataframe, ta.td_seq) # Tom Demark Sequential (TD_SEQ)  # erro na chamada do índice 
         dataframe = self.apply_indicator(dataframe, ta.trix, length=window) # Trix (TRIX)
         dataframe = self.apply_indicator(dataframe, ta.tsi) # True Strength Index (TSI)
         dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
         dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
+
+        # Cyclo Indicators
+        # dataframe = self.apply_indicator(dataframe, ta.ebsw, length=window) #  Even Better SineWave (EBSW) # Erro na chamada da função
+
+
+
+        # dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
+        # dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
+        # dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
+        # dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
+        # dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
+        # dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
+        # dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
+        # dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
+
         
+        
+        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
+        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
+        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
+        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
+        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
+        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
+        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
+        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
+        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
+        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
+        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
+    
+
 
         windows = [5, 12, 26, 50, 100, 200]
 
