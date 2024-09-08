@@ -245,10 +245,17 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.aroon, length=window) #  Indicator: Aroon & Aroon Oscillator
         dataframe = self.apply_indicator(dataframe, ta.chop, length=window) # Indicator: Choppiness Index (CHOP)
         dataframe = self.apply_indicator(dataframe, ta.cksp, length=window) #  Indicator: Chande Kroll Stop (CKSP)
-        dataframe = self.apply_indicator(dataframe, ta.decay, length=window) #  Indicator: Decay
+        # dataframe = self.apply_indicator(dataframe, ta.decay, length=window) #  Indicator: Decay ### Erro na função
         dataframe = self.apply_indicator(dataframe, ta.decreasing, length=window) #  Indicator: Decreasing
         dataframe = self.apply_indicator(dataframe, ta.dpo, length=window) #  Indicator: Detrend Price Oscillator (DPO)
+        dataframe = self.apply_indicator(dataframe, ta.increasing, length=window) #  Indicator: Increasing
 
+        dataframe = self.apply_indicator(dataframe, ta.psar, length=window) #  Indicator: Parabolic Stop and Reverse (PSAR)
+        dataframe = self.apply_indicator(dataframe, ta.qstick, length=window) #  Indicator: Q Stick
+        dataframe = self.apply_indicator(dataframe, ta.ttm_trend, length=window) #  Indicator: TTM Trend (TTM_TRND)
+        dataframe = self.apply_indicator(dataframe, ta.vhf, length=window) #  Indicator: Vertical Horizontal Filter (VHF)
+        dataframe = self.apply_indicator(dataframe, ta.vortex, length=window) #  Indicator: Vortex
+        ## long_run, short_run, t_signals, xsignals cant be used right now (Differente parameters)
 
         # dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
         # dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
