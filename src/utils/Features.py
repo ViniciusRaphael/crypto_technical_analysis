@@ -227,6 +227,18 @@ class Features():
 
 
         # Statistics Indicators
+        dataframe = self.apply_indicator(dataframe, ta.entropy, length=window) #  Entropy (ENTP)
+        dataframe = self.apply_indicator(dataframe, ta.kurtosis, length=window) #  Indicator: Kurtosis
+        dataframe = self.apply_indicator(dataframe, ta.mad, length=window) # Mean Absolute Deviation
+        dataframe = self.apply_indicator(dataframe, ta.median, length=window) #  Indicator: median
+        dataframe = self.apply_indicator(dataframe, ta.quantile, length=window) # Quantile
+        dataframe = self.apply_indicator(dataframe, ta.skew, length=window) #  Skew
+        dataframe = self.apply_indicator(dataframe, ta.stdev, length=window) #  Indicator: Standard Deviation
+        # dataframe = self.apply_indicator(dataframe, ta.tos_stdevall, length=window) #  TD Ameritrade's Think or Swim Standard Deviation All  #### Erro na função
+        dataframe = self.apply_indicator(dataframe, ta.variance, length=window) #  Indicator: Variance
+        dataframe = self.apply_indicator(dataframe, ta.zscore, length=window) #  Z Score
+
+        
         # Trend Indicators
 
         # dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
@@ -244,7 +256,7 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.cdl_inside) #  Candle Type: Inside Bar
         dataframe = self.apply_indicator(dataframe, ta.cdl_inside) #  Candle Type: Inside Bar
         # dataframe = self.apply_indicator(dataframe, ta.cdl_pattern) #  Candle Pattern
-        dataframe = self.apply_indicator(dataframe, ta.ha) #  Candle Type: Heikin Ashi
+        # dataframe = self.apply_indicator(dataframe, ta.ha) #  Candle Type: Heikin Ashi
         dataframe = self.apply_indicator(dataframe, ta.cdl_z, length=window) #  Candle Type: Z Score
     
 
