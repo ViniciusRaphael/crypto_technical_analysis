@@ -156,7 +156,6 @@ class Features():
         # dataframe = self.apply_indicator(dataframe, ta.vwap) # Volume Weighted Average Price (VWAP) ## Problema no calculo to_period não é mais usado
 
         # Volume indicators
-        dataframe = self.apply_indicator(dataframe, ta.obv) # On Balance Volume (OBV)
         dataframe = self.apply_indicator(dataframe, ta.ad) # Accumulation/Distribution (AD
         dataframe = self.apply_indicator(dataframe, ta.adosc) # Accumulation/Distribution Oscillator
         dataframe = self.apply_indicator(dataframe, ta.aobv) #Archer On Balance Volume (AOBV)
@@ -167,6 +166,7 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.pvol) # Price-Volume (PVOL)
         dataframe = self.apply_indicator(dataframe, ta.pvr) # Price Volume Rank  ### Se der erro, tem que mudar a função e adicionar um **kwargs na função dentro do pandas-ta
         dataframe = self.apply_indicator(dataframe, ta.pvt) # Price-Volume Trend (PVT)
+        # dataframe = self.apply_indicator(dataframe, ta.obv) # On Balance Volume (OBV) ## É chamado tmb no AOBV
         # dataframe = self.apply_indicator(dataframe, ta.vp) #Volume Profile (VP) ### Problema na função
 
         windows = [5, 12, 26, 50, 100, 200]
