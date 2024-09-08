@@ -220,6 +220,14 @@ class Features():
         # dataframe = self.apply_indicator(dataframe, ta.ebsw, length=window) #  Even Better SineWave (EBSW) # Erro na chamada da função
 
 
+        # Performance Indicators
+        dataframe = self.apply_indicator(dataframe, ta.drawdown) #  "Indicator: Drawdown (DD)
+        dataframe = self.apply_indicator(dataframe, ta.log_return, length=window) #  "Indicator:  Log Return
+        dataframe = self.apply_indicator(dataframe, ta.percent_return, length=window) #   Percent Return
+
+
+        # Statistics Indicators
+        # Trend Indicators
 
         # dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
         # dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
@@ -235,7 +243,7 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.cdl_doji, length=window) #  Candle Type: Doji
         dataframe = self.apply_indicator(dataframe, ta.cdl_inside) #  Candle Type: Inside Bar
         dataframe = self.apply_indicator(dataframe, ta.cdl_inside) #  Candle Type: Inside Bar
-        dataframe = self.apply_indicator(dataframe, ta.cdl_pattern) #  Candle Pattern
+        # dataframe = self.apply_indicator(dataframe, ta.cdl_pattern) #  Candle Pattern
         dataframe = self.apply_indicator(dataframe, ta.ha) #  Candle Type: Heikin Ashi
         dataframe = self.apply_indicator(dataframe, ta.cdl_z, length=window) #  Candle Type: Z Score
     
