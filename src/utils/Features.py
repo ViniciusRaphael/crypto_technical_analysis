@@ -231,18 +231,13 @@ class Features():
         # dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
 
         
-        
-        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
-        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
-        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
-        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
-        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
-        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
-        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
-        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
-        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
-        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
-        # dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
+        # Candles Indicators
+        dataframe = self.apply_indicator(dataframe, ta.cdl_doji, length=window) #  Candle Type: Doji
+        dataframe = self.apply_indicator(dataframe, ta.cdl_inside) #  Candle Type: Inside Bar
+        dataframe = self.apply_indicator(dataframe, ta.cdl_inside) #  Candle Type: Inside Bar
+        dataframe = self.apply_indicator(dataframe, ta.cdl_pattern) #  Candle Pattern
+        dataframe = self.apply_indicator(dataframe, ta.ha) #  Candle Type: Heikin Ashi
+        dataframe = self.apply_indicator(dataframe, ta.cdl_z, length=window) #  Candle Type: Z Score
     
 
 
