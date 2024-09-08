@@ -156,6 +156,7 @@ class Features():
         # dataframe = self.apply_indicator(dataframe, ta.vwap) # Volume Weighted Average Price (VWAP) ## Problema no calculo to_period não é mais usado
 
         # Volume indicators
+        dataframe = self.apply_indicator(dataframe, ta.obv) # On Balance Volume (OBV)
         dataframe = self.apply_indicator(dataframe, ta.ad) # Accumulation/Distribution (AD
         dataframe = self.apply_indicator(dataframe, ta.adosc) # Accumulation/Distribution Oscillator
         dataframe = self.apply_indicator(dataframe, ta.aobv) #Archer On Balance Volume (AOBV)
@@ -203,7 +204,6 @@ class Features():
             # Indicadores de volume 
             dataframe = self.apply_indicator(dataframe, ta.mfi, length=window) #  Money Flow Index (MFI)
             dataframe = self.apply_indicator(dataframe, ta.nvi, length=window) #  Negative Volume Index (NVI)
-            dataframe = self.apply_indicator(dataframe, ta.obv, length=window) # On Balance Volume (OBV)
             dataframe = self.apply_indicator(dataframe, ta.pvi, length=window) # Positive Volume Index (PVI)
 
         for ind in ['ema', 'sma', 'wma', 'alma','dema', 'fwma', #'mcgd', 'jma', 
@@ -248,5 +248,8 @@ class Features():
                 dataframe[f'bl_target_{target}P_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) >= target / 100).astype(int)
                 dataframe[f'bl_target_{target}N_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) <= -target / 100).astype(int)
         print('passou target')
+
+        duplicate_columns = dataframe.columns[dataframe.columns.duplicated()].tolist()
+        print(duplicate_columns)
 
         return dataframe
