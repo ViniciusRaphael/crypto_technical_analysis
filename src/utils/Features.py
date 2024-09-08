@@ -129,8 +129,11 @@ class Features():
         
         # Concatena as novas colunas ao dataframe original
         dataframe_concat = pd.concat([dataframe, indicator_columns], axis=1)
-        
-        return dataframe_concat
+
+        # Removing duplicate cols
+        dataframe_cleaned = dataframe_concat.loc[:, ~dataframe_concat.columns.duplicated()] 
+
+        return dataframe_cleaned
 
 
     def add_indicators(self, dataframe):
@@ -165,7 +168,7 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.kvo) # Klinger Volume Oscillator (KVO)
         dataframe = self.apply_indicator(dataframe, ta.pvol) # Price-Volume (PVOL)
         dataframe = self.apply_indicator(dataframe, ta.pvr) # Price Volume Rank  ### Se der erro, tem que mudar a função e adicionar um **kwargs na função dentro do pandas-ta
-        dataframe = self.apply_indicator(dataframe, ta.pvt) # Price-Volume Trend (PVT)
+        dataframe = self.apply_indicator(dataframe, ta.pvt) # Price-Volume Trend (PVT) ## Já calculado por outro indicador 
         # dataframe = self.apply_indicator(dataframe, ta.obv) # On Balance Volume (OBV) ## É chamado tmb no AOBV
         # dataframe = self.apply_indicator(dataframe, ta.vp) #Volume Profile (VP) ### Problema na função
         window = 14
@@ -186,6 +189,34 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.eri, length=window) #  Elder Ray Index (ERI)
         dataframe = self.apply_indicator(dataframe, ta.fisher, length=window) # Fisher Transform (FISHT)
         dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        dataframe = self.apply_indicator(dataframe, ta.kdj, length=window) # KDJ (KDJ)
+        dataframe = self.apply_indicator(dataframe, ta.kst) # 'Know Sure Thing' (KST)
+        dataframe = self.apply_indicator(dataframe, ta.macd) # Moving Average, Convergence/Divergence (MACD)
+        dataframe = self.apply_indicator(dataframe, ta.mom, length=window) # Momentum (MOM)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+        # dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
 
 
         dataframe = self.apply_indicator(dataframe, ta.pvt) # Price-Volume Trend (PVT)
@@ -272,7 +303,7 @@ class Features():
                 dataframe[f'bl_target_{target}N_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) <= -target / 100).astype(int)
         print('passou target')
 
-        # duplicate_columns = dataframe.columns[dataframe.columns.duplicated()].tolist()
-        # print(duplicate_columns)
+        duplicate_columns = dataframe.columns[dataframe.columns.duplicated()].tolist()
+        print(duplicate_columns)
 
         return dataframe
