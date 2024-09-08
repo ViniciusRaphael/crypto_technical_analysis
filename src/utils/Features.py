@@ -249,13 +249,30 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.decreasing, length=window) #  Indicator: Decreasing
         dataframe = self.apply_indicator(dataframe, ta.dpo, length=window) #  Indicator: Detrend Price Oscillator (DPO)
         dataframe = self.apply_indicator(dataframe, ta.increasing, length=window) #  Indicator: Increasing
-
         dataframe = self.apply_indicator(dataframe, ta.psar, length=window) #  Indicator: Parabolic Stop and Reverse (PSAR)
         dataframe = self.apply_indicator(dataframe, ta.qstick, length=window) #  Indicator: Q Stick
         dataframe = self.apply_indicator(dataframe, ta.ttm_trend, length=window) #  Indicator: TTM Trend (TTM_TRND)
         dataframe = self.apply_indicator(dataframe, ta.vhf, length=window) #  Indicator: Vertical Horizontal Filter (VHF)
         dataframe = self.apply_indicator(dataframe, ta.vortex, length=window) #  Indicator: Vortex
         ## long_run, short_run, t_signals, xsignals cant be used right now (Differente parameters)
+
+
+        # Volatility Indicators
+        dataframe = self.apply_indicator(dataframe, ta.aberration, length=window) #Indicator: Aberration (ABER)
+        dataframe = self.apply_indicator(dataframe, ta.accbands, length=window) #Indicator: Acceleration Bands (ACCBANDS)
+        dataframe = self.apply_indicator(dataframe, ta.atr, length=window) #Indicator: Average True Range (ATR)"
+        dataframe = self.apply_indicator(dataframe, ta.bbands, length=window) #Indicator: Indicator Bollinger Bands (BBANDS)
+        dataframe = self.apply_indicator(dataframe, ta.donchian, length=window) #Indicator: Donchian Channels (DC)
+        dataframe = self.apply_indicator(dataframe, ta.hwc) #Indicator: Holt-Winter Channel
+        dataframe = self.apply_indicator(dataframe, ta.kc, length=window) #Indicator: Keltner Channels (KC)"
+        dataframe = self.apply_indicator(dataframe, ta.massi) #Indicator: Mass Index (MASSI)
+        dataframe = self.apply_indicator(dataframe, ta.natr, length=window) #Indicator:Normalized Average True Range (NATR)
+        dataframe = self.apply_indicator(dataframe, ta.pdist) #Indicator:Price Distance (PDIST)
+        dataframe = self.apply_indicator(dataframe, ta.thermo, length=window) #Indicator:Elders Thermometer (THERMO)
+        dataframe = self.apply_indicator(dataframe, ta.rvi, length=window) #Indicator:Relative Volatility Index (RVI)
+        dataframe = self.apply_indicator(dataframe, ta.true_range, length=window) #Indicator:True Range
+        dataframe = self.apply_indicator(dataframe, ta.ui, length=window) #Indicator:Ulcer Index (UI)
+
 
         # dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
         # dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
