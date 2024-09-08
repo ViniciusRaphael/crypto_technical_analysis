@@ -201,27 +201,20 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.qqe) # Quantitative Qualitative Estimation (QQE)
         dataframe = self.apply_indicator(dataframe, ta.roc, length=window) # Rate of Change (ROC)
         dataframe = self.apply_indicator(dataframe, ta.rsi, length=window) # Relative Strength Index (RSI) ########## RSI
-        dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
-        dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
-        dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
-        dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
-        dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
-        dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
-        dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
-        dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
-        dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
-        dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
-        dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
-        dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
-        dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
-        dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
-        dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
-        dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
-
-
-        dataframe = self.apply_indicator(dataframe, ta.pvt) # Price-Volume Trend (PVT)
-        dataframe = self.apply_indicator(dataframe, ta.pvt) # Price-Volume Trend (PVT)
-
+        dataframe = self.apply_indicator(dataframe, ta.rsx, length=window) #  Relative Strength Xtra (inspired by Jurik RSX)
+        dataframe = self.apply_indicator(dataframe, ta.rvgi, length=window) #  Relative Vigor Index (RVGI)
+        dataframe = self.apply_indicator(dataframe, ta.slope) # Slope
+        dataframe = self.apply_indicator(dataframe, ta.squeeze_pro) #  Squeeze Momentum (SQZ) PRO
+        dataframe = self.apply_indicator(dataframe, ta.squeeze) #  Squeeze Momentum (SQZ)
+        dataframe = self.apply_indicator(dataframe, ta.stc) # Schaff Trend Cycle (STC)
+        dataframe = self.apply_indicator(dataframe, ta.stoch) # Stochastic Oscillator (STOCH)
+        dataframe = self.apply_indicator(dataframe, ta.stochrsi, length=window) # Stochastic RSI Oscillator (STOCHRSI)
+        dataframe = self.apply_indicator(dataframe, ta.td_seq) # Tom Demark Sequential (TD_SEQ)
+        dataframe = self.apply_indicator(dataframe, ta.trix, length=window) # Trix (TRIX)
+        dataframe = self.apply_indicator(dataframe, ta.tsi) # True Strength Index (TSI)
+        dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
+        dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
+        
 
         windows = [5, 12, 26, 50, 100, 200]
 
