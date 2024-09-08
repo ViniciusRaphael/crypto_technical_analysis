@@ -240,6 +240,15 @@ class Features():
 
         
         # Trend Indicators
+        dataframe = self.apply_indicator(dataframe, ta.adx, length=window) #  Indicator: ADX
+        dataframe = self.apply_indicator(dataframe, ta.amat) #  Archer Moving Averages Trends (AMAT)
+        dataframe = self.apply_indicator(dataframe, ta.aroon, length=window) #  Indicator: Aroon & Aroon Oscillator
+        dataframe = self.apply_indicator(dataframe, ta.chop, length=window) # Indicator: Choppiness Index (CHOP)
+        dataframe = self.apply_indicator(dataframe, ta.cksp, length=window) #  Indicator: Chande Kroll Stop (CKSP)
+        dataframe = self.apply_indicator(dataframe, ta.decay, length=window) #  Indicator: Decay
+        dataframe = self.apply_indicator(dataframe, ta.decreasing, length=window) #  Indicator: Decreasing
+        dataframe = self.apply_indicator(dataframe, ta.dpo, length=window) #  Indicator: Detrend Price Oscillator (DPO)
+
 
         # dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
         # dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
