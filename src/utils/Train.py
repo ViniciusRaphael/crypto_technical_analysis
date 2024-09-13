@@ -23,10 +23,13 @@ class Models():
 
 
     def data_clean(self, dados:pd.DataFrame, target_list:list, data_return:str, removing_cols:list = ['Date', 'Symbol', 'Dividends', 'Stock Splits']):
-        # Removing NA
-        dados_treat = dados.dropna(axis=1, how='all') # removing cols with all values = NaN
+        # Definir o limite de 50% para valores inválidos (NaN ou infinitos)
+        limite = len(dados) * 0.8
+
+        dados_treat = dados.dropna(thresh=limite, axis=1) # removing cols with all values = NaN
+
         dados_treat = dados_treat.dropna() # Removing rows with NaN
-        
+
         # Substituindo valores infinitos por NaN
         dados_treat.replace([np.inf, -np.inf], np.nan, inplace=True)
 
@@ -220,6 +223,7 @@ class Models():
         dados_x = self.data_clean(dados_prep_models, parameters._remove_target_list, 'X', _dict_config_train['removing_cols_for_train'])
         dados_y_all = self.data_clean(dados_prep_models, parameters._remove_target_list, 'Y', _dict_config_train['removing_cols_for_train'])
 
+        print(len(dados_x.columns))
         # limpar arquivo de log e inserindo o cabeçalho
         with open(parameters.file_log_models, 'w') as arquivo:
             arquivo.write('name_file,name_model,target,version,date_add,true_negative,false_positive,false_negative,true_positive,accuracy,precision,recall,auc_roc,f1_score' + '\n')
