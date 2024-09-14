@@ -23,14 +23,10 @@ class Models():
 
 
     def data_clean(self, dados:pd.DataFrame, target_list:list, data_return:str, removing_cols:list = ['Date', 'Symbol', 'Dividends', 'Stock Splits']):
-        
-        ## Já feito no momento em que salva o dataset com indicadores
-        # Definir o limite de 80% para valores inválidos (NaN)
-        # limite = len(dados) * 0.8
 
-        # dados_treat = dados.dropna(thresh=limite, axis=1) # removing cols with all values = NaN
+        dados_treat = dados.dropna(how='all', axis=1) # removing cols with all values = NaN
 
-        dados_treat = dados.dropna() # Removing rows with NaN
+        dados_treat = dados_treat.dropna() # Removing rows with NaN
 
         # Substituindo valores infinitos por NaN
         dados_treat.replace([np.inf, -np.inf], np.nan, inplace=True)
