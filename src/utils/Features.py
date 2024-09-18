@@ -172,114 +172,47 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.pvt) # Price-Volume Trend (PVT) ## Já calculado por outro indicador 
         # dataframe = self.apply_indicator(dataframe, ta.obv) # On Balance Volume (OBV) ## É chamado tmb no AOBV
         # dataframe = self.apply_indicator(dataframe, ta.vp) #Volume Profile (VP) ### Problema na função
-        window = 14
 
         # Momentum Indicators
         dataframe = self.apply_indicator(dataframe, ta.ao) # Awesome Oscillator (AO)
         dataframe = self.apply_indicator(dataframe, ta.apo) #  Absolute Price Oscillator (APO)
-        dataframe = self.apply_indicator(dataframe, ta.bias, length=window) # Bias (BIAS)
         dataframe = self.apply_indicator(dataframe, ta.bop) # Balance of Power (BOP)
         dataframe = self.apply_indicator(dataframe, ta.brar) #  BRAR (BRAR)
-        dataframe = self.apply_indicator(dataframe, ta.cci, length=window) # Commodity Channel Index (CCI)
-        dataframe = self.apply_indicator(dataframe, ta.cfo, length=window) # Chande Forcast Oscillator (CFO)
-        dataframe = self.apply_indicator(dataframe, ta.cg, length=window) # Center of Gravity (CG)
-        dataframe = self.apply_indicator(dataframe, ta.cmo, length=window) # Chande Momentum Oscillator (CMO)
-        dataframe = self.apply_indicator(dataframe, ta.coppock, length=window) # Coppock Curve (COPC)
-        dataframe = self.apply_indicator(dataframe, ta.cti, length=window) # Correlation Trend Indicator
-        dataframe = self.apply_indicator(dataframe, ta.dm, length=window) # DM
-        dataframe = self.apply_indicator(dataframe, ta.er, length=window) # Efficiency Ratio (ER)
-        dataframe = self.apply_indicator(dataframe, ta.eri, length=window) #  Elder Ray Index (ERI)
-        dataframe = self.apply_indicator(dataframe, ta.fisher, length=window) # Fisher Transform (FISHT)
-        dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
-        dataframe = self.apply_indicator(dataframe, ta.kdj, length=window) # KDJ (KDJ)
         dataframe = self.apply_indicator(dataframe, ta.kst) # 'Know Sure Thing' (KST)
         dataframe = self.apply_indicator(dataframe, ta.macd) # Moving Average, Convergence/Divergence (MACD)
-        dataframe = self.apply_indicator(dataframe, ta.mom, length=window) # Momentum (MOM)
-        dataframe = self.apply_indicator(dataframe, ta.pgo, length=window) # Pretty Good Oscillator (PGO)
-        dataframe = self.apply_indicator(dataframe, ta.ppo) # Percentage Price Oscillator (PPO)
-        dataframe = self.apply_indicator(dataframe, ta.psl, length=window) #  Psychological Line (PSL)
-
         dataframe = self.apply_indicator(dataframe, ta.pvo) # Percentage Volume Oscillator (PVO)
         dataframe = self.apply_indicator(dataframe, ta.qqe) # Quantitative Qualitative Estimation (QQE)
-        dataframe = self.apply_indicator(dataframe, ta.roc, length=window) # Rate of Change (ROC)
-        dataframe = self.apply_indicator(dataframe, ta.rsi, length=window) # Relative Strength Index (RSI) ########## RSI
-        dataframe = self.apply_indicator(dataframe, ta.rsx, length=window) #  Relative Strength Xtra (inspired by Jurik RSX)
-        dataframe = self.apply_indicator(dataframe, ta.rvgi, length=window) #  Relative Vigor Index (RVGI)
         dataframe = self.apply_indicator(dataframe, ta.slope) # Slope
         dataframe = self.apply_indicator(dataframe, ta.squeeze_pro) #  Squeeze Momentum (SQZ) PRO
         dataframe = self.apply_indicator(dataframe, ta.squeeze) #  Squeeze Momentum (SQZ)
-        # dataframe = self.apply_indicator(dataframe, ta.stc) # Schaff Trend Cycle (STC) #### Erro na função
         dataframe = self.apply_indicator(dataframe, ta.stoch) # Stochastic Oscillator (STOCH)
-        dataframe = self.apply_indicator(dataframe, ta.stochrsi, length=window) # Stochastic RSI Oscillator (STOCHRSI)
-        # dataframe = self.apply_indicator(dataframe, ta.td_seq) # Tom Demark Sequential (TD_SEQ)  # erro na chamada do índice 
-        dataframe = self.apply_indicator(dataframe, ta.trix, length=window) # Trix (TRIX)
         dataframe = self.apply_indicator(dataframe, ta.tsi) # True Strength Index (TSI)
         dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
-        dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
+        dataframe = self.apply_indicator(dataframe, ta.ppo) # Percentage Price Oscillator (PPO)
+        # dataframe = self.apply_indicator(dataframe, ta.td_seq) # Tom Demark Sequential (TD_SEQ)  # erro na chamada do índice 
+        # dataframe = self.apply_indicator(dataframe, ta.stc) # Schaff Trend Cycle (STC) #### Erro na função
 
         # Cyclo Indicators
         # dataframe = self.apply_indicator(dataframe, ta.ebsw, length=window) #  Even Better SineWave (EBSW) # Erro na chamada da função
 
-
         # Performance Indicators
         dataframe = self.apply_indicator(dataframe, ta.drawdown) #  "Indicator: Drawdown (DD)
-        dataframe = self.apply_indicator(dataframe, ta.log_return, length=window) #  "Indicator:  Log Return
-        dataframe = self.apply_indicator(dataframe, ta.percent_return, length=window) #   Percent Return
-
-
-        # Statistics Indicators
-        dataframe = self.apply_indicator(dataframe, ta.entropy, length=window) #  Entropy (ENTP)
-        dataframe = self.apply_indicator(dataframe, ta.kurtosis, length=window) #  Indicator: Kurtosis
-        dataframe = self.apply_indicator(dataframe, ta.mad, length=window) # Mean Absolute Deviation
-        dataframe = self.apply_indicator(dataframe, ta.median, length=window) #  Indicator: median
-        dataframe = self.apply_indicator(dataframe, ta.quantile, length=window) # Quantile
-        dataframe = self.apply_indicator(dataframe, ta.skew, length=window) #  Skew
-        dataframe = self.apply_indicator(dataframe, ta.stdev, length=window) #  Indicator: Standard Deviation
-        # dataframe = self.apply_indicator(dataframe, ta.tos_stdevall, length=window) #  TD Ameritrade's Think or Swim Standard Deviation All  #### Erro na função
-        dataframe = self.apply_indicator(dataframe, ta.variance, length=window) #  Indicator: Variance
-        dataframe = self.apply_indicator(dataframe, ta.zscore, length=window) #  Z Score
-
         
         # Trend Indicators
-        dataframe = self.apply_indicator(dataframe, ta.adx, length=window) #  Indicator: ADX
         dataframe = self.apply_indicator(dataframe, ta.amat) #  Archer Moving Averages Trends (AMAT)
-        dataframe = self.apply_indicator(dataframe, ta.aroon, length=window) #  Indicator: Aroon & Aroon Oscillator
-        dataframe = self.apply_indicator(dataframe, ta.chop, length=window) # Indicator: Choppiness Index (CHOP)
-        dataframe = self.apply_indicator(dataframe, ta.cksp, length=window) #  Indicator: Chande Kroll Stop (CKSP)
-        # dataframe = self.apply_indicator(dataframe, ta.decay, length=window) #  Indicator: Decay ### Erro na função
-        dataframe = self.apply_indicator(dataframe, ta.decreasing, length=window) #  Indicator: Decreasing
-        dataframe = self.apply_indicator(dataframe, ta.dpo, length=window) #  Indicator: Detrend Price Oscillator (DPO)
-        dataframe = self.apply_indicator(dataframe, ta.increasing, length=window) #  Indicator: Increasing
-        dataframe = self.apply_indicator(dataframe, ta.psar, length=window) #  Indicator: Parabolic Stop and Reverse (PSAR)
-        dataframe = self.apply_indicator(dataframe, ta.qstick, length=window) #  Indicator: Q Stick
-        dataframe = self.apply_indicator(dataframe, ta.ttm_trend, length=window) #  Indicator: TTM Trend (TTM_TRND)
-        dataframe = self.apply_indicator(dataframe, ta.vhf, length=window) #  Indicator: Vertical Horizontal Filter (VHF)
-        dataframe = self.apply_indicator(dataframe, ta.vortex, length=window) #  Indicator: Vortex
         ## long_run, short_run, t_signals, xsignals cant be used right now (Differente parameters)
 
 
         # Volatility Indicators
-        dataframe = self.apply_indicator(dataframe, ta.aberration, length=window) #Indicator: Aberration (ABER)
-        dataframe = self.apply_indicator(dataframe, ta.accbands, length=window) #Indicator: Acceleration Bands (ACCBANDS)
-        dataframe = self.apply_indicator(dataframe, ta.atr, length=window) #Indicator: Average True Range (ATR)"
-        dataframe = self.apply_indicator(dataframe, ta.bbands, length=window) #Indicator: Indicator Bollinger Bands (BBANDS)
-        dataframe = self.apply_indicator(dataframe, ta.donchian, length=window) #Indicator: Donchian Channels (DC)
-        # dataframe = self.apply_indicator(dataframe, ta.hwc) #Indicator: Holt-Winter Channel ## Erro na função
-        dataframe = self.apply_indicator(dataframe, ta.kc, length=window) #Indicator: Keltner Channels (KC)"
-        # dataframe = self.apply_indicator(dataframe, ta.massi) #Indicator: Mass Index (MASSI) ## Multiplos Close na função
-        dataframe = self.apply_indicator(dataframe, ta.natr, length=window) #Indicator:Normalized Average True Range (NATR)
         dataframe = self.apply_indicator(dataframe, ta.pdist) #Indicator:Price Distance (PDIST)
-        dataframe = self.apply_indicator(dataframe, ta.thermo, length=window) #Indicator:Elders Thermometer (THERMO)
-        dataframe = self.apply_indicator(dataframe, ta.rvi, length=window) #Indicator:Relative Volatility Index (RVI)
-        dataframe = self.apply_indicator(dataframe, ta.true_range, length=window) #Indicator:True Range
-        dataframe = self.apply_indicator(dataframe, ta.ui, length=window) #Indicator:Ulcer Index (UI)
-        
+        # dataframe = self.apply_indicator(dataframe, ta.hwc) #Indicator: Holt-Winter Channel ## Erro na função
+        # dataframe = self.apply_indicator(dataframe, ta.massi) #Indicator: Mass Index (MASSI) ## Multiplos Close na função
+
+
         # Candles Indicators
-        dataframe = self.apply_indicator(dataframe, ta.cdl_doji, length=window) #  Candle Type: Doji
         dataframe = self.apply_indicator(dataframe, ta.cdl_inside) #  Candle Type: Inside Bar
         # dataframe = self.apply_indicator(dataframe, ta.ha) #  Candle Type: Heikin Ashi
-        dataframe = self.apply_indicator(dataframe, ta.cdl_z, length=window) #  Candle Type: Z Score
-    
+
 
 
         windows = [5, 12, 26, 50, 100, 200]
@@ -287,7 +220,85 @@ class Features():
         # Calculate and add Exponential Moving Averages (EMAs)
         for window in windows:
 
-            dataframe = self.apply_indicator(dataframe, ta.supertrend, length=window) # supertrend            
+            dataframe = self.apply_indicator(dataframe, ta.supertrend, length=window) # supertrend       
+
+            # Indicadores de volume 
+            dataframe = self.apply_indicator(dataframe, ta.mfi, length=window) #  Money Flow Index (MFI)
+            dataframe = self.apply_indicator(dataframe, ta.nvi, length=window) #  Negative Volume Index (NVI)
+            dataframe = self.apply_indicator(dataframe, ta.pvi, length=window) # Positive Volume Index (PVI)
+
+            # Momentum Indicators
+            dataframe = self.apply_indicator(dataframe, ta.bias, length=window) # Bias (BIAS)
+            dataframe = self.apply_indicator(dataframe, ta.cci, length=window) # Commodity Channel Index (CCI)
+            dataframe = self.apply_indicator(dataframe, ta.cfo, length=window) # Chande Forcast Oscillator (CFO)
+            dataframe = self.apply_indicator(dataframe, ta.cg, length=window) # Center of Gravity (CG)
+            dataframe = self.apply_indicator(dataframe, ta.cmo, length=window) # Chande Momentum Oscillator (CMO)
+            dataframe = self.apply_indicator(dataframe, ta.coppock, length=window) # Coppock Curve (COPC)
+            dataframe = self.apply_indicator(dataframe, ta.cti, length=window) # Correlation Trend Indicator
+            dataframe = self.apply_indicator(dataframe, ta.dm, length=window) # DM
+            dataframe = self.apply_indicator(dataframe, ta.er, length=window) # Efficiency Ratio (ER)
+            dataframe = self.apply_indicator(dataframe, ta.eri, length=window) #  Elder Ray Index (ERI)
+            dataframe = self.apply_indicator(dataframe, ta.fisher, length=window) # Fisher Transform (FISHT)
+            dataframe = self.apply_indicator(dataframe, ta.inertia, length=window) # Inertia (INERTIA)
+            dataframe = self.apply_indicator(dataframe, ta.kdj, length=window) # KDJ (KDJ)
+            dataframe = self.apply_indicator(dataframe, ta.mom, length=window) # Momentum (MOM)
+            dataframe = self.apply_indicator(dataframe, ta.pgo, length=window) # Pretty Good Oscillator (PGO)
+            dataframe = self.apply_indicator(dataframe, ta.psl, length=window) #  Psychological Line (PSL)
+            dataframe = self.apply_indicator(dataframe, ta.roc, length=window) # Rate of Change (ROC)
+            dataframe = self.apply_indicator(dataframe, ta.rsi, length=window) # Relative Strength Index (RSI) ############## RSI
+            dataframe = self.apply_indicator(dataframe, ta.rsx, length=window) #  Relative Strength Xtra (inspired by Jurik RSX)
+            dataframe = self.apply_indicator(dataframe, ta.rvgi, length=window) #  Relative Vigor Index (RVGI)
+            dataframe = self.apply_indicator(dataframe, ta.trix, length=window) # Trix (TRIX)
+            dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
+            dataframe = self.apply_indicator(dataframe, ta.stochrsi, length=window) # Stochastic RSI Oscillator (STOCHRSI)
+
+            # Performance Indicators
+            dataframe = self.apply_indicator(dataframe, ta.log_return, length=window) #  "Indicator:  Log Return
+            dataframe = self.apply_indicator(dataframe, ta.percent_return, length=window) #   Percent Return  
+
+            # Trend Indicators
+            dataframe = self.apply_indicator(dataframe, ta.adx, length=window) #  Indicator: ADX
+            dataframe = self.apply_indicator(dataframe, ta.aroon, length=window) #  Indicator: Aroon & Aroon Oscillator
+            dataframe = self.apply_indicator(dataframe, ta.chop, length=window) # Indicator: Choppiness Index (CHOP)
+            dataframe = self.apply_indicator(dataframe, ta.cksp, length=window) #  Indicator: Chande Kroll Stop (CKSP)
+            # dataframe = self.apply_indicator(dataframe, ta.decay, length=window) #  Indicator: Decay ### Erro na função
+            dataframe = self.apply_indicator(dataframe, ta.decreasing, length=window) #  Indicator: Decreasing
+            dataframe = self.apply_indicator(dataframe, ta.dpo, length=window) #  Indicator: Detrend Price Oscillator (DPO)
+            dataframe = self.apply_indicator(dataframe, ta.increasing, length=window) #  Indicator: Increasing
+            dataframe = self.apply_indicator(dataframe, ta.psar, length=window) #  Indicator: Parabolic Stop and Reverse (PSAR)
+            dataframe = self.apply_indicator(dataframe, ta.qstick, length=window) #  Indicator: Q Stick
+            dataframe = self.apply_indicator(dataframe, ta.ttm_trend, length=window) #  Indicator: TTM Trend (TTM_TRND)
+            dataframe = self.apply_indicator(dataframe, ta.vhf, length=window) #  Indicator: Vertical Horizontal Filter (VHF)
+            dataframe = self.apply_indicator(dataframe, ta.vortex, length=window) #  Indicator: Vortex   
+
+            # Statistics Indicators
+            dataframe = self.apply_indicator(dataframe, ta.entropy, length=window) #  Entropy (ENTP)
+            dataframe = self.apply_indicator(dataframe, ta.kurtosis, length=window) #  Indicator: Kurtosis
+            dataframe = self.apply_indicator(dataframe, ta.mad, length=window) # Mean Absolute Deviation
+            dataframe = self.apply_indicator(dataframe, ta.median, length=window) #  Indicator: median
+            dataframe = self.apply_indicator(dataframe, ta.quantile, length=window) # Quantile
+            dataframe = self.apply_indicator(dataframe, ta.skew, length=window) #  Skew
+            dataframe = self.apply_indicator(dataframe, ta.stdev, length=window) #  Indicator: Standard Deviation
+            # dataframe = self.apply_indicator(dataframe, ta.tos_stdevall, length=window) #  TD Ameritrade's Think or Swim Standard Deviation All  #### Erro na função
+            dataframe = self.apply_indicator(dataframe, ta.variance, length=window) #  Indicator: Variance
+            dataframe = self.apply_indicator(dataframe, ta.zscore, length=window) #  Z Score
+
+            # Volatility Indicators
+            dataframe = self.apply_indicator(dataframe, ta.aberration, length=window) #Indicator: Aberration (ABER)
+            dataframe = self.apply_indicator(dataframe, ta.accbands, length=window) #Indicator: Acceleration Bands (ACCBANDS)
+            dataframe = self.apply_indicator(dataframe, ta.atr, length=window) #Indicator: Average True Range (ATR)"
+            dataframe = self.apply_indicator(dataframe, ta.bbands, length=window) #Indicator: Indicator Bollinger Bands (BBANDS)
+            dataframe = self.apply_indicator(dataframe, ta.donchian, length=window) #Indicator: Donchian Channels (DC)
+            dataframe = self.apply_indicator(dataframe, ta.kc, length=window) #Indicator: Keltner Channels (KC)"
+            dataframe = self.apply_indicator(dataframe, ta.natr, length=window) #Indicator:Normalized Average True Range (NATR)
+            dataframe = self.apply_indicator(dataframe, ta.thermo, length=window) #Indicator:Elders Thermometer (THERMO)
+            dataframe = self.apply_indicator(dataframe, ta.rvi, length=window) #Indicator:Relative Volatility Index (RVI)
+            dataframe = self.apply_indicator(dataframe, ta.true_range, length=window) #Indicator:True Range
+            dataframe = self.apply_indicator(dataframe, ta.ui, length=window) #Indicator:Ulcer Index (UI)
+            
+            # Candles Indicators
+            dataframe = self.apply_indicator(dataframe, ta.cdl_doji, length=window) #  Candle Type: Doji
+            dataframe = self.apply_indicator(dataframe, ta.cdl_z, length=window) #  Candle Type: Z Score
 
             # Moving Average (Overlap indicators)
             dataframe[f'ema_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ema(x, length=window)) # Exponential Moving Average (EMA)
@@ -314,10 +325,7 @@ class Features():
             # dataframe[f'mcgd_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.mcgd(x, length=window)) # McGinley Dynamic Indicator (MCGD) ## Erro na função
             # dataframe[f'jma{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.jma(x, length=window)) # Jurik Moving Average (JMA) # Erro na função
 
-            # Indicadores de volume 
-            dataframe = self.apply_indicator(dataframe, ta.mfi, length=window) #  Money Flow Index (MFI)
-            dataframe = self.apply_indicator(dataframe, ta.nvi, length=window) #  Negative Volume Index (NVI)
-            dataframe = self.apply_indicator(dataframe, ta.pvi, length=window) # Positive Volume Index (PVI)
+            
 
         for ind in ['ema', 'sma', 'wma', 'alma','dema', 'fwma', #'mcgd', 'jma', 
                     'hma', 'linreg', 't3', 'swma', 'sinwma', 'zlma', 'vidya', 'trima',
