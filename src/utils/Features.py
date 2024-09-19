@@ -99,8 +99,8 @@ class Features():
             grupo['vl_dmp'] = pd.NA
             grupo['vl_dmn'] = pd.NA
         return grupo
-
-
+    
+    
     def apply_indicator(self, dataframe, indicator_function, symbol_column='Symbol', **kwargs):
         """
         Aplica um indicador técnico que usa High, Low e Close, adicionando as colunas geradas ao dataframe.
@@ -117,6 +117,7 @@ class Features():
         Returns:
         - pd.DataFrame: DataFrame original com as colunas do indicador adicionadas.
         """
+        print(f'Executing: ', str(indicator_function))
         # Aplica o indicador por grupo de símbolos
         indicator_columns = dataframe.groupby(symbol_column, group_keys=False).apply(
             lambda df: indicator_function(high=df['High'], 
@@ -146,6 +147,7 @@ class Features():
         Returns:
         - pd.DataFrame: Updated DataFrame with added technical indicators.
         """
+
         # Sort DataFrame by 'Symbol' and 'Date', convert Date column to Datetime
         dataframe = dataframe.sort_values(by=['Symbol', 'Date']).reset_index(drop=True)
 
@@ -160,8 +162,7 @@ class Features():
 
         # Volume indicators
         dataframe['pvr'] =  ta.pvr(dataframe['Close'], dataframe['Volume']) # Price Volume Rank 
-
-        dataframe = self.apply_indicator(dataframe, ta.ad) # Accumulation/Distribution (AD
+        dataframe = self.apply_indicator(dataframe, ta.ad) # Accumulation/Distribution (AD)
         dataframe = self.apply_indicator(dataframe, ta.adosc) # Accumulation/Distribution Oscillator
         dataframe = self.apply_indicator(dataframe, ta.aobv) #Archer On Balance Volume (AOBV)
         dataframe = self.apply_indicator(dataframe, ta.cmf) # Chaikin Money Flow (CMF)
@@ -202,23 +203,21 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.amat) #  Archer Moving Averages Trends (AMAT)
         ## long_run, short_run, t_signals, xsignals cant be used right now (Differente parameters)
 
-
         # Volatility Indicators
         dataframe = self.apply_indicator(dataframe, ta.pdist) #Indicator:Price Distance (PDIST)
         # dataframe = self.apply_indicator(dataframe, ta.hwc) #Indicator: Holt-Winter Channel ## Erro na função
         # dataframe = self.apply_indicator(dataframe, ta.massi) #Indicator: Mass Index (MASSI) ## Multiplos Close na função
 
-
         # Candles Indicators
         dataframe = self.apply_indicator(dataframe, ta.cdl_inside) #  Candle Type: Inside Bar
         # dataframe = self.apply_indicator(dataframe, ta.ha) #  Candle Type: Heikin Ashi
-
-
 
         windows = [5, 12, 26, 50, 100, 200]
 
         # Calculate and add Exponential Moving Averages (EMAs)
         for window in windows:
+
+            print('Executing: ', window, ' window')
 
             dataframe = self.apply_indicator(dataframe, ta.supertrend, length=window) # supertrend       
 
@@ -301,6 +300,8 @@ class Features():
             dataframe = self.apply_indicator(dataframe, ta.cdl_z, length=window) #  Candle Type: Z Score
 
             # Moving Average (Overlap indicators)
+            print(f'Executing: Overlap Indicators {window} window')
+
             dataframe[f'ema_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ema(x, length=window)) # Exponential Moving Average (EMA)
             dataframe[f'sma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.sma(x, length=window)) # Weighted Moving Average (WMA)
             dataframe[f'wma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.wma(x, length=window)) # Simple Moving Average (SMA)
@@ -325,11 +326,10 @@ class Features():
             # dataframe[f'mcgd_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.mcgd(x, length=window)) # McGinley Dynamic Indicator (MCGD) ## Erro na função
             # dataframe[f'jma{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.jma(x, length=window)) # Jurik Moving Average (JMA) # Erro na função
 
-            
-
         for ind in ['ema', 'sma', 'wma', 'alma','dema', 'fwma', #'mcgd', 'jma', 
                     'hma', 'linreg', 't3', 'swma', 'sinwma', 'zlma', 'vidya', 'trima',
                     'tema', 'midpoint', 'pwma', 'rma', 'kama', 'ssf']:
+            
             for base_window in windows:
                 for compare_window in windows:
                     if base_window < compare_window:
@@ -339,25 +339,25 @@ class Features():
         # Calculate Average Directional Index (ADX)
         dataframe = dataframe.groupby('Symbol', group_keys=False).apply(self.calculate_adx).reset_index(drop=True)
         dataframe['nm_adx_trend'] = dataframe['vl_adx'].transform(self.classify_adx_value)
-        print('passou nm_adx_trend')
+        print('created nm_adx_trend')
 
         # Calculate Relative Strength Index (RSI)
         dataframe['rsi'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.rsi(x))
         dataframe['nm_rsi_trend'] = dataframe['rsi'].transform(self.classify_rsi_value)
 
-        print('passou nm_rsi_trend')
+        print('created nm_rsi_trend')
 
 
         #Calculate the MACD and Signal Line
         dataframe['vl_macd'] = dataframe['ema_12'] - dataframe['ema_26']
         dataframe['vl_macd_signal'] = dataframe.groupby('Symbol')['vl_macd'].transform(lambda x: x.ewm(span=9).mean())
 
-        print('passou vl_macd_signal')
+        print('created vl_macd_signal')
 
         dataframe['vl_macd_delta'] = dataframe['vl_macd'] - dataframe['vl_macd_signal']
         dataframe['qt_days_macd_delta_positive'] = self.count_positive_reset(dataframe['vl_macd_delta'])
 
-        print('passou qt_days_macd_delta_positive')
+        print('created qt_days_macd_delta_positive')
 
         # Cols that have more than 80% of NaN
         _remove_features = ['0', 'SUPERTs_200_3.0', 'HILOl_13_21', 'SUPERTl_50_3.0', 'SUPERTl_200_3.0', 'PSARl_0.02_0.2', 'SUPERTs_100_3.0', 'QQEs_14_5_4.236', 
@@ -375,9 +375,9 @@ class Features():
                 dataframe[f'target_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x))
                 dataframe[f'bl_target_{target}P_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) >= target / 100).astype(int)
                 dataframe[f'bl_target_{target}N_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) <= -target / 100).astype(int)
-        print('passou target')
+        print('created target')
 
         duplicate_columns = dataframe.columns[dataframe.columns.duplicated()].tolist()
-        print(duplicate_columns)
+        print('duplicated_cols', duplicate_columns)
 
         return dataframe
