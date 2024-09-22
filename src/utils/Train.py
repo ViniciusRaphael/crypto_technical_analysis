@@ -73,9 +73,10 @@ class Models():
         # normalizando e padronizando os dados
         # MinMaxScaler é usado para normalizar as variáveis, colocando em uma mesma escala,
         # e StandardScaler é usado para padronizar, fazendo com que a média seja 0 e o desvio padrão seja 1
-        # Padronizando
+        # Padronizand
         scaler = StandardScaler()
         scaler.fit(X_norm_scale)
+
         standardized_data = scaler.transform(X_norm_scale)
 
         # normalizando
