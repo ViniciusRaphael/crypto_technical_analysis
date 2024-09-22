@@ -33,8 +33,6 @@ class Deploy():
 
         print(f'Removed Null cols: {null_cols_withou_targets}')
 
-        # dados_x_dropped = filtered_data.dropna(how='all', axis=1) # removing cols with all values = NaN (If the predict is the current date, or the last one, it will delete the target too)
-
         # dados_x_dropped = dados_x_dropped.dropna() # Removing rows with NaN
         dados_x_dropped = filtered_data.drop(columns=null_cols_withou_targets, axis=1)
         
@@ -161,9 +159,6 @@ class Deploy():
 
         dados_input_select = parameters.cls_FileHandling.get_selected_symbols(dados_input_select, parameters) if parameters.execute_filtered else dados_input_select
 
-        # print(dados_input_select.columns)
-        # print(dados_input_select.head())
-
         # Listar todos os itens no diretório e filtrar apenas os arquivos
         # models = [f for f in os.listdir(parameters.path_models) if os.path.isfile(os.path.join(parameters.path_models, f))]
 
@@ -184,26 +179,13 @@ class Deploy():
 
         dummies_input = self.build_dummies(dataset_ref, parameters._remove_target_list, _dict_config_train['removing_cols_for_train'])
 
-        # print('dummies_input')
-        # print(dummies_input.head())
-
         # padronize input parameters from test models x predict model 
         dados_x_all = cls_Models.data_clean(dados_input_select, parameters._remove_target_list, 'X', _dict_config_train['removing_cols_for_train'])
         dados_x_all_dummies = pd.get_dummies(dados_x_all)
 
-        # print(dummies_input.columns)
-        # print(dummies_input.head())
-
-        # print(dados_x_all_dummies.columns)
-        # print(dados_x_all_dummies.head())
-
         padronized_dummies = self.padronize_dummies(dummies_input, dados_x_all_dummies)
-        # print(padronized_dummies.columns)
-        # print(padronized_dummies.head())
 
         padronized_dummies_norm = cls_Models.norm_scale(padronized_dummies)
-        # print(padronized_dummies_norm.columns)
-        # print(padronized_dummies_norm.head())
 
         compiled_dataset = dataset_ref[['Symbol', 'Date', 'Close']]
 
