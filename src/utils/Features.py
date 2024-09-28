@@ -118,6 +118,9 @@ class Features():
         - pd.DataFrame: DataFrame original com as colunas do indicador adicionadas.
         """
         print(f'Executing: ', str(indicator_function))
+
+        dataframe = dataframe.reset_index(drop=True)
+
         # Aplica o indicador por grupo de símbolos
         indicator_columns = dataframe.groupby(symbol_column, group_keys=False).apply(
             lambda df: indicator_function(high=df['High'], 
@@ -126,7 +129,7 @@ class Features():
                                             volume=df['Volume'], 
                                             open_=df['Open'],
                                             **kwargs)
-        )
+        ).reset_index(drop=True)
         
         # Concatena as novas colunas ao dataframe original
         dataframe_concat = pd.concat([dataframe, indicator_columns], axis=1)
@@ -152,23 +155,24 @@ class Features():
         dataframe = dataframe.sort_values(by=['Symbol', 'Date']).reset_index(drop=True)
 
         # Some Overlap indicators
+        
         dataframe = self.apply_indicator(dataframe, ta.hilo) # Gann HiLo (HiLo)
         dataframe = self.apply_indicator(dataframe, ta.hlc3) # HLC3
         dataframe = self.apply_indicator(dataframe, ta.ichimoku) # Ichimoku Kinkō Hyō (Ichimoku) ## Erro
         dataframe = self.apply_indicator(dataframe, ta.ohlc4) # OHLC4
-        dataframe = self.apply_indicator(dataframe, ta.vwma) # Volume Weighted Moving Average (VWMA)
+        dataframe = self.apply_indicator(dataframe, ta.vwma) # Volume Weighted Moving Average (VWMA) 
         dataframe = self.apply_indicator(dataframe, ta.wcp) # Weighted Closing Price (WCP) # maybe cause memory problem 
         # dataframe = self.apply_indicator(dataframe, ta.vwap) # Volume Weighted Average Price (VWAP) ## Problema no calculo to_period não é mais usado
 
         # Volume indicators
         dataframe['pvr'] =  ta.pvr(dataframe['Close'], dataframe['Volume']) # Price Volume Rank 
         dataframe = self.apply_indicator(dataframe, ta.ad) # Accumulation/Distribution (AD)
-        dataframe = self.apply_indicator(dataframe, ta.adosc) # Accumulation/Distribution Oscillator
+        dataframe = self.apply_indicator(dataframe, ta.adosc) # Accumulation/Distribution Oscillator #
         dataframe = self.apply_indicator(dataframe, ta.aobv) #Archer On Balance Volume (AOBV)
-        dataframe = self.apply_indicator(dataframe, ta.cmf) # Chaikin Money Flow (CMF)
+        dataframe = self.apply_indicator(dataframe, ta.cmf) # Chaikin Money Flow (CMF) 
         dataframe = self.apply_indicator(dataframe, ta.efi) # Elder's Force Index (EFI)
         dataframe = self.apply_indicator(dataframe, ta.eom) # Ease of Movement (EOM)
-        dataframe = self.apply_indicator(dataframe, ta.kvo) # Klinger Volume Oscillator (KVO)
+        # dataframe = self.apply_indicator(dataframe, ta.kvo) # Klinger Volume Oscillator (KVO) #### erro com o dado todo
         dataframe = self.apply_indicator(dataframe, ta.pvol) # Price-Volume (PVOL)
         dataframe = self.apply_indicator(dataframe, ta.pvt) # Price-Volume Trend (PVT) ## Já calculado por outro indicador 
         # dataframe = self.apply_indicator(dataframe, ta.obv) # On Balance Volume (OBV) ## É chamado tmb no AOBV
@@ -180,7 +184,7 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.bop) # Balance of Power (BOP)
         dataframe = self.apply_indicator(dataframe, ta.brar) #  BRAR (BRAR)
         dataframe = self.apply_indicator(dataframe, ta.kst) # 'Know Sure Thing' (KST)
-        dataframe = self.apply_indicator(dataframe, ta.macd) # Moving Average, Convergence/Divergence (MACD)
+        # dataframe = self.apply_indicator(dataframe, ta.macd) # Moving Average, Convergence/Divergence (MACD) #### erro com o dado todo
         dataframe = self.apply_indicator(dataframe, ta.pvo) # Percentage Volume Oscillator (PVO)
         dataframe = self.apply_indicator(dataframe, ta.qqe) # Quantitative Qualitative Estimation (QQE)
         dataframe = self.apply_indicator(dataframe, ta.slope) # Slope
@@ -234,7 +238,7 @@ class Features():
             dataframe = self.apply_indicator(dataframe, ta.cmo, length=window) # Chande Momentum Oscillator (CMO)
             dataframe = self.apply_indicator(dataframe, ta.coppock, length=window) # Coppock Curve (COPC)
             dataframe = self.apply_indicator(dataframe, ta.cti, length=window) # Correlation Trend Indicator
-            dataframe = self.apply_indicator(dataframe, ta.dm, length=window) # DM
+            # dataframe = self.apply_indicator(dataframe, ta.dm, length=window) # DM ## erro ao rodar o arquivo todo
             dataframe = self.apply_indicator(dataframe, ta.er, length=window) # Efficiency Ratio (ER)
             dataframe = self.apply_indicator(dataframe, ta.eri, length=window) #  Elder Ray Index (ERI)
             dataframe = self.apply_indicator(dataframe, ta.fisher, length=window) # Fisher Transform (FISHT)
