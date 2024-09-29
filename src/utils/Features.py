@@ -406,14 +406,15 @@ class Features():
     def build_crypto_indicators(self, parameters):
 
         # Read Parquet file into a Pandas DataFrame
-        df = parameters.cls_FileHandling.read_file(parameters.files_folder, parameters.file_ingestion)
+        df_input_raw = parameters.cls_FileHandling.read_file(parameters.files_folder, parameters.file_ingestion)
 
         # Remove companies with discrepant numbers
-        company_code = 'MYRIA-USD'
-        df = df[df['Symbol'] != company_code]
+        remove_symbols = 'MYRIA-USD'
 
-        # Add indicators to the DataFrame
-        crypto_indicators_dataframe = self.add_indicators(df)
+        df_input_raw = df_input_raw[df_input_raw['Symbol'] != remove_symbols]
+
+        # Add indicators to the DataFrame and cleaning the date format
+        crypto_indicators_dataframe = self.add_indicators(df_input_raw)
 
         crypto_indicators_dataframe = self.clean_date(crypto_indicators_dataframe)
 
@@ -424,28 +425,9 @@ class Features():
             # Create the output folder if it doesn't exist
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
-            # Save the DataFrame as a Parquet file
-            # cls_FileHandling.save_parquet_file(crypto_indicators_dataframe, output_path)
-            # crypto_indicators_dataframe.to_csv(output_path, index=False)
-            # print('6')
-
-            # print('tentando escrever')
-            # crypto_indicators_dataframe.to_csv('test_csv_file.csv')
-            # print('escrito no csv')
-
-            # parameters.cls_FileHandling.wait_for_file('test_csv_file.csv')
-
-
-            # print('lendo csv')
-            # df_read = pd.read_csv('test_csv_file.csv')
-            # print('salvando parquet')
-
-            # crypto_indicators_dataframe.to_parquet('test_parquet_file2.parquet', compression = 'snappy')
-            # print('deu certo escrever')
-
+            print('Converting file into parquet')
 
             crypto_indicators_dataframe.to_parquet(output_path, compression = 'snappy')
-            # print('7')
 
             print(f"Parquet file saved to {output_path} with {len(crypto_indicators_dataframe)} rows")
             
