@@ -1,6 +1,7 @@
 # Third-party libraries
 import pandas as pd
 import pandas_ta as ta
+from pathlib import Path
 
 
 class Features():
@@ -129,7 +130,7 @@ class Features():
                                             volume=df['Volume'], 
                                             open_=df['Open'],
                                             **kwargs)
-        ).reset_index(drop=True)
+        )
         
         # Concatena as novas colunas ao dataframe original
         dataframe_concat = pd.concat([dataframe, indicator_columns], axis=1)
@@ -367,10 +368,15 @@ class Features():
         _remove_features = ['0', 'SUPERTs_200_3.0', 'HILOl_13_21', 'SUPERTl_50_3.0', 'SUPERTl_200_3.0', 'PSARl_0.02_0.2', 'SUPERTs_100_3.0', 'QQEs_14_5_4.236', 
                 'SUPERTl_12_3.0', 'PSARs_0.02_0.2', 'SUPERTs_26_3.0', 'SUPERTl_26_3.0', 'QQEl_14_5_4.236', 'SUPERTl_5_3.0', 
                 'SUPERTs_5_3.0', 'HILOs_13_21', 'SUPERTs_50_3.0', 'SUPERTl_100_3.0', 'SUPERTs_12_3.0',
-                'ISA_9', 'ISB_26', 'ITS_9', 'IKS_26', 'ICS_26']
+                #'ISA_9', 'ISB_26', 'ITS_9', 'IKS_26', 'ICS_26', '0'
+                ]
             
+        print('colunas totais arquivo ', len(dataframe.columns))
 
-        dataframe = dataframe.drop(columns=_remove_features, errors='ignore')
+        dataframe = dataframe.drop(columns=_remove_features, axis = 1, errors='ignore')     
+
+        print('colunas utilizadas salvar', len(dataframe.columns))
+
         
         # Financial Result
         targets = [10, 15, 20, 25]
@@ -387,3 +393,64 @@ class Features():
         print('duplicated_cols', duplicate_columns)
 
         return dataframe
+    
+    
+    def clean_date(self, dados_date):
+
+        dados_date['Date'] = pd.to_datetime(dados_date['Date'])
+        dados_date['Date'] = dados_date['Date'].dt.strftime('%Y-%m-%d')
+
+        return dados_date
+    
+
+    def build_crypto_indicators(self, parameters):
+
+        # Read Parquet file into a Pandas DataFrame
+        df = parameters.cls_FileHandling.read_file(parameters.files_folder, parameters.file_ingestion)
+
+        # Remove companies with discrepant numbers
+        company_code = 'MYRIA-USD'
+        df = df[df['Symbol'] != company_code]
+
+        # Add indicators to the DataFrame
+        crypto_indicators_dataframe = self.add_indicators(df)
+
+        crypto_indicators_dataframe = self.clean_date(crypto_indicators_dataframe)
+
+        if crypto_indicators_dataframe is not None:
+            # Specify the folder and file name for saving the Parquet file
+            output_path = Path(parameters.files_folder, parameters.file_w_indicators)
+
+            # Create the output folder if it doesn't exist
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+
+            # Save the DataFrame as a Parquet file
+            # cls_FileHandling.save_parquet_file(crypto_indicators_dataframe, output_path)
+            # crypto_indicators_dataframe.to_csv(output_path, index=False)
+            # print('6')
+
+            # print('tentando escrever')
+            # crypto_indicators_dataframe.to_csv('test_csv_file.csv')
+            # print('escrito no csv')
+
+            # parameters.cls_FileHandling.wait_for_file('test_csv_file.csv')
+
+
+            # print('lendo csv')
+            # df_read = pd.read_csv('test_csv_file.csv')
+            # print('salvando parquet')
+
+            # crypto_indicators_dataframe.to_parquet('test_parquet_file2.parquet', compression = 'snappy')
+            # print('deu certo escrever')
+
+
+            crypto_indicators_dataframe.to_parquet(output_path, compression = 'snappy')
+            # print('7')
+
+            print(f"Parquet file saved to {output_path} with {len(crypto_indicators_dataframe)} rows")
+            
+            parameters.cls_FileHandling.wait_for_file(output_path)
+
+        else:
+            print("No data fetched.")
+

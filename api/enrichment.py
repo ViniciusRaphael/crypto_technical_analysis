@@ -10,7 +10,8 @@ if parameters.execute_data_ingestion:
     parameters.cls_Ingestion.build_historical_data(cls_File, parameters)
 
 if parameters.execute_data_indicators:
-    parameters.cls_Transform.build_crypto_indicators(cls_File, parameters)
+    parameters.cls_Features.build_crypto_indicators(parameters)
+
 
 if parameters.execute_data_prep_models:
     parameters.cls_DataPrep.build_data_prep_models_file(cls_File, parameters)
