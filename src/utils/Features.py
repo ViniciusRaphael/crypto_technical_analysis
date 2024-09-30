@@ -172,9 +172,9 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.aobv) #Archer On Balance Volume (AOBV)
         dataframe = self.apply_indicator(dataframe, ta.cmf) # Chaikin Money Flow (CMF) 
         dataframe = self.apply_indicator(dataframe, ta.eom) # Ease of Movement (EOM)
-        dataframe = self.apply_indicator(dataframe, ta.kvo) # Klinger Volume Oscillator (KVO)
         dataframe = self.apply_indicator(dataframe, ta.pvol) # Price-Volume (PVOL)
         dataframe = self.apply_indicator(dataframe, ta.pvt) # Price-Volume Trend (PVT) ## Já calculado por outro indicador 
+        # dataframe = self.apply_indicator(dataframe, ta.kvo) # Klinger Volume Oscillator (KVO) erro no nome da função kvos.name erro ao executar todas as criptos
         # dataframe = self.apply_indicator(dataframe, ta.obv) # On Balance Volume (OBV) ## É chamado tmb no AOBV
         # dataframe = self.apply_indicator(dataframe, ta.vp) #Volume Profile (VP) ### Problema na função
 
@@ -184,7 +184,6 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.bop) # Balance of Power (BOP)
         dataframe = self.apply_indicator(dataframe, ta.brar) #  BRAR (BRAR)
         dataframe = self.apply_indicator(dataframe, ta.kst) # 'Know Sure Thing' (KST)
-        dataframe = self.apply_indicator(dataframe, ta.macd) # Moving Average, Convergence/Divergence (MACD)
         dataframe = self.apply_indicator(dataframe, ta.pvo) # Percentage Volume Oscillator (PVO)
         dataframe = self.apply_indicator(dataframe, ta.qqe) # Quantitative Qualitative Estimation (QQE)
         dataframe = self.apply_indicator(dataframe, ta.slope) # Slope
@@ -194,6 +193,7 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.tsi) # True Strength Index (TSI)
         dataframe = self.apply_indicator(dataframe, ta.uo) #  Ultimate Oscillator (UO)
         dataframe = self.apply_indicator(dataframe, ta.ppo) # Percentage Price Oscillator (PPO)
+        # dataframe = self.apply_indicator(dataframe, ta.macd) # Moving Average, Convergence/Divergence (MACD) erro ao executar todas as criptos
         # dataframe = self.apply_indicator(dataframe, ta.td_seq) # Tom Demark Sequential (TD_SEQ)  # erro na chamada do índice 
         # dataframe = self.apply_indicator(dataframe, ta.stc) # Schaff Trend Cycle (STC) #### Erro na função
 
@@ -238,7 +238,6 @@ class Features():
             dataframe = self.apply_indicator(dataframe, ta.cmo, length=window) # Chande Momentum Oscillator (CMO)
             dataframe = self.apply_indicator(dataframe, ta.coppock, length=window) # Coppock Curve (COPC)
             dataframe = self.apply_indicator(dataframe, ta.cti, length=window) # Correlation Trend Indicator
-            dataframe = self.apply_indicator(dataframe, ta.dm, length=window) # DM 
             dataframe = self.apply_indicator(dataframe, ta.er, length=window) # Efficiency Ratio (ER)
             dataframe = self.apply_indicator(dataframe, ta.eri, length=window) #  Elder Ray Index (ERI)
             dataframe = self.apply_indicator(dataframe, ta.fisher, length=window) # Fisher Transform (FISHT)
@@ -254,6 +253,7 @@ class Features():
             dataframe = self.apply_indicator(dataframe, ta.trix, length=window) # Trix (TRIX)
             dataframe = self.apply_indicator(dataframe, ta.willr, length=window) #  William's Percent R (WILLR)
             dataframe = self.apply_indicator(dataframe, ta.stochrsi, length=window) # Stochastic RSI Oscillator (STOCHRSI)
+            # dataframe = self.apply_indicator(dataframe, ta.dm, length=window) # DM  # erro ao utilizar todas as criptos
 
             # Performance Indicators
             dataframe = self.apply_indicator(dataframe, ta.log_return, length=window) #  "Indicator:  Log Return
