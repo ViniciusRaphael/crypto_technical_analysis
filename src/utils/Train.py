@@ -251,7 +251,7 @@ class Models():
             _dict_classifiers = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.cls_Constants._get_classifiers())
 
             # Utilizam dados normalizados
-            self.create_model(parameters, _dict_classifiers['lr'], 'logistic_regression', target_eval, X_train_norm, y_train, X_test_norm, y_test)
+            # self.create_model(parameters, _dict_classifiers['lr'], 'logistic_regression', target_eval, X_train_norm, y_train, X_test_norm, y_test) ## baixa precisão em comparação com os demais
             # self.create_model(parameters, _dict_classifiers['Sc'], 'SVC', target_eval, X_train_norm, y_train, X_test_norm, y_test)
 
             # Não necessitam de dados normalizados

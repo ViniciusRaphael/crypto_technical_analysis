@@ -19,9 +19,9 @@ class Constants():
             },
             'v2.0': {
                 'lr': LogisticRegression(class_weight='balanced',random_state=0),
-                'rf': RandomForestClassifier(),
-                'Xv': XGBClassifier(),
-                'Sv': SVC(probability=True, kernel='linear', C=0.7, max_iter=1000)
+                'rf': RandomForestClassifier(random_state=0),
+                'Xv': XGBClassifier(random_state=0),
+                'Sv': SVC(probability=True, kernel='linear', C=0.7, max_iter=1000, random_state=0)
             }
         }
     
