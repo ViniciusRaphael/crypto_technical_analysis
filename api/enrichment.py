@@ -21,7 +21,7 @@ if parameters.execute_train_models:
 if parameters.execute_historical_predict: 
     parameters.cls_Predict.historical_outcome(cls_Models, parameters)
 
-if parameters.execute_daily_predict: 
+if parameters.execute_daily_predict:
     parameters.cls_Predict.daily_outcome(cls_Models, parameters, '')
 
 if parameters.execute_signals: 

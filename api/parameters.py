@@ -1,6 +1,5 @@
 from pathlib import Path
 from src.utils.FileHandle import FileHandling
-from src.utils.Transform import DataTransform
 from src.utils.Train import Models
 from src.utils.PrepModels import DataPrep
 from src.utils.Predict import Deploy
@@ -13,9 +12,9 @@ import platform
 
 
 # Process selections Generate Dados
-execute_data_ingestion = False               # It will play the ingestion pipeline
+execute_data_ingestion = True               # It will play the ingestion pipeline
 execute_data_indicators = True              # It will play the indicators pipeline
-execute_data_prep_models = False             # It will play the data prep models pipeline (used to train the model)
+execute_data_prep_models = True             # It will play the data prep models pipeline (used to train the model)
 execute_daily_predict = True                # It will play the daily outcome pipeline, default is the last recent, but you can set another date in enrichment file
 
 
@@ -54,14 +53,17 @@ start_date_ingestion = '2018-01-01' if execute_train_models else '2022-01-01'  #
 filter_symbols = [ # Filter symbols only when the execute_filtered is True
     'BTC-USD', 'ETH-USD', 'BNB-USD', 'SOL-USD', 'XRP-USD', 'DOGE-USD', 'TRX-USD', 'ADA-USD', 'AVAX-USD', 'SHIB-USD',
     'DOT-USD', 'BCH-USD', 'LINK-USD', 'LTC-USD', 'MATIC-USD', 'XMR-USD', 'XLM-USD', 'ETC-USD','UNI-USD', 'AAVE-USD',  
-    #  ,'FIL-USD', 'VET-USD', 'ATOM-USD', 'CRO-USD', 'THETA-USD', 'FTM-USD', 'ALGO-USD', 'ZEC-USD', 'DASH-USD', 'EOS-USD',
-    #  'XTZ-USD', 'OMG-USD', 'KSM-USD', 'ZIL-USD', 'ICX-USD', 'QTUM-USD','NANO-USD', 'ONT-USD', 'WAVES-USD', 'BAT-USD', 
-    #  'LRC-USD', 'ENJ-USD', 'BNT-USD', 'REN-USD', 'CVC-USD', 'ANT-USD', 'REP-USD', 'STORJ-USD', 'KNC-USD', 'MANA-USD', 'SNT-USD', 'PPT-USD'
+    # 'FIL-USD', 'VET-USD', 'ATOM-USD', 'CRO-USD', 'THETA-USD', 'FTM-USD', 'ALGO-USD', 'ZEC-USD', 'DASH-USD', 'EOS-USD',
+    # 'XTZ-USD', 'OMG-USD', 'KSM-USD', 'ZIL-USD', 'ICX-USD', 'QTUM-USD','NANO-USD', 'ONT-USD', 'WAVES-USD', 'BAT-USD', 
+    # 'LRC-USD', 'ENJ-USD', 'BNT-USD', 'REN-USD', 'CVC-USD', 'ANT-USD', 'REP-USD', 'STORJ-USD', 'KNC-USD', 'MANA-USD', 'SNT-USD', 'PPT-USD'
     ]
 
 target_list_bol_filter = [ # targets used when execute_filtered_models is True (Directly in training models)
+    # 'bl_target_10P_15d','bl_target_15P_15d','bl_target_20P_15d','bl_target_25P_15d',
+    # 'bl_target_10N_15d','bl_target_15N_15d','bl_target_20N_15d','bl_target_25N_15d',
+
     'bl_target_10P_30d','bl_target_15P_30d','bl_target_20P_30d','bl_target_25P_30d',
-    'bl_target_10N_30d','bl_target_15N_30d','bl_target_20N_30d','bl_target_25N_30d' 
+    # 'bl_target_10N_30d','bl_target_15N_30d','bl_target_20N_30d','bl_target_25N_30d' 
     ]
 
 
@@ -73,7 +75,6 @@ cls_Models = Models()
 cls_Predict = Deploy()
 cls_DataPrep = DataPrep()
 cls_Ingestion = DataIngestion()
-cls_Transform = DataTransform()
 cls_Signals = Backtesting()
 cls_Features = Features()
 cls_RealBacktest = RealBacktest()
