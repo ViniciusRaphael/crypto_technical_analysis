@@ -29,17 +29,26 @@ class Deploy():
 
         # Cols with all the values Null
         null_cols = filtered_data.columns[filtered_data.isnull().all()]
-        null_cols_withou_targets = [x for x in null_cols if x not in target_list]
+        null_cols_without_targets = [x for x in null_cols if x not in target_list]
 
-        print(f'Removed Null cols: {null_cols_withou_targets}')
+        print(f'Removed Null cols Predict: {null_cols_without_targets}')
 
         # dados_x_dropped = dados_x_dropped.dropna() # Removing rows with NaN
-        dados_x_dropped = filtered_data.drop(columns=null_cols_withou_targets, axis=1)
+        dados_x_dropped = filtered_data.drop(columns=null_cols_without_targets, axis=1)
+        # dados_x_dropped = filtered_data.drop(columns=['DPO_5', 'DPO_12', 'DPO_26', 'DPO_50', 'DPO_100'], axis=1)
         
-        dados_x = dados_x_dropped.drop(dados_x_dropped[target_list], axis=1)
+        # dados_x_dropped = dados_x_dropped.drop(dados_x_dropped[target_list], axis=1)
+
+
+
+        dados_x = dados_x_dropped.drop(dados_x_dropped[target_list], axis=1)    
+
         dados_x = dados_x.drop(dados_x[remove_cols], axis=1)
 
+
         dummies_build = pd.get_dummies(dados_x)
+
+        print(len(dummies_build.columns))
 
         dummies_prep = dummies_build.dropna()
 
@@ -155,9 +164,14 @@ class Deploy():
 
         dados_w_indicators = parameters.cls_FileHandling.read_file(parameters.files_folder, parameters.file_w_indicators)
 
+        print('cols originais ', len(dados_w_indicators.columns))
+
         dados_input_select = dados_prep_models if backtest else dados_w_indicators
 
         dados_input_select = parameters.cls_FileHandling.get_selected_symbols(dados_input_select, parameters) if parameters.execute_filtered else dados_input_select
+
+        print('cols input select ', len(dados_input_select.columns))
+
 
         # Listar todos os itens no diretório e filtrar apenas os arquivos
         # models = [f for f in os.listdir(parameters.path_models) if os.path.isfile(os.path.join(parameters.path_models, f))]
@@ -175,8 +189,8 @@ class Deploy():
         
 
         # Access dict with models configs
-        _dict_config_train = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.cls_Constants._get_configs_train())
-
+        _dict_config_train = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.cls_Constants._get_configs_train(), default_config = 'v2.1.20')
+              
         dummies_input = self.build_dummies(dataset_ref, parameters._remove_target_list, _dict_config_train['removing_cols_for_train'])
 
         # padronize input parameters from test models x predict model 

@@ -266,7 +266,7 @@ class Features():
             dataframe = self.apply_indicator(dataframe, ta.cksp, length=window) #  Indicator: Chande Kroll Stop (CKSP)
             # dataframe = self.apply_indicator(dataframe, ta.decay, length=window) #  Indicator: Decay ### Erro na função
             dataframe = self.apply_indicator(dataframe, ta.decreasing, length=window) #  Indicator: Decreasing
-            dataframe = self.apply_indicator(dataframe, ta.dpo, length=window) #  Indicator: Detrend Price Oscillator (DPO)
+            # dataframe = self.apply_indicator(dataframe, ta.dpo, length=window) #  Indicator: Detrend Price Oscillator (DPO) ######## mismatch em número de indicators
             dataframe = self.apply_indicator(dataframe, ta.increasing, length=window) #  Indicator: Increasing
             dataframe = self.apply_indicator(dataframe, ta.psar, length=window) #  Indicator: Parabolic Stop and Reverse (PSAR)
             dataframe = self.apply_indicator(dataframe, ta.qstick, length=window) #  Indicator: Q Stick
@@ -327,6 +327,8 @@ class Features():
             dataframe[f'ssf_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ssf(x, length=window)) # Ehler's Super Smoother Filter (SSF)
             dataframe[f'kama_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.kama(x, length=window)) # Kaufman's Adaptive Moving Average (KAMA)
 
+            # print(len(dataframe.columns))
+
             # dataframe[f'mcgd_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.mcgd(x, length=window)) # McGinley Dynamic Indicator (MCGD) ## Erro na função
             # dataframe[f'jma{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.jma(x, length=window)) # Jurik Moving Average (JMA) # Erro na função
 
@@ -339,34 +341,38 @@ class Features():
                     if base_window < compare_window:
                         col_name = f'{ind}_{base_window}_above_{ind}_{compare_window}'
                         dataframe[col_name] = dataframe[f'{ind}_{base_window}'] > dataframe[f'{ind}_{compare_window}']
+
+        print(len(dataframe.columns))
+
         
-        # Calculate Average Directional Index (ADX)
-        dataframe = dataframe.groupby('Symbol', group_keys=False).apply(self.calculate_adx).reset_index(drop=True)
-        dataframe['nm_adx_trend'] = dataframe['vl_adx'].transform(self.classify_adx_value)
-        print('created nm_adx_trend')
+        # # Calculate Average Directional Index (ADX)
+        # dataframe = dataframe.groupby('Symbol', group_keys=False).apply(self.calculate_adx).reset_index(drop=True)
+        # dataframe['nm_adx_trend'] = dataframe['vl_adx'].transform(self.classify_adx_value)
+        # print('created nm_adx_trend')
 
-        # Calculate Relative Strength Index (RSI)
-        dataframe['rsi'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.rsi(x))
-        dataframe['nm_rsi_trend'] = dataframe['rsi'].transform(self.classify_rsi_value)
+        # # Calculate Relative Strength Index (RSI)
+        # dataframe['rsi'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.rsi(x))
+        # dataframe['nm_rsi_trend'] = dataframe['rsi'].transform(self.classify_rsi_value)
 
-        print('created nm_rsi_trend')
+        # print('created nm_rsi_trend')
 
 
-        #Calculate the MACD and Signal Line
-        dataframe['vl_macd'] = dataframe['ema_12'] - dataframe['ema_26']
-        dataframe['vl_macd_signal'] = dataframe.groupby('Symbol')['vl_macd'].transform(lambda x: x.ewm(span=9).mean())
+        # #Calculate the MACD and Signal Line
+        # dataframe['vl_macd'] = dataframe['ema_12'] - dataframe['ema_26']
+        # dataframe['vl_macd_signal'] = dataframe.groupby('Symbol')['vl_macd'].transform(lambda x: x.ewm(span=9).mean())
 
-        print('created vl_macd_signal')
+        # print('created vl_macd_signal')
 
-        dataframe['vl_macd_delta'] = dataframe['vl_macd'] - dataframe['vl_macd_signal']
-        dataframe['qt_days_macd_delta_positive'] = self.count_positive_reset(dataframe['vl_macd_delta'])
+        # dataframe['vl_macd_delta'] = dataframe['vl_macd'] - dataframe['vl_macd_signal']
+        # dataframe['qt_days_macd_delta_positive'] = self.count_positive_reset(dataframe['vl_macd_delta'])
 
-        print('created qt_days_macd_delta_positive')
+        # print('created qt_days_macd_delta_positive')
 
         # Cols that have more than 80% of NaN
         _remove_features = ['0', 'SUPERTs_200_3.0', 'HILOl_13_21', 'SUPERTl_50_3.0', 'SUPERTl_200_3.0', 'PSARl_0.02_0.2', 'SUPERTs_100_3.0', 'QQEs_14_5_4.236', 
                 'SUPERTl_12_3.0', 'PSARs_0.02_0.2', 'SUPERTs_26_3.0', 'SUPERTl_26_3.0', 'QQEl_14_5_4.236', 'SUPERTl_5_3.0', 
                 'SUPERTs_5_3.0', 'HILOs_13_21', 'SUPERTs_50_3.0', 'SUPERTl_100_3.0', 'SUPERTs_12_3.0',
+                'DPO_5', 'DPO_12', 'DPO_26', 'DPO_50', 'DPO_100', 'DPO_200',
                 #'ISA_9', 'ISB_26', 'ITS_9', 'IKS_26', 'ICS_26', '0'
                 ]
             
