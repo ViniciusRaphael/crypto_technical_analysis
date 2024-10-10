@@ -19,7 +19,7 @@ execute_daily_predict = True                # It will play the daily outcome pip
 
 
 # Process selections Train/Test Models and Performance
-execute_filtered = True                    # It will filter symbols by the filter_symbols parameter
+execute_filtered = False                    # It will filter symbols by the filter_symbols parameter
 execute_train_models = False                # It will play the train models pipeline (it will sobescribe the version_model, or set a new value in version_model)
 execute_filtered_models = True              # Filter models directly in training
 execute_historical_predict = False          # It will play the backtest pipeline, for futher scenarios validation
@@ -52,7 +52,7 @@ start_date_ingestion = '2018-01-01' if execute_train_models else '2022-01-01'  #
 
 filter_symbols = [ # Filter symbols only when the execute_filtered is True
     'BTC-USD', 'ETH-USD', 'BNB-USD', 'SOL-USD', 'XRP-USD', 'DOGE-USD', 'TRX-USD', 'ADA-USD', 'AVAX-USD', 'SHIB-USD',
-    'DOT-USD', 'BCH-USD', 'LINK-USD', 'LTC-USD', 'MATIC-USD', 'XMR-USD', 'XLM-USD', 'ETC-USD','UNI-USD', 'AAVE-USD',  
+    # 'DOT-USD', 'BCH-USD', 'LINK-USD', 'LTC-USD', 'MATIC-USD', 'XMR-USD', 'XLM-USD', 'ETC-USD','UNI-USD', 'AAVE-USD',  
     # 'FIL-USD', 'VET-USD', 'ATOM-USD', 'CRO-USD', 'THETA-USD', 'FTM-USD', 'ALGO-USD', 'ZEC-USD', 'DASH-USD', 'EOS-USD',
     # 'XTZ-USD', 'OMG-USD', 'KSM-USD', 'ZIL-USD', 'ICX-USD', 'QTUM-USD','NANO-USD', 'ONT-USD', 'WAVES-USD', 'BAT-USD', 
     # 'LRC-USD', 'ENJ-USD', 'BNT-USD', 'REN-USD', 'CVC-USD', 'ANT-USD', 'REP-USD', 'STORJ-USD', 'KNC-USD', 'MANA-USD', 'SNT-USD', 'PPT-USD'
@@ -63,7 +63,7 @@ target_list_bol_filter = [ # targets used when execute_filtered_models is True (
     # 'bl_target_10N_15d','bl_target_15N_15d','bl_target_20N_15d','bl_target_25N_15d',
 
     'bl_target_10P_30d','bl_target_15P_30d','bl_target_20P_30d','bl_target_25P_30d',
-    # 'bl_target_10N_30d','bl_target_15N_30d','bl_target_20N_30d','bl_target_25N_30d' 
+    'bl_target_10N_30d','bl_target_15N_30d','bl_target_20N_30d','bl_target_25N_30d' 
     ]
 
 
