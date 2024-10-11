@@ -118,7 +118,7 @@ class Features():
         Returns:
         - pd.DataFrame: DataFrame original com as colunas do indicador adicionadas.
         """
-        print(f'Executing: ', str(indicator_function))
+        print('Executing: ', str(indicator_function.__name__), '| cols: ', len(dataframe.columns))
 
         dataframe = dataframe.reset_index(drop=True)
 
@@ -138,7 +138,76 @@ class Features():
         # Removing duplicate cols
         dataframe_cleaned = dataframe_concat.loc[:, ~dataframe_concat.columns.duplicated()] 
 
-        return dataframe_cleaned
+        # print(len(dataframe_cleaned.columns))
+
+        return dataframe_concat
+
+    # def apply_indicator(
+    #     self, 
+    #     dataframe, 
+    #     indicator_function, 
+    #     symbol_column='Symbol', 
+    #     high_column='High',
+    #     low_column='Low',
+    #     close_column='Close',
+    #     open_column='Open',
+    #     volume_column='Volume',
+    #     **kwargs
+    # ):
+    #     """
+    #     Aplica um indicador técnico que usa High, Low e Close, adicionando as colunas geradas ao dataframe.
+        
+    #     Args:
+    #     - dataframe (pd.DataFrame): O dataframe com os dados históricos.
+    #     - indicator_function (function): Função do indicador a ser aplicada (por exemplo, ta.supertrend).
+    #     - symbol_column (str): Nome da coluna de símbolos.
+    #     - high_column (str): Nome da coluna de preços "High".
+    #     - low_column (str): Nome da coluna de preços "Low".
+    #     - close_column (str): Nome da coluna de preços "Close".
+    #     - open_column (str): Nome da coluna de preços "Open".
+    #     - volume_column (str): Nome da coluna de volume.
+    #     - **kwargs: Parâmetros adicionais da função do indicador (ex. `length`, `mult`).
+        
+    #     Returns:
+    #     - pd.DataFrame: DataFrame original com as colunas do indicador adicionadas.
+    #     """
+    #     print(f'Executing: {indicator_function.__name__} | Columns before: {len(dataframe.columns)}')
+
+    #     dataframe = dataframe.reset_index(drop=True)
+
+    #     # Validação de colunas necessárias
+    #     required_columns = [symbol_column, high_column, low_column, close_column, volume_column, open_column]
+    #     missing_columns = [col for col in required_columns if col not in dataframe.columns]
+    #     if missing_columns:
+    #         raise ValueError(f"Missing columns in dataframe: {missing_columns}")
+
+    #     # Aplica o indicador por grupo de símbolos
+    #     indicator_columns = dataframe.groupby(symbol_column, group_keys=False).apply(
+    #         lambda df: indicator_function(
+    #             high=df[high_column], 
+    #             low=df[low_column], 
+    #             close=df[close_column], 
+    #             volume=df[volume_column], 
+    #             open_=df[open_column],
+    #             **kwargs
+    #         )
+    #     ).reset_index(drop=True)
+
+    #     # Verifica se o indicador retornou um DataFrame ou Series
+    #     if isinstance(indicator_columns, pd.Series):
+    #         indicator_columns = indicator_columns.to_frame()
+        
+    #     # Adiciona um prefixo para evitar duplicatas
+    #     indicator_columns = indicator_columns.add_prefix(f"{indicator_function.__name__}_")
+
+    #     # Reseta o índice para concatenar corretamente
+    #     indicator_columns = indicator_columns.reset_index(drop=True)
+
+    #     # Concatena as novas colunas ao dataframe original
+    #     dataframe_concat = pd.concat([dataframe, indicator_columns], axis=1)
+
+    #     return dataframe_concat
+
 
 
     def add_indicators(self, dataframe):
@@ -216,7 +285,9 @@ class Features():
         dataframe = self.apply_indicator(dataframe, ta.cdl_inside) #  Candle Type: Inside Bar
         # dataframe = self.apply_indicator(dataframe, ta.ha) #  Candle Type: Heikin Ashi
 
-        windows = [5, 12, 26, 50, 100, 200]
+        windows = [5, 12, 26, 50, 100, 
+                # 200
+                ]
 
         # Calculate and add Exponential Moving Averages (EMAs)
         for window in windows:
@@ -390,8 +461,8 @@ class Features():
         for target in targets:
             for timeframe in timeframes:
                 dataframe[f'target_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x))
-                dataframe[f'bl_target_{target}P_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) >= target / 100).astype(int)
-                dataframe[f'bl_target_{target}N_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) <= -target / 100).astype(int)
+                dataframe[f'bl_target_{target}P_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) >= target / 100)#astype(int)
+                dataframe[f'bl_target_{target}N_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) <= -target / 100)#
         print('created target')
 
         duplicate_columns = dataframe.columns[dataframe.columns.duplicated()].tolist()
