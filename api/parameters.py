@@ -48,7 +48,7 @@ return_crypto_in_simulations = False # It will return a col with all crypto symb
 # Configs date and models filters
 start_date_backtest = '2024-01-01'                  # Define the start date for backtesting
 start_date_ingestion = '2018-01-01' if execute_train_models else '2022-01-01'  # We only need data for the last 200 days for daily_outcome, but we need the historical for training
-
+active_date_symbol = '2024-01-01'
 
 filter_symbols = [ # Filter symbols only when the execute_filtered is True
     'BTC-USD', 'ETH-USD', 'BNB-USD', 'SOL-USD', 'XRP-USD', 'DOGE-USD', 'TRX-USD', 'ADA-USD', 'AVAX-USD', 'SHIB-USD',

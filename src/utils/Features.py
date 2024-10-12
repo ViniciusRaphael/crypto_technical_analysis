@@ -131,21 +131,16 @@ class Features():
                                             open_=df['Open'],
                                             **kwargs)
         ).reset_index(drop=True)
-        # .add_prefix(f"{indicator_function.__name__}_{length}_")
         
         # Concatena as novas colunas ao dataframe original
         dataframe_concat = pd.concat([dataframe, indicator_columns], axis=1)
 
-        # Removing duplicate cols
-        dataframe_cleaned = dataframe_concat.loc[:, ~dataframe_concat.columns.duplicated()] 
-
-        # print(len(dataframe_cleaned.columns))
-        l1 = len(dataframe_concat.columns)
-        l2 = len(set((dataframe_concat.columns)))
-        ll = l1 == l2
+        len_all = len(dataframe_concat.columns)
+        len_unique = len(set((dataframe_concat.columns)))
+        len_check = len_all == len_unique
         
-        if ll == False:
-            print(l1, '--', l2)
+        if len_check == False:
+            print('warning: ', len_all, '--', len_unique)
 
         return dataframe_concat
 
@@ -164,6 +159,8 @@ class Features():
         # Sort DataFrame by 'Symbol' and 'Date', convert Date column to Datetime
         dataframe = dataframe.sort_values(by=['Symbol', 'Date']).reset_index(drop=True)
 
+        dataframe['pvr'] =  ta.pvr(dataframe['Close'], dataframe['Volume']) # Price Volume Rank 
+
         indicators = [
             ta.hilo # Gann HiLo (HiLo)
             ,ta.hlc3 # HLC3
@@ -175,12 +172,11 @@ class Features():
             # ,ta.ichimoku # Ichimoku Kinkō Hyō (Ichimoku) #### Erro na função, se usar, vai dar erro no índice
 
             # Volume indicators
-            # dataframe['pvr'] =  ta.pvr(dataframe['Close'], dataframe['Volume']) # Price Volume Rank 
             ,ta.ad # Accumulation/Distribution (AD)
-            ,ta.adosc # Accumulation/Distribution Oscillator 
+            ,ta.adosc # Accumulation/Distribution Oscillator  ####erro ao chamar todas as criptos
             ,ta.aobv #Archer On Balance Volume (AOBV)
-            ,ta.cmf # Chaikin Money Flow (CMF) 
-            ,ta.eom # Ease of Movement (EOM)
+            ,ta.cmf # Chaikin Money Flow (CMF) ######## erro ao chamar todas as criptos
+            ,ta.eom # Ease of Movement (EOM) ######## erro ao chamar todas as criptos
             ,ta.pvol # Price-Volume (PVOL)
             ,ta.pvt # Price-Volume Trend (PVT) ## Já calculado por outro indicador 
             # ,ta.kvo) # Klinger Volume Oscillator (KVO) erro no nome da função kvos.name erro ao executar todas as criptos
@@ -188,8 +184,8 @@ class Features():
             # ,ta.vp) #Volume Profile (VP) ### Problema na função
 
             # Momentum Indicators
-            ,ta.ao # Awesome Oscillator (AO)
-            ,ta.apo #  Absolute Price Oscillator (APO)
+            ,ta.ao # Awesome Oscillator (AO)  ## erro ao chamar todas as criptos
+            ,ta.apo #  Absolute Price Oscillator (APO) ##  erro ao chamar todas as criptos
             ,ta.bop # Balance of Power (BOP)
             ,ta.brar #  BRAR (BRAR)
             ,ta.kst # 'Know Sure Thing' (KST)
@@ -202,7 +198,7 @@ class Features():
             ,ta.tsi # True Strength Index (TSI)
             ,ta.uo #  Ultimate Oscillator (UO)
             ,ta.ppo # Percentage Price Oscillator (PPO)
-            # ,ta.macd) # Moving Average, Convergence/Divergence (MACD) erro ao executar todas as criptos
+            ,ta.macd # Moving Average, Convergence/Divergence (MACD) erro ao executar todas as criptos
             # ,ta.td_seq) # Tom Demark Sequential (TD_SEQ)  # erro na chamada do índice 
             # ,ta.stc) # Schaff Trend Cycle (STC) #### Erro na função
 
@@ -342,15 +338,17 @@ class Features():
         for ind in indicators:
             dataframe = self.apply_indicator(dataframe, ind)
 
-        windows = [5, 12, 26, 50, 100, 200]
 
         for ind in indicators_window:
+
+            windows = [5, 12, 26, 50, 100, 200]
         
             for window in windows:
 
                 dataframe = self.apply_indicator(dataframe, ind, length = window)
+                # print(dataframe.columns)
         
-        ### This process generate more indicators, but it seems that the model has lower peformance
+        ## This process generate more indicators, but it seems that the model has lower peformance
         # for  window in windows:
         #     dataframe[f'ema_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.ema(x, length=window)) # Exponential Moving Average (EMA)
         #     dataframe[f'sma_{window}'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.sma(x, length=window)) # Weighted Moving Average (WMA)
@@ -385,31 +383,6 @@ class Features():
         #                 col_name = f'{ind}_{base_window}_above_{ind}_{compare_window}'
         #                 dataframe[col_name] = dataframe[f'{ind}_{base_window}'] > dataframe[f'{ind}_{compare_window}']
 
-        # print(len(dataframe.columns))
-
-        
-        # # Calculate Average Directional Index (ADX)
-        # dataframe = dataframe.groupby('Symbol', group_keys=False).apply(self.calculate_adx).reset_index(drop=True)
-        # dataframe['nm_adx_trend'] = dataframe['vl_adx'].transform(self.classify_adx_value)
-        # print('created nm_adx_trend')
-
-        # # Calculate Relative Strength Index (RSI)
-        # dataframe['rsi'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ta.rsi(x))
-        # dataframe['nm_rsi_trend'] = dataframe['rsi'].transform(self.classify_rsi_value)
-
-        # print('created nm_rsi_trend')
-
-
-        # #Calculate the MACD and Signal Line
-        # dataframe['vl_macd'] = dataframe['ema_12'] - dataframe['ema_26']
-        # dataframe['vl_macd_signal'] = dataframe.groupby('Symbol')['vl_macd'].transform(lambda x: x.ewm(span=9).mean())
-
-        # print('created vl_macd_signal')
-
-        # dataframe['vl_macd_delta'] = dataframe['vl_macd'] - dataframe['vl_macd_signal']
-        # dataframe['qt_days_macd_delta_positive'] = self.count_positive_reset(dataframe['vl_macd_delta'])
-
-        # print('created qt_days_macd_delta_positive')
 
         # Cols that have more than 80% of NaN
         _remove_features = ['0', 'SUPERTs_200_3.0', 'HILOl_13_21', 'SUPERTl_50_3.0', 'SUPERTl_200_3.0', 'PSARl_0.02_0.2', 'SUPERTs_100_3.0', 'QQEs_14_5_4.236', 
@@ -462,10 +435,18 @@ class Features():
         # Remove companies with discrepant numbers
         remove_symbols = 'MYRIA-USD'
 
-        df_input_raw = df_input_raw[df_input_raw['Symbol'] != remove_symbols]
+        # Removing old cyrptos in the list
+        active_symbols = df_input_raw.groupby('Symbol')['Date'].agg(['min', 'max'])
+        active_symbols.reset_index(inplace=True)
+        active_symbols['active'] = active_symbols['max'] >= parameters.active_date_symbol
+        active_symbols = active_symbols[active_symbols['active']]['Symbol']
+
+        ## Removing problematic symbols
+        df_input_symbols = df_input_raw[df_input_raw['Symbol'].isin(active_symbols)]
+        df_input_symbols = df_input_symbols[df_input_symbols['Symbol'] != remove_symbols]
 
         # Add indicators to the DataFrame and cleaning the date format
-        crypto_indicators_dataframe = self.add_indicators(df_input_raw)
+        crypto_indicators_dataframe = self.add_indicators(df_input_symbols)
 
         crypto_indicators_dataframe = self.clean_date(crypto_indicators_dataframe)
 
