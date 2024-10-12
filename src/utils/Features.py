@@ -232,34 +232,34 @@ class Features():
         
         indicators_window = [
             # Indicadores de overlap 
-            # ta.ema # Exponential Moving Average (EMA)
-            # ,ta.sma # Weighted Moving Average (WMA)
-            # ,ta.wma # Simple Moving Average (SMA)
-            # ,ta.alma # Média Móvel Arnaud Legoux (ALMA)
-            # ,ta.dema # Double Exponential Moving Average (DEMA)
-            # ,ta.fwma # Fibonacci's Weighted Moving Average (FWMA)
-            # ,ta.hma # Hull Moving Average (HMA)
-            # ,ta.linreg # Linear Regression Moving Average (LINREG)
-            # ,ta.t3 # Tim Tillson's T3 Moving Average (T3)
-            # ,ta.swma # Symmetric Weighted Moving Average (SWMA)
-            # ,ta.sinwma # Sine Weighted Moving Average (SINWMA) by Everget of TradingView
-            # ,ta.zlma # Zero Lag Moving Average (ZLMA)
-            # ,ta.vidya # Variable Index Dynamic Average (VIDYA)
-            # ,ta.trima # Triangular Moving Average (TRIMA)
-            # ,ta.tema # Triple Exponential Moving Average (TEMA)
-            # ,ta.midpoint # Midpoint
-            # ,ta.pwma # Pascal's Weighted Moving Average (PWMA)
-            # ,ta.rma # wildeR's Moving Average (RMA)
-            # ,ta.ssf # Ehler's Super Smoother Filter (SSF)
-            # ,ta.kama # Kaufman's Adaptive Moving Average (KAMA)
-            # # ,ta.mcgd # McGinley Dynamic Indicator (MCGD) ## Erro na função
-            # # ,ta.jma # Jurik Moving Average (JMA) # Erro na função
+            ta.ema # Exponential Moving Average (EMA)
+            ,ta.sma # Weighted Moving Average (WMA)
+            ,ta.wma # Simple Moving Average (SMA)
+            ,ta.alma # Média Móvel Arnaud Legoux (ALMA)
+            ,ta.dema # Double Exponential Moving Average (DEMA)
+            ,ta.fwma # Fibonacci's Weighted Moving Average (FWMA)
+            ,ta.hma # Hull Moving Average (HMA)
+            ,ta.linreg # Linear Regression Moving Average (LINREG)
+            ,ta.t3 # Tim Tillson's T3 Moving Average (T3)
+            ,ta.swma # Symmetric Weighted Moving Average (SWMA)
+            ,ta.sinwma # Sine Weighted Moving Average (SINWMA) by Everget of TradingView
+            ,ta.zlma # Zero Lag Moving Average (ZLMA)
+            ,ta.vidya # Variable Index Dynamic Average (VIDYA)
+            ,ta.trima # Triangular Moving Average (TRIMA)
+            ,ta.tema # Triple Exponential Moving Average (TEMA)
+            ,ta.midpoint # Midpoint
+            ,ta.pwma # Pascal's Weighted Moving Average (PWMA)
+            ,ta.rma # wildeR's Moving Average (RMA)
+            ,ta.ssf # Ehler's Super Smoother Filter (SSF)
+            ,ta.kama # Kaufman's Adaptive Moving Average (KAMA)
+            # ,ta.mcgd # McGinley Dynamic Indicator (MCGD) ## Erro na função
+            # ,ta.jma # Jurik Moving Average (JMA) # Erro na função
 
 
-            # ta.supertrend # supertrend       
+            ,ta.supertrend # supertrend       
 
         #     # Indicadores de volume 
-            ta.mfi #  Money Flow Index (MFI)
+            ,ta.mfi #  Money Flow Index (MFI)
             ,ta.nvi #  Negative Volume Index (NVI)
             ,ta.pvi # Positive Volume Index (PVI)
 
@@ -337,8 +337,8 @@ class Features():
         ]
         
 
-        # for ind in indicators:
-        #     dataframe = self.apply_indicator(dataframe, ind)
+        for ind in indicators:
+            dataframe = self.apply_indicator(dataframe, ind)
 
 
         for ind in indicators_window:
@@ -410,13 +410,13 @@ class Features():
                 dataframe[f'target_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x))
                 dataframe[f'bl_target_{target}P_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) >= target / 100)#astype(int)
                 dataframe[f'bl_target_{target}N_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) <= -target / 100)#
-        print('created target')
+        print('target creating')
 
         duplicate_columns = dataframe.columns[dataframe.columns.duplicated()].tolist()
-        print('duplicated_cols', duplicate_columns)
 
-        print('colunas com target', len(dataframe.columns))
+        print('duplicated cols', duplicate_columns)
 
+        print('cols with target', len(dataframe.columns))
 
         return dataframe
     
