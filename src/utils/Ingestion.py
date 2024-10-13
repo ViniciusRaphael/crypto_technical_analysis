@@ -115,11 +115,17 @@ class DataIngestion():
         if parameters.execute_filtered:
             crypto_symbols = parameters.filter_symbols
         else:
-            # Get a list of cryptocurrency symbols from Kucoin
-            kucoin_symbols = self.get_kucoin_symbols()
-            # Remove the last character from each symbol in the list
-            # USDT to USD - name convention on yfinance
-            crypto_symbols = [symbol[:-1] for symbol in kucoin_symbols]
+
+            if parameters.execute_only_stable_crypto:
+                print('Collecting Stable Cryptos...')
+                crypto_symbols = parameters.cls_Constants._get_stable_symbols()
+
+            else:
+                # Get a list of cryptocurrency symbols from Kucoin
+                kucoin_symbols = self.get_kucoin_symbols()
+                # Remove the last character from each symbol in the list
+                # USDT to USD - name convention on yfinance
+                crypto_symbols = [symbol[:-1] for symbol in kucoin_symbols]
 
         # Define start date for historical data retrieval
         start_date = parameters.start_date_ingestion
