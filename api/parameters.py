@@ -20,6 +20,7 @@ execute_daily_predict = True                # It will play the daily outcome pip
 
 # Process selections Train/Test Models and Performance
 execute_filtered = False                    # It will filter symbols by the filter_symbols parameter
+execute_only_stable_crypto = True           # It will filter a list of +400 cryptos that are considered stable. It will avoid to get all the cryptos in API request when collecting the data. It will only be used if execute_filtered is False
 execute_train_models = False                # It will play the train models pipeline (it will sobescribe the version_model, or set a new value in version_model)
 execute_filtered_models = True              # Filter models directly in training
 execute_historical_predict = False          # It will play the backtest pipeline, for futher scenarios validation
@@ -48,8 +49,8 @@ return_crypto_in_simulations = False # It will return a col with all crypto symb
 # Configs date and models filters
 start_date_backtest = '2024-01-01'                  # Define the start date for backtesting
 start_date_ingestion = '2018-01-01' if execute_train_models else '2022-01-01'  # We only need data for the last 200 days for daily_outcome, but we need the historical for training
-active_date_symbol = '2024-10-01'
-recent_date_symbol = '2022-10-01'
+active_date_symbol = '2024-10-01'   ## Set the max date to consider a valid cripto (avoid collect crypto that has been already deslisted)
+recent_date_symbol = '2022-10-01'   ## Set the min date to consider a valid cripto (avoid collect crypto that is too recent and we can't calculate for 200 window)
 
 filter_symbols = [ # Filter symbols only when the execute_filtered is True
     'BTC-USD', 'ETH-USD', 'BNB-USD', 'SOL-USD', 'XRP-USD', 'DOGE-USD', 'TRX-USD', 'ADA-USD', 'AVAX-USD', 'SHIB-USD',
