@@ -36,8 +36,6 @@ class Models():
 
         dados_treat = dados.dropna() # Removing rows with NaN
 
-        # dados_treat = dados_treat.dropna() # Removing rows with NaN
-
         # Substituindo valores infinitos por NaN
         dados_treat.replace([np.inf, -np.inf], np.nan, inplace=True)
 
