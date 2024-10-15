@@ -151,6 +151,7 @@ class RealBacktest():
     def all_entries_backtest(self, parameters):
         # Read in the necessary files
         predicted_backtest = pd.read_csv(parameters.file_backtest)
+
         dados_prep_models = parameters.cls_FileHandling.read_file(parameters.files_folder, parameters.file_prep_models)
 
         # Filter and merge data

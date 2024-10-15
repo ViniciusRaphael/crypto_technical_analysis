@@ -26,11 +26,29 @@ class Deploy():
 
 
     def build_dummies(self, filtered_data, target_list, remove_cols):
+
+        # Cols with all the values Null
+        null_cols = filtered_data.columns[filtered_data.isnull().all()]
+        null_cols_without_targets = [x for x in null_cols if x not in target_list]
+
+        print(f'Removed Null cols Predict: {null_cols_without_targets}')
+
+        # dados_x_dropped = dados_x_dropped.dropna() # Removing rows with NaN
+        dados_x_dropped = filtered_data.drop(columns=null_cols_without_targets, axis=1)
+        # dados_x_dropped = filtered_data.drop(columns=['DPO_5', 'DPO_12', 'DPO_26', 'DPO_50', 'DPO_100'], axis=1)
         
-        dados_x = filtered_data.drop(filtered_data[target_list], axis=1)
+        # dados_x_dropped = dados_x_dropped.drop(dados_x_dropped[target_list], axis=1)
+
+
+
+        dados_x = dados_x_dropped.drop(dados_x_dropped[target_list], axis=1)    
+
         dados_x = dados_x.drop(dados_x[remove_cols], axis=1)
 
+
         dummies_build = pd.get_dummies(dados_x)
+
+        print(len(dummies_build.columns))
 
         dummies_prep = dummies_build.dropna()
 
@@ -146,9 +164,14 @@ class Deploy():
 
         dados_w_indicators = parameters.cls_FileHandling.read_file(parameters.files_folder, parameters.file_w_indicators)
 
+        print('cols originais ', len(dados_w_indicators.columns))
+
         dados_input_select = dados_prep_models if backtest else dados_w_indicators
 
         dados_input_select = parameters.cls_FileHandling.get_selected_symbols(dados_input_select, parameters) if parameters.execute_filtered else dados_input_select
+
+        print('cols input select ', len(dados_input_select.columns))
+
 
         # Listar todos os itens no diretório e filtrar apenas os arquivos
         # models = [f for f in os.listdir(parameters.path_models) if os.path.isfile(os.path.join(parameters.path_models, f))]
@@ -163,10 +186,11 @@ class Deploy():
 
         # Vai escolher uma data em específico, '' para a mais recente
         dataset_ref = self.eval_data(dados_input_select, choosen_data_input)
+        
 
         # Access dict with models configs
-        _dict_config_train = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.cls_Constants._get_configs_train())
-
+        _dict_config_train = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.cls_Constants._get_configs_train(), default_config = 'v2.1.20')
+              
         dummies_input = self.build_dummies(dataset_ref, parameters._remove_target_list, _dict_config_train['removing_cols_for_train'])
 
         # padronize input parameters from test models x predict model 
@@ -174,6 +198,7 @@ class Deploy():
         dados_x_all_dummies = pd.get_dummies(dados_x_all)
 
         padronized_dummies = self.padronize_dummies(dummies_input, dados_x_all_dummies)
+
         padronized_dummies_norm = cls_Models.norm_scale(padronized_dummies)
 
         compiled_dataset = dataset_ref[['Symbol', 'Date', 'Close']]
@@ -234,7 +259,7 @@ class Deploy():
         print(f'Predicting selected date')
 
         daily_outcome = self.build_crypto_scores(cls_Models, parameters, choosen_date, False)
-        print(daily_outcome)
+        # print(daily_outcome)
 
         # Salvar o DataFrame em um arquivo CSV
         if not os.path.exists(parameters.path_daily_outcome):
@@ -247,12 +272,17 @@ class Deploy():
         if parameters.melt_daily_predict == True:
             daily_outcome = daily_outcome.melt(id_vars=['Symbol', 'Date', 'Close'], var_name='Models', value_name='Probability')
             # Join with simple backtest to rescue the value for backtesting with all currencies
-            daily_output_filename = f'{parameters.path_model_backtest}/_simple_backtest_{parameters.version_model}_{parameters.min_threshold_signals}_.csv'
-            backtest_file_selected = pd.read_csv(daily_output_filename, sep=';')
-            daily_outcome = pd.merge(daily_outcome, backtest_file_selected[['Symbol', 'model', 'number_entries', 'percent_correct_entries', 'simulate_variation', 'reached_target']],
-                                                                        how='left', left_on=['Symbol', 'Models'], right_on=['Symbol', 'model'])
+            try: 
+                daily_output_filename = f'{parameters.path_model_backtest}/_simple_backtest_{parameters.version_model}_{parameters.min_threshold_signals}_.csv'
+                backtest_file_selected = pd.read_csv(daily_output_filename, sep=';')
+                daily_outcome = pd.merge(daily_outcome, backtest_file_selected[['Symbol', 'model', 'number_entries', 'percent_correct_entries', 'simulate_variation', 'reached_target']],
+                                                                            how='left', left_on=['Symbol', 'Models'], right_on=['Symbol', 'model'])
 
-            daily_outcome = daily_outcome.sort_values(by=['reached_target', 'Probability', 'simulate_variation'], ascending=[False, False, False])
+                daily_outcome = daily_outcome.sort_values(by=['reached_target', 'Probability', 'simulate_variation'], ascending=[False, False, False])
+            except:
+                print('Warning: No backtest file associated with the predicted result. Returning dataset without the backtest enrichment')
+                pass
+            
             print(daily_outcome.head(20))
 
         daily_outcome.to_csv(file_name_outcome, index=True, sep=';', decimal=',')

@@ -23,9 +23,19 @@ class Models():
 
 
     def data_clean(self, dados:pd.DataFrame, target_list:list, data_return:str, removing_cols:list = ['Date', 'Symbol', 'Dividends', 'Stock Splits']):
-        # Removing NA
-        dados_treat = dados.dropna()
-        
+
+        # null_cols = dados.columns[dados.isnull().all()]
+        # null_cols_without_targets = [x for x in null_cols if x not in target_list]
+
+        # print(f'Removed Null cols: {null_cols_without_targets}')
+
+        # # dados_x_dropped = dados_x_dropped.dropna() # Removing rows with NaN
+        # dados_treat = dados.drop(columns=null_cols_without_targets, axis=1)
+    
+        # dados_treat = dados.dropna(how='all', axis=1) # removing cols with all values = NaN
+
+        dados_treat = dados.dropna() # Removing rows with NaN
+
         # Substituindo valores infinitos por NaN
         dados_treat.replace([np.inf, -np.inf], np.nan, inplace=True)
 
@@ -71,9 +81,10 @@ class Models():
         # normalizando e padronizando os dados
         # MinMaxScaler é usado para normalizar as variáveis, colocando em uma mesma escala,
         # e StandardScaler é usado para padronizar, fazendo com que a média seja 0 e o desvio padrão seja 1
-        # Padronizando
+        # Padronizand
         scaler = StandardScaler()
         scaler.fit(X_norm_scale)
+
         standardized_data = scaler.transform(X_norm_scale)
 
         # normalizando
@@ -214,11 +225,12 @@ class Models():
         dados_prep_models = parameters.cls_FileHandling.get_selected_symbols(dados_prep_models, parameters)
 
         # Access dict with models configs
-        _dict_config_train = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.cls_Constants._get_configs_train())
+        _dict_config_train = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.cls_Constants._get_configs_train(), default_config = 'v2.1.20')
 
         dados_x = self.data_clean(dados_prep_models, parameters._remove_target_list, 'X', _dict_config_train['removing_cols_for_train'])
         dados_y_all = self.data_clean(dados_prep_models, parameters._remove_target_list, 'Y', _dict_config_train['removing_cols_for_train'])
 
+        print(len(dados_x.columns))
         # limpar arquivo de log e inserindo o cabeçalho
         with open(parameters.file_log_models, 'w') as arquivo:
             arquivo.write('name_file,name_model,target,version,date_add,true_negative,false_positive,false_negative,true_positive,accuracy,precision,recall,auc_roc,f1_score' + '\n')
@@ -247,7 +259,7 @@ class Models():
             _dict_classifiers = parameters.cls_FileHandling.get_constants_dict(parameters, parameters.cls_Constants._get_classifiers())
 
             # Utilizam dados normalizados
-            self.create_model(parameters, _dict_classifiers['lr'], 'logistic_regression', target_eval, X_train_norm, y_train, X_test_norm, y_test)
+            # self.create_model(parameters, _dict_classifiers['lr'], 'logistic_regression', target_eval, X_train_norm, y_train, X_test_norm, y_test) ## baixa precisão em comparação com os demais
             # self.create_model(parameters, _dict_classifiers['Sc'], 'SVC', target_eval, X_train_norm, y_train, X_test_norm, y_test)
 
             # Não necessitam de dados normalizados

@@ -1,6 +1,5 @@
 from pathlib import Path
 from src.utils.FileHandle import FileHandling
-from src.utils.Transform import DataTransform
 from src.utils.Train import Models
 from src.utils.PrepModels import DataPrep
 from src.utils.Predict import Deploy
@@ -21,6 +20,7 @@ execute_daily_predict = True                # It will play the daily outcome pip
 
 # Process selections Train/Test Models and Performance
 execute_filtered = False                    # It will filter symbols by the filter_symbols parameter
+execute_only_stable_crypto = True           # It will filter a list of +400 cryptos that are considered stable. It will avoid to get all the cryptos in API request when collecting the data. It will only be used if execute_filtered is False
 execute_train_models = False                # It will play the train models pipeline (it will sobescribe the version_model, or set a new value in version_model)
 execute_filtered_models = True              # Filter models directly in training
 execute_historical_predict = False          # It will play the backtest pipeline, for futher scenarios validation
@@ -32,7 +32,7 @@ execute_simulations = False                 # Create simulations with random sel
 
 # Configs scores and model version
 score_metric = 'f1_score'                   # Metric to compose the score. Options: accuracy, precision, recall, auc_roc, f1_score
-version_model = 'v2.1.20'                       # Define the version. If it doesnt exist, it will be created (when trained the model) otherwise, it will used the previously one
+version_model = 'v2.2.20'                       # Define the version. If it doesnt exist, it will be created (when trained the model) otherwise, it will used the previously one
 num_select_models = 0          # select the max number of models to return (0 for all)
 min_threshold_models = 0.65       # select the minimum threshold for select the model (considering the score_metric)
 min_threshold_signals = 0.55     # select the minimum threshold for considering a signal as a entrance (it consider's the selected models (that passed in threshold))
@@ -49,17 +49,21 @@ return_crypto_in_simulations = False # It will return a col with all crypto symb
 # Configs date and models filters
 start_date_backtest = '2024-01-01'                  # Define the start date for backtesting
 start_date_ingestion = '2018-01-01' if execute_train_models else '2022-01-01'  # We only need data for the last 200 days for daily_outcome, but we need the historical for training
-
+active_date_symbol = '2024-10-01'   ## Set the max date to consider a valid cripto (avoid collect crypto that has been already deslisted)
+recent_date_symbol = '2022-10-01'   ## Set the min date to consider a valid cripto (avoid collect crypto that is too recent and we can't calculate for 200 window)
 
 filter_symbols = [ # Filter symbols only when the execute_filtered is True
     'BTC-USD', 'ETH-USD', 'BNB-USD', 'SOL-USD', 'XRP-USD', 'DOGE-USD', 'TRX-USD', 'ADA-USD', 'AVAX-USD', 'SHIB-USD',
-    'DOT-USD', 'BCH-USD', 'LINK-USD', 'LTC-USD', 'MATIC-USD', 'XMR-USD', 'XLM-USD', 'ETC-USD','UNI-USD', 'AAVE-USD',  
-    #  ,'FIL-USD', 'VET-USD', 'ATOM-USD', 'CRO-USD', 'THETA-USD', 'FTM-USD', 'ALGO-USD', 'ZEC-USD', 'DASH-USD', 'EOS-USD',
-    #  'XTZ-USD', 'OMG-USD', 'KSM-USD', 'ZIL-USD', 'ICX-USD', 'QTUM-USD','NANO-USD', 'ONT-USD', 'WAVES-USD', 'BAT-USD', 
-    #  'LRC-USD', 'ENJ-USD', 'BNT-USD', 'REN-USD', 'CVC-USD', 'ANT-USD', 'REP-USD', 'STORJ-USD', 'KNC-USD', 'MANA-USD', 'SNT-USD', 'PPT-USD'
+    # 'DOT-USD', 'BCH-USD', 'LINK-USD', 'LTC-USD', 'MATIC-USD', 'XMR-USD', 'XLM-USD', 'ETC-USD','UNI-USD', 'AAVE-USD',  
+    # 'FIL-USD', 'VET-USD', 'ATOM-USD', 'CRO-USD', 'THETA-USD', 'FTM-USD', 'ALGO-USD', 'ZEC-USD', 'DASH-USD', 'EOS-USD',
+    # 'XTZ-USD', 'OMG-USD', 'KSM-USD', 'ZIL-USD', 'ICX-USD', 'QTUM-USD','NANO-USD', 'ONT-USD', 'WAVES-USD', 'BAT-USD', 
+    # 'LRC-USD', 'ENJ-USD', 'BNT-USD', 'REN-USD', 'CVC-USD', 'ANT-USD', 'REP-USD', 'STORJ-USD', 'KNC-USD', 'MANA-USD', 'SNT-USD', 'PPT-USD'
     ]
 
 target_list_bol_filter = [ # targets used when execute_filtered_models is True (Directly in training models)
+    # 'bl_target_10P_15d','bl_target_15P_15d','bl_target_20P_15d','bl_target_25P_15d',
+    # 'bl_target_10N_15d','bl_target_15N_15d','bl_target_20N_15d','bl_target_25N_15d',
+
     'bl_target_10P_30d','bl_target_15P_30d','bl_target_20P_30d','bl_target_25P_30d',
     'bl_target_10N_30d','bl_target_15N_30d','bl_target_20N_30d','bl_target_25N_30d' 
     ]
@@ -73,7 +77,6 @@ cls_Models = Models()
 cls_Predict = Deploy()
 cls_DataPrep = DataPrep()
 cls_Ingestion = DataIngestion()
-cls_Transform = DataTransform()
 cls_Signals = Backtesting()
 cls_Features = Features()
 cls_RealBacktest = RealBacktest()
