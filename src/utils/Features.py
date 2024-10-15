@@ -9,99 +9,6 @@ class Features():
     def __init__(self) -> None:
         pass
 
-
-    def classify_adx_value(self, value):
-        """
-        Checks the ADX value against predefined ranges and returns the corresponding trend category.
-
-        Args:
-            value (int): The ADX value to be categorized.
-
-        Returns:
-            str or None: The category name for the provided ADX value.
-        """
-        NM_ADX_GROUP = {
-            '0-25': '1. Absent or Weak Trend',
-            '25-50': '2. Strong Trend',
-            '50-75': '3. Very Strong Trend',
-            '75-100': '4. Extremely Strong Trend'
-        }
-
-        for key, name in NM_ADX_GROUP.items():
-            range_start, range_end = map(int, key.split('-'))
-            if range_start <= value <= range_end:
-                return name
-        return None
-
-
-    def classify_rsi_value(self, value):
-        """
-        Checks the RSI value against predefined ranges and returns the corresponding category.
-
-        Args:
-            value (float): The RSI value to be categorized.
-
-        Returns:
-            str or None: The category name for the provided RSI value.
-        """
-        RSI_GROUP = {
-            '0-10': 'rsi_0_to_10',
-            '11-20': 'rsi_11_to_20',
-            '21-30': 'rsi_21_to_30',
-            '31-40': 'rsi_31_to_40',
-            '41-50': 'rsi_41_to_50',
-            '51-60': 'rsi_51_to_60',
-            '61-70': 'rsi_61_to_70',
-            '71-80': 'rsi_71_to_80',
-            '81-90': 'rsi_81_to_90',
-            '91-100': 'rsi_91_to_100'
-        }
-
-        for key, name in RSI_GROUP.items():
-            range_start, range_end = map(int, key.split('-'))
-            if range_start <= value < range_end:
-                return name
-        return None
-
-
-    def count_positive_reset(self, df_column):
-        """
-        Counts consecutive positive values in a DataFrame column and resets count on encountering negative values.
-
-        Args:
-            df_column (pandas.Series): The DataFrame column to be processed.
-
-        Returns:
-            list: A list containing counts of consecutive positive values.
-        """
-        count = 0
-        counts = []
-
-        for value in df_column:
-            if value > 0:
-                count += 1
-            else:
-                count = 0  # Reset count if a negative value is encountered
-            counts.append(count)
-
-        return counts
-
-
-    def calculate_adx(self, grupo):
-        adx_values = ta.adx(grupo['High'], grupo['Low'], grupo['Close'], length=14)
-        if adx_values is not None and not adx_values.empty:
-            # Adiciona as colunas calculadas ao grupo original
-            grupo['vl_adx'] = adx_values['ADX_14'].values
-            grupo['vl_dmp'] = adx_values['DMP_14'].values
-            grupo['vl_dmn'] = adx_values['DMN_14'].values
-        else:
-            # Se o cálculo falhar, preenche com NaN
-            grupo['vl_adx'] = pd.NA
-            grupo['vl_dmp'] = pd.NA
-            grupo['vl_dmn'] = pd.NA
-        return grupo
-    
-    
     def apply_indicator(self, dataframe, indicator_function, symbol_column='Symbol', **kwargs):
         """
         Aplica um indicador técnico que usa High, Low e Close, adicionando as colunas geradas ao dataframe.
@@ -212,8 +119,8 @@ class Features():
             
             # Trend Indicators
             ,ta.amat #  Archer Moving Averages Trends (AMAT)
-            ,ta.cksp #  Indicator: Chande Kroll Stop (CKSP) #################################### começou aqui os erros #### não tem window
-            ,ta.psar #  Indicator: Parabolic Stop and Reverse (PSAR) ########### não tem window
+            ,ta.cksp #  Indicator: Chande Kroll Stop (CKSP) 
+            ,ta.psar #  Indicator: Parabolic Stop and Reverse (PSAR)
             ## long_run, short_run, t_signals, xsignals cant be used right now (Differente parameters)
 
             # Volatility Indicators
@@ -331,9 +238,6 @@ class Features():
         #     # Candles Indicators
             ,ta.cdl_doji #  Candle Type: Doji
             ,ta.cdl_z #  Candle Type: Z Score
-
-        #     # Moving Average (Overlap indicators)
-        #     print(f'Executing: Overlap Indicators {window} window')
         ]
         
 
@@ -394,23 +298,19 @@ class Features():
                 #'ISA_9', 'ISB_26', 'ITS_9', 'IKS_26', 'ICS_26', '0'
                 ]
             
-        print('colunas totais arquivo ', len(dataframe.columns))
-
         dataframe = dataframe.drop(columns=_remove_features, axis = 1, errors='ignore')     
-
-        print('colunas utilizadas salvar', len(dataframe.columns))
-
         
         # Financial Result
         targets = [10, 15, 20, 25]
         timeframes = [7, 15, 30]
+        
+        print('Creating target')
 
         for target in targets:
             for timeframe in timeframes:
                 dataframe[f'target_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x))
                 dataframe[f'bl_target_{target}P_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) >= target / 100)#astype(int)
                 dataframe[f'bl_target_{target}N_{timeframe}d'] = dataframe.groupby('Symbol')['Close'].transform(lambda x: ((x.shift(-timeframe) - x)/x) <= -target / 100)#
-        print('target creating')
 
         duplicate_columns = dataframe.columns[dataframe.columns.duplicated()].tolist()
 
